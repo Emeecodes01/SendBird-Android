@@ -13,6 +13,7 @@ import com.sendbird.uikit.fragments.ChannelFragment;
 public class CustomChannelFragment extends ChannelFragment {
     private CustomMessageType customMessageType = CustomMessageType.NONE;
 
+
     @Override
     protected void onBeforeSendUserMessage(@NonNull UserMessageParams params) {
         super.onBeforeSendUserMessage(params);

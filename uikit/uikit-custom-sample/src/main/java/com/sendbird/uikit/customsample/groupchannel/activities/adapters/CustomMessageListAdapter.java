@@ -19,8 +19,8 @@ import com.sendbird.uikit.utils.MessageUtils;
 
 public class CustomMessageListAdapter extends MessageListAdapter {
 
-    public static final int VIEW_HIGHLIGHT_MESSAGE_ME_TYPE = 1001;
-    public static final int VIEW_HIGHLIGHT_MESSAGE_OTHER_TYPE = 1002;
+    public static final int VIEW_HIGHLIGHT_MESSAGE_ME_TYPE = 0;
+    public static final int VIEW_HIGHLIGHT_MESSAGE_OTHER_TYPE = 1;
 
     public CustomMessageListAdapter(boolean useMessageGroupUI) {
         super(null, null, null, useMessageGroupUI);
@@ -45,6 +45,7 @@ public class CustomMessageListAdapter extends MessageListAdapter {
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         // You must call the super. You can use methods that MessageViewHolder provides
+
         super.onBindViewHolder(holder, position);
         // TODO: Bind the custom ViewHolder
     }

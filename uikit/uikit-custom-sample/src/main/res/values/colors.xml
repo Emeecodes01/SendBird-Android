@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#0091FF</color>
-    <color name="colorPrimaryDark">#006BBD</color>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#33FFFFFF</color>
     <color name="colorAccent">#2EBA9F</color>
     <color name="highlight">#F78900</color>
 
-    <color name="primary_500">#006BBD</color>
+    <color name="primary_500">#742ddd</color>
     <color name="primary_400">#007CBD</color>
     <color name="primary_300">#0091FF</color>
     <color name="primary_200">#35A8FF</color>
@@ -34,9 +34,10 @@
     <color name="onlight_02">#80000000</color>
     <color name="onlight_03">#61000000</color>
     <color name="onlight_04">#1e000000</color>
-    <color name="ondark_01">#e1ffffff</color>
+    <color name="ondark_01">#313848</color>
     <color name="ondark_02">#80ffffff</color>
     <color name="ondark_03">#61ffffff</color>
     <color name="ondark_04">#1effffff</color>
+    <color name="ondark_05">#40E5E5E5</color>
     <color name="information">#adc9ff</color>
 </resources>

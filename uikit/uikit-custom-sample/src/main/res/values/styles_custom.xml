@@ -1,8 +1,9 @@
 <resources>
     <style name="AppThemeCustom" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/primary_300</item>
-        <item name="colorPrimaryDark">@color/primary_500</item>
-        <item name="colorAccent">@color/secondary_300</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="background">@color/ondark_05</item>
     </style>
 
     <style name="SendBird.Custom" parent="AppThemeCustom">
@@ -38,24 +39,18 @@
     </style>
 
     <style name="Widget.SendBird.AppBar.Custom">
-        <item name="android:background">@color/primary_300</item>
+        <item name="android:background">@color/colorPrimary</item>
         <item name="sb_appbar_title_appearance">@style/SendbirdH2OnDark01</item>
-        <item name="sb_appbar_description_appearance">@style/SendbirdCaption2OnDark02</item>
-        <item name="sb_appbar_divider_color">@color/primary_500</item>
-
-        <item name="sb_appbar_left_button_text_appearance">@style/SendbirdButtonOnDark01</item>
-        <item name="sb_appbar_left_button_text_color">@color/selector_on_primary</item>
-        <item name="sb_appbar_left_button_tint">@color/ondark_01</item>
-        <item name="sb_appbar_left_button_background">@drawable/sb_button_uncontained_background_custom</item>
-        <item name="sb_appbar_right_button_text_appearance">@style/SendbirdButtonOnDark01</item>
-        <item name="sb_appbar_right_button_text_color">@color/selector_on_primary</item>
-        <item name="sb_appbar_right_button_tint">@color/ondark_01</item>
-        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_custom</item>
+        <item name="sb_appbar_description">@string/time</item>
+        <item name="sb_appbar_description_appearance">@style/SendbirdCaption2OnDark01</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="sb_appbar_right_button_text">@string/app_name</item>
     </style>
 
     <style name="Widget.SendBird.RecyclerView.Custom">
-        <item name="android:background">@color/background_50</item>
-        <item name="sb_pager_recycler_view_use_divide_line">true</item>
+        <item name="android:background">@color/ondark_05</item>
+        <item name="sb_pager_recycler_view_use_divide_line">false</item>
         <item name="sb_pager_recycler_view_divide_line_color">@color/onlight_04</item>
         <item name="sb_pager_recycler_view_divide_line_height">@dimen/sb_size_1</item>
         <item name="sb_pager_recycler_view_divide_margin_left">0dp</item>
@@ -78,7 +73,7 @@
 
     <style name="Widget.SendBird.RecyclerView.Message.Custom">
         <item name="sb_pager_recycler_view_use_divide_line">false</item>
-        <item name="sb_message_recyclerview_background">@color/background_50</item>
+        <item name="sb_message_recyclerview_background">@color/ondark_05</item>
         <item name="sb_message_recyclerview_tooltip_background">@drawable/selector_tooltip_background_light</item>
         <item name="sb_message_recyclerview_tooltip_textappearance">@style/SendbirdCaption1Primary300</item>
         <item name="sb_message_typing_indicator_textappearance">@style/SendbirdCaption1OnLight02</item>
@@ -139,7 +134,7 @@
         <item name="sb_message_other_text_appearance">@style/SendbirdBody3OnLight01</item>
         <item name="sb_message_me_background">@drawable/sb_shape_chat_bubble</item>
         <item name="sb_message_other_background">@drawable/sb_shape_chat_bubble</item>
-        <item name="sb_message_me_background_tint">@color/sb_message_me_tint_light</item>
+        <item name="sb_message_me_background_tint">@drawable/me_message_tint</item>
         <item name="sb_message_other_background_tint">@color/sb_message_other_tint_light</item>
     </style>
 

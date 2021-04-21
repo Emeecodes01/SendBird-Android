@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">SendbirdUIKitCustomSample</string>
     <string name="text_title_login_activity">Sendbird UIKit Sample</string>
+    <string name="time">5:32</string>
 
     <string name="text_version_info">UI Kit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
     <string name="text_hint_user_id">User ID</string>
@@ -40,4 +41,5 @@
     <string name="text_error_connection_must_be_made">Connection must be made.</string>
     <string name="text_error_update_user_information">Couldn\&#39;t update user information.</string>
     <string name="text_error_update_do_not_disturb">Couldn\&#39;t update disturb setting.</string>
+    <string name="write_a_reply">Write a reply...</string>
 </resources>

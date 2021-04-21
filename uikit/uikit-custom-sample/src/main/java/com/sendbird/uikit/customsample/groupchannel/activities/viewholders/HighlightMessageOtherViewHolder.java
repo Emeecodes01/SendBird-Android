@@ -34,15 +34,15 @@ public class HighlightMessageOtherViewHolder extends MessageViewHolder {
     public void bind(BaseChannel channel, @NonNull BaseMessage message, MessageGroupType messageGroupType) {
         Context context = binding.getRoot().getContext();
         boolean sendingState = message.getSendingStatus() == BaseMessage.SendingStatus.SUCCEEDED;
-        binding.tvSentAt.setVisibility(sendingState ? View.VISIBLE : View.GONE);
+//        binding.tvSentAt.setVisibility(sendingState ? View.VISIBLE : View.GONE);
         String sentAt = DateUtils.formatDateTime(context, message.getCreatedAt(), DateUtils.FORMAT_SHOW_TIME);
-        binding.tvSentAt.setText(sentAt);
+//        binding.tvSentAt.setText(sentAt);
 
         Sender sender = message.getSender();
         String nickname = sender == null || TextUtils.isEmpty(sender.getNickname()) ?
                 context.getString(R.string.sb_text_channel_list_title_unknown) :
                 sender.getNickname();
-        binding.tvNickname.setText(nickname);
+//        binding.tvNickname.setText(nickname);
 
         String url = "";
         if (sender != null && !TextUtils.isEmpty(sender.getProfileUrl())) {

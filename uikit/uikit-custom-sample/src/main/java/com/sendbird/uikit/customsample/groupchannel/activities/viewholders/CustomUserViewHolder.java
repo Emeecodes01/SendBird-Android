@@ -41,7 +41,7 @@ public class CustomUserViewHolder extends BaseViewHolder<UserInfo> {
                 .error(errorIcon)
                 .apply(RequestOptions.circleCropTransform())
                 .into(binding.ivUserCover);
-        binding.tvNickname.setText(user.getNickname());
+//        binding.tvNickname.setText(user.getNickname());
     }
 
     public void bindSelected(UserInfo user, List<String> invitedUsers,

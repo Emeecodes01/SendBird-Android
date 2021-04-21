@@ -25,15 +25,12 @@ public class HighlightMessageMeViewHolder extends MessageViewHolder {
         Context context = binding.getRoot().getContext();
         boolean sendingState = message.getSendingStatus() == BaseMessage.SendingStatus.SUCCEEDED;
 
-        binding.tvSentAt.setVisibility(sendingState ? View.VISIBLE : View.GONE);
+//        binding.tvSentAt.setVisibility(sendingState ? View.VISIBLE : View.GONE);
         String sentAt = DateUtils.formatDateTime(context, message.getCreatedAt(), DateUtils.FORMAT_SHOW_TIME);
-        binding.tvSentAt.setText(sentAt);
-        binding.ivStatus.drawStatus(message, channel);
+//        binding.tvSentAt.setText(sentAt);
+//        binding.ivStatus.drawStatus(message, channel);
         binding.tvMessage.setText(message.getMessage());
 
-        int paddingTop = context.getResources().getDimensionPixelSize(com.sendbird.uikit.R.dimen.sb_size_8);
-        int paddingBottom = context.getResources().getDimensionPixelSize(com.sendbird.uikit.R.dimen.sb_size_8);
-        binding.root.setPadding(binding.root.getPaddingLeft(), paddingTop, binding.root.getPaddingRight(), paddingBottom);
     }
 
     @Override

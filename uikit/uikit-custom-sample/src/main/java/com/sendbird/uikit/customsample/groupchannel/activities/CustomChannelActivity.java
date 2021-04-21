@@ -6,7 +6,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.sendbird.android.MessageListParams;
 import com.sendbird.uikit.activities.ChannelActivity;
+import com.sendbird.uikit.consts.KeyboardDisplayType;
 import com.sendbird.uikit.customsample.R;
 import com.sendbird.uikit.customsample.groupchannel.activities.adapters.CustomMessageListAdapter;
 import com.sendbird.uikit.customsample.groupchannel.fragments.CustomChannelFragment;
@@ -22,24 +24,24 @@ public class CustomChannelActivity extends ChannelActivity {
         return new ChannelFragment.Builder(channelUrl, R.style.CustomMessageListStyle)
                 .setCustomChannelFragment(customChannelFragment)
                 .setUseHeader(true)
-                .setHeaderTitle(null)
+                .setUseUserProfile(true)
+                .setHeaderTitle("Tamilore")
                 .setUseHeaderLeftButton(true)
                 .setUseHeaderRightButton(true)
-                .setUseLastSeenAt(true)
                 .setUseTypingIndicator(true)
-                .setHeaderLeftButtonIcon(R.drawable.icon_arrow_left, AppCompatResources.getColorStateList(this, R.color.ondark_01))
-                .setHeaderRightButtonIcon(R.drawable.icon_info, AppCompatResources.getColorStateList(this, R.color.ondark_01))
-                .setInputLeftButtonIcon(R.drawable.icon_add, AppCompatResources.getColorStateList(this, R.color.primary_300))
-                .setInputRightButtonIcon(R.drawable.icon_send, AppCompatResources.getColorStateList(this, R.color.secondary_300))
-                .setInputHint(getString(R.string.sb_text_channel_input_text_hint))
+                .setHeaderLeftButtonIcon(R.drawable.ic_back_arrow, null)
+                .setHeaderRightButtonIcon(R.drawable.ic_clock, null)
+                .setInputLeftButtonIcon(R.drawable.ic_attach, null)
+                .setInputRightButtonIcon(R.drawable.icon_send, AppCompatResources.getColorStateList(this, R.color.ondark_01))
+                .setInputHint(getString(R.string.write_a_reply))
                 .setHeaderLeftButtonListener(null)
                 .setHeaderRightButtonListener(v -> showCustomChannelSettingsActivity(channelUrl))
-                .setMessageListAdapter(new CustomMessageListAdapter(useMessageGroupUI))
+                .setMessageListAdapter(new CustomMessageListAdapter(true))
                 .setItemClickListener(null)
                 .setItemLongClickListener(null)
                 .setInputLeftButtonListener(v -> showMessageTypeDialog())
                 .setMessageListParams(null)
-                .setUseMessageGroupUI(useMessageGroupUI)
+                .setUseMessageGroupUI(true)
                 .build();
     }
 

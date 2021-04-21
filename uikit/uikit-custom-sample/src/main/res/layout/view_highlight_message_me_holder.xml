@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/sb_size_12"
-        android:paddingTop="@dimen/sb_size_8"
-        android:paddingRight="@dimen/sb_size_12"
-        android:paddingBottom="@dimen/sb_size_8">
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="5dp">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvSentAt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/sb_size_0"
-            android:layout_marginRight="@dimen/sb_size_4"
-            app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/tvMessage"
             app:layout_constraintEnd_toStartOf="@+id/tvMessage"
             app:layout_constraintHorizontal_bias="1"
             app:layout_constraintHorizontal_chainStyle="packed"
@@ -27,33 +25,32 @@
             android:id="@+id/tvMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="@dimen/sb_message_max_width"
             android:autoLink="web"
-            android:gravity="center_vertical"
-            android:background="@drawable/highlight_message_background"
+            android:background="@drawable/me_message_shape"
+            android:minWidth="40dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
             android:textAppearance="@style/SendbirdBody3OnDark01"
-            android:padding="@dimen/sb_size_10"
+            android:textColor="@color/background_50"
             app:layout_constrainedWidth="true"
-            app:layout_constraintBottom_toTopOf="@+id/brBottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintStart_toEndOf="@+id/tvSentAt"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="@id/guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hello, what's up" />
 
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/brBottom"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="tvMessage" />
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.4" />
 
         <com.sendbird.uikit.widgets.MyMessageStatusView
             android:id="@+id/ivStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/sb_size_0"
-            android:layout_marginRight="@dimen/sb_size_4"
+            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/tvSentAt"
             app:layout_constraintEnd_toStartOf="@+id/tvMessage"
             app:layout_constraintHorizontal_bias="1"

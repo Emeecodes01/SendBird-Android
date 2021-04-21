@@ -9,7 +9,6 @@
         android:id="@+id/tbMain"
         android:layout_width="@dimen/sb_size_0"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary_300"
         android:paddingLeft="@dimen/sb_size_20"
         android:paddingRight="@dimen/sb_size_4"
         app:titleTextAppearance="@style/SendbirdH1OnDark01"

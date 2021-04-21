@@ -7,5 +7,5 @@
         android:bottomRightRadius="@dimen/sb_size_15"/>
 
     <solid
-        android:color="@color/highlight"/>
+        android:color="#000000"/>
 </shape>

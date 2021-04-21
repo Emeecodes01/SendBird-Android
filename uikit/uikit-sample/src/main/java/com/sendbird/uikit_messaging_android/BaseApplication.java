@@ -12,7 +12,8 @@ import com.sendbird.uikit_messaging_android.utils.PushUtils;
 
 public class BaseApplication extends Application {
 
-    private static final String APP_ID = "2D7B4CDB-932F-4082-9B09-A1153792DC8D";
+//    private static final String APP_ID = "2D7B4CDB-932F-4082-9B09-A1153792DC8D";
+    private static final String APP_ID = "58BB27E6-E4EA-4448-83F5-8E03A873AD6A";
 
     @Override
     public void onCreate() {

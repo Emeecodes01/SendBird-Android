@@ -33,6 +33,13 @@
 
     <style name="CustomUserMessage" parent="Widget.SendBird.Message.User">
         <item name="sb_message_sender_name_text_appearance">@style/SendbirdCaption1Primary300</item>
+        <item name="sb_message_me_background_tint">@drawable/me_message_tint</item>
+        <item name="sb_message_other_background_tint">@drawable/other_message_tint</item>
+        <item name="sb_message_me_background">@drawable/me_message_shape</item>
+        <item name="sb_message_other_background">@drawable/other_message_shape</item>
+        <item name="sb_message_me_text_appearance">@style/SendbirdBody3OnLight</item>
+        <item name="sb_message_other_text_appearance">@style/SendbirdBody3OnDark01</item>
+
     </style>
 
     <style name="CustomFileMessage" parent="Widget.SendBird.Message.File">
