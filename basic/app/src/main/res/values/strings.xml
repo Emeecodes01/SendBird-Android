@@ -58,5 +58,7 @@
     <!-- Message Status -->
     <string name="message_sending">Sending</string>
     <string name="message_failed">Failed</string>
+    <string name="upload_file">Upload file</string>
+    <string name="write_a_reply">Write a reply...</string>
 
 </resources>
