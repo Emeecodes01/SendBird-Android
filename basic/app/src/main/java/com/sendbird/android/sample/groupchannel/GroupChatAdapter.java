@@ -720,7 +720,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             // Hide profile image and nickname if the previous message was also sent by current sender.
             if (isContinuous) {
-                profileImage.setVisibility(View.INVISIBLE);
+//                profileImage.setVisibility(View.INVISIBLE);
                 nicknameText.setVisibility(View.GONE);
             } else {
 //                profileImage.setVisibility(View.VISIBLE);
@@ -844,13 +844,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             // Hide profile image and nickname if the previous message was also sent by current sender.
             if (isContinuous) {
-                profileImage.setVisibility(View.INVISIBLE);
+//                profileImage.setVisibility(View.INVISIBLE);
                 nicknameText.setVisibility(View.GONE);
             } else {
-                profileImage.setVisibility(View.VISIBLE);
+//                profileImage.setVisibility(View.VISIBLE);
                 ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
-                nicknameText.setVisibility(View.VISIBLE);
+//                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
             }
 
@@ -957,13 +957,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             // Hide profile image and nickname if the previous message was also sent by current sender.
             if (isContinuous) {
-                profileImage.setVisibility(View.INVISIBLE);
+//                profileImage.setVisibility(View.INVISIBLE);
                 nicknameText.setVisibility(View.GONE);
             } else {
-                profileImage.setVisibility(View.VISIBLE);
+//                profileImage.setVisibility(View.VISIBLE);
                 ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
-                nicknameText.setVisibility(View.VISIBLE);
+//                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
             }
 
@@ -1081,10 +1081,10 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 profileImage.setVisibility(View.INVISIBLE);
                 nicknameText.setVisibility(View.GONE);
             } else {
-                profileImage.setVisibility(View.VISIBLE);
+//                profileImage.setVisibility(View.VISIBLE);
                 ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
-                nicknameText.setVisibility(View.VISIBLE);
+//                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
             }
 

@@ -62,7 +62,6 @@ public class GroupChannelListFragment extends Fragment {
         setRetainInstance(true);
 
         // Change action bar title
-        ((GroupChannelActivity) getActivity()).setActionBarTitle(getResources().getString(R.string.all_group_channels));
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_group_channel_list);
         mCreateChannelFab = (FloatingActionButton) rootView.findViewById(R.id.fab_group_channel_list);

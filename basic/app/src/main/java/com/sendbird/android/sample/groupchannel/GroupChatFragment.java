@@ -17,17 +17,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -81,15 +83,16 @@ public class GroupChatFragment extends Fragment {
 
     private InputMethodManager mIMM;
 
-    private RelativeLayout mRootLayout;
+    private ConstraintLayout mRootLayout;
     private RecyclerView mRecyclerView;
     private GroupChatAdapter mChatAdapter;
     private LinearLayoutManager mLayoutManager;
     private EditText mMessageEditText;
-    private Button mMessageSendButton;
+    private Button mRecordVoiceButton;
     private ImageButton mUploadFileButton;
-    private View mCurrentEventLayout;
+    private Toolbar toolbar_group_channel;
     private TextView mCurrentEventText;
+    private TextView mUserName;
 
     private GroupChannel mChannel;
     private String mChannelUrl;
@@ -143,69 +146,36 @@ public class GroupChatFragment extends Fragment {
 
         setRetainInstance(true);
 
-        mRootLayout = (RelativeLayout) rootView.findViewById(R.id.layout_group_chat_root);
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_group_chat);
+        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
+        mUserName = rootView.findViewById(R.id.userName);
 
-        mCurrentEventLayout = rootView.findViewById(R.id.layout_group_chat_current_event);
-        mCurrentEventText = (TextView) rootView.findViewById(R.id.text_group_chat_current_event);
+        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
+        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
 
-        mMessageEditText = (EditText) rootView.findViewById(R.id.edittext_group_chat_message);
-        mMessageSendButton = (Button) rootView.findViewById(R.id.button_group_chat_send);
-        mUploadFileButton = (ImageButton) rootView.findViewById(R.id.button_group_chat_upload);
+        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
+        mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
+        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
 
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() > 0) {
-                    mMessageSendButton.setEnabled(true);
-                } else {
-                    mMessageSendButton.setEnabled(false);
-                }
-            }
+        toolbar_group_channel.setNavigationOnClickListener( view -> {
+            getActivity().getSupportFragmentManager().popBackStack();
         });
 
-        mMessageSendButton.setEnabled(false);
-        mMessageSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentState == STATE_EDIT) {
-                    String userInput = mMessageEditText.getText().toString();
-                    if (userInput.length() > 0) {
-                        if (mEditingMessage != null) {
-                            editMessage(mEditingMessage, userInput);
-                        }
-                    }
-                    setState(STATE_NORMAL, null, -1);
-                } else {
-                    String userInput = mMessageEditText.getText().toString();
-                    if (userInput.length() > 0) {
-                        sendUserMessage(userInput);
-                        mMessageEditText.setText("");
-                    }
-                }
+        mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
+
+            if (actionId == EditorInfo.IME_ACTION_SEND){
+                sendTextMessage();
             }
+
+            return false;
         });
 
-        mUploadFileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requestMedia();
-            }
-        });
+        mUploadFileButton.setOnClickListener(v -> requestMedia());
 
         mIsTyping = false;
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
@@ -229,6 +199,24 @@ public class GroupChatFragment extends Fragment {
 
         return rootView;
     }
+
+    private void sendTextMessage() {
+        String userInput = mMessageEditText.getText().toString();
+        if (mCurrentState == STATE_EDIT) {
+            if (userInput.length() > 0) {
+                if (mEditingMessage != null) {
+                    editMessage(mEditingMessage, userInput);
+                }
+            }
+            setState(STATE_NORMAL, null, -1);
+        } else {
+            if (userInput.length() > 0) {
+                sendUserMessage(userInput);
+                mMessageEditText.setText("");
+            }
+        }
+    }
+
 
     private void refresh() {
         if (mChannel == null) {
@@ -366,7 +354,7 @@ public class GroupChatFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_group_chat, menu);
+//        inflater.inflate(R.menu.menu_group_chat, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -411,6 +399,7 @@ public class GroupChatFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getActivity());
         mLayoutManager.setReverseLayout(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemViewCacheSize(50);
         mRecyclerView.setAdapter(mChatAdapter);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -462,7 +451,6 @@ public class GroupChatFragment extends Fragment {
                     return;
                 }
 
-
                 onFileMessageClicked(message);
             }
         });
@@ -509,7 +497,6 @@ public class GroupChatFragment extends Fragment {
                 mEditingMessage = null;
 
                 mUploadFileButton.setVisibility(View.VISIBLE);
-                mMessageSendButton.setText("SEND");
                 mMessageEditText.setText("");
                 break;
 
@@ -518,7 +505,6 @@ public class GroupChatFragment extends Fragment {
                 mEditingMessage = editingMessage;
 
                 mUploadFileButton.setVisibility(View.GONE);
-                mMessageSendButton.setText("SAVE");
                 String messageString = ((UserMessage)editingMessage).getMessage();
                 if (messageString == null) {
                     messageString = "";
@@ -600,7 +586,7 @@ public class GroupChatFragment extends Fragment {
     private void displayTyping(List<Member> typingUsers) {
 
         if (typingUsers.size() > 0) {
-            mCurrentEventLayout.setVisibility(View.VISIBLE);
+//            mCurrentEventLayout.setVisibility(View.VISIBLE);
             String string;
 
             if (typingUsers.size() == 1) {
@@ -612,7 +598,7 @@ public class GroupChatFragment extends Fragment {
             }
             mCurrentEventText.setText(string);
         } else {
-            mCurrentEventLayout.setVisibility(View.GONE);
+//            mCurrentEventLayout.setVisibility(View.GONE);
         }
     }
 
@@ -705,11 +691,8 @@ public class GroupChatFragment extends Fragment {
         if(mChannel != null) {
             title = TextUtils.getGroupChannelTitle(mChannel);
         }
+        mUserName.setText(title);
 
-        // Set action bar title to name of channel
-        if (getActivity() != null) {
-            ((GroupChannelActivity) getActivity()).setActionBarTitle(title);
-        }
     }
 
     private void sendUserMessageWithUrl(final String text, String url) {

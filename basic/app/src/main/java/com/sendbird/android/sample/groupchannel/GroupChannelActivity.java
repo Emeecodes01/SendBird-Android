@@ -18,13 +18,6 @@ public class GroupChannelActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_group_channel);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_left_white_24_dp);
-        }
-
         if (savedInstanceState == null) {
             // Load list of Group Channels
             Fragment fragment = GroupChannelListFragment.newInstance();
@@ -78,9 +71,4 @@ public class GroupChannelActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
-    void setActionBarTitle(String title) {
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(title);
-        }
-    }
 }
