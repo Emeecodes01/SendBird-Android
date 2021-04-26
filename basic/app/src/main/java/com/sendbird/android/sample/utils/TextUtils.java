@@ -10,6 +10,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class TextUtils {
+
+    public static String THEME_MATH = "mathematics_english";
+
     public static String getGroupChannelTitle(GroupChannel channel) {
         List<Member> members = channel.getMembers();
 

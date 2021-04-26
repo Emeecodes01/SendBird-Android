@@ -44,6 +44,30 @@ public class ImageUtils {
                 });
     }
 
+
+    /**
+     * Crops image into a circle that fits within the ImageView.
+     */
+    public static void displayRoundCornerImageFromUrl(final Context context, final String url, final ImageView imageView) {
+        RequestOptions myOptions = new RequestOptions()
+                .centerCrop()
+                .dontAnimate();
+
+        Glide.with(context)
+                .asBitmap()
+                .apply(myOptions)
+                .load(url)
+                .into(new BitmapImageViewTarget(imageView) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        RoundedBitmapDrawable circularBitmapDrawable =
+                                RoundedBitmapDrawableFactory.create(context.getResources(), resource);
+                        circularBitmapDrawable.setCornerRadius(30);
+                        imageView.setImageDrawable(circularBitmapDrawable);
+                    }
+                });
+    }
+
     public static void displayImageFromUrl(final Context context, final String url,
                                            final ImageView imageView) {
         displayImageFromUrl(context, url, imageView, null);

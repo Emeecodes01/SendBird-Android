@@ -1,1 +1,2 @@
+include ':cropper-debug'
 include ':app'

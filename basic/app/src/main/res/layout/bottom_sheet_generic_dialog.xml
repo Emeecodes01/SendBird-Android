@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/colorPhysics">
+
+    <View
+        android:id="@+id/v_background_color"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#88000000"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/v_background_violet"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_dialog_violet"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/cl_main"
+        app:layout_constraintEnd_toEndOf="@id/cl_main"
+        app:layout_constraintStart_toStartOf="@id/cl_main"
+        app:layout_constraintTop_toTopOf="@id/cl_main" />
+
+    <View
+        android:id="@+id/v_background_orange"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_dialog_orange"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/cl_main"
+        app:layout_constraintEnd_toEndOf="@id/cl_main"
+        app:layout_constraintStart_toStartOf="@id/cl_main"
+        app:layout_constraintTop_toTopOf="@id/cl_main" />
+
+    <com.sendbird.android.sample.utils.DialogBackgroundView
+        android:id="@+id/dbv_background_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/iv_subject_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:visibility="invisible"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="contentDescription"
+        tools:src="@drawable/ic_chapter_bg_physics_big" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_dialog_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_image"
+            android:layout_width="24.28dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="60dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="contentDescription"
+            tools:src="@drawable/ic_lock" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="40dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:letterSpacing="0.0125"
+            android:lineSpacingExtra="1.5sp"
+            android:maxLines="3"
+            android:textColor="@color/color_black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/itim_regular"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Evidence of photosynthesis in plants" />
+
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:alpha="0.60"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:letterSpacing="0.025"
+            android:lineSpacingExtra="4sp"
+            android:maxHeight="70dp"
+            android:maxLines="4"
+            android:textColor="@color/color_black"
+            android:textSize="15sp"
+            android:fontFamily="@font/muli_regular"
+            app:layout_constraintBottom_toTopOf="@id/bt_positive"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            tools:text="Complete prior concepts to unlock!" />
+
+        <TextView
+            android:id="@+id/bt_positive"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="70dp"
+            android:layout_marginTop="36dp"
+            android:layout_marginEnd="70dp"
+            android:layout_marginBottom="30dp"
+            android:fontFamily="@font/muli_bold"
+            android:gravity="center"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:textAllCaps="true"
+            android:textColor="@color/color_white"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@id/bt_negative"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_message"
+            tools:background="@drawable/bg_btn_onboarding_next"
+            tools:text="Start New Practice" />
+
+        <TextView
+            android:id="@+id/bt_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="36dp"
+            android:drawableStart="@drawable/ic_camera"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:paddingVertical="10dp"
+            android:text="@string/camera"
+            android:textAllCaps="true"
+            android:textColor="@color/color_black"
+            android:textSize="12sp"
+           android:fontFamily="@font/muli_bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/bt_gallery"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            tools:text="Camera" />
+
+        <TextView
+            android:id="@+id/bt_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="30dp"
+            android:drawableStart="@drawable/ic_gallery"
+            android:gravity="center"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:paddingVertical="10dp"
+            android:text="@string/gallery"
+            android:textAllCaps="true"
+            android:textColor="@color/color_black"
+            android:textSize="12sp"
+           android:fontFamily="@font/muli_bold"
+            app:layout_constraintLeft_toRightOf="@id/bt_camera"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/bt_camera"
+            tools:text="Gallery" />
+
+        <TextView
+            android:id="@+id/bt_negative"
+            android:layout_width="0dp"
+            android:layout_height="16dp"
+            android:layout_marginBottom="30dp"
+            android:gravity="center"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:textAllCaps="true"
+            android:textColor="@color/color_black"
+            android:textSize="12sp"
+           android:fontFamily="@font/muli_bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@id/bt_positive"
+            app:layout_constraintRight_toRightOf="@id/bt_positive"
+            app:layout_constraintTop_toBottomOf="@id/bt_positive"
+            tools:text="Quit" />
+
+        <TextView
+            android:id="@+id/tv_timer"
+            android:layout_width="0dp"
+            android:layout_height="16dp"
+            android:layout_marginBottom="30dp"
+            android:gravity="center"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:textAllCaps="true"
+            android:textColor="@color/color_black"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:fontFamily="@font/itim_regular"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@id/bt_positive"
+            app:layout_constraintRight_toRightOf="@id/bt_positive"
+            app:layout_constraintTop_toTopOf="@id/bt_negative"
+            tools:text="Quit" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_congratulations"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_badge"
+        app:layout_constraintVertical_bias="0">
+
+        <TextView
+            android:id="@+id/tv_congratulation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="60dp"
+            android:letterSpacing="0.0125"
+            android:lineSpacingExtra="1sp"
+            android:text="@string/congratulations"
+            android:textAlignment="center"
+            android:textColor="@color/color_white"
+            android:textSize="28sp"
+            android:fontFamily="@font/itim_regular"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Congratulations!!!" />
+
+        <TextView
+            android:id="@+id/tv_badge_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:letterSpacing="0.025"
+            android:lineSpacingExtra="4sp"
+            android:maxLines="2"
+            android:textAlignment="center"
+            android:textColor="@color/color_white"
+            android:textSize="20sp"
+            android:fontFamily="@font/itim_regular"
+            app:layout_constraintLeft_toLeftOf="@id/tv_congratulation"
+            app:layout_constraintRight_toRightOf="@id/tv_congratulation"
+            app:layout_constraintTop_toBottomOf="@id/tv_congratulation"
+            tools:text="Badge Name Here" />
+
+        <TextView
+            android:id="@+id/tv_badge_description"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:alpha="0.8"
+            android:ellipsize="end"
+            android:letterSpacing="0.025"
+            android:lineSpacingExtra="4sp"
+            android:maxLines="3"
+            android:minLines="3"
+            android:textAlignment="center"
+            android:textColor="@color/color_white"
+            android:textSize="16sp"
+            android:fontFamily="@font/muli_regular"
+            app:layout_constraintBottom_toTopOf="@id/btn_share_badge"
+            app:layout_constraintLeft_toLeftOf="@id/tv_badge_name"
+            app:layout_constraintRight_toRightOf="@id/tv_badge_name"
+            app:layout_constraintTop_toBottomOf="@id/tv_badge_name"
+            app:layout_constraintVertical_chainStyle="spread_inside"
+            tools:text="You are now a master of “Rational numbers”" />
+
+        <Button
+            android:id="@+id/btn_share_badge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="45dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="45dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_badge_share_btn"
+            android:letterSpacing=".125"
+            android:padding="15dp"
+            android:text="@string/share"
+            android:textAllCaps="true"
+            android:textColor="@color/color_white"
+            android:textSize="13sp"
+           android:fontFamily="@font/muli_bold"
+            app:layout_constraintBottom_toTopOf="@id/tv_next"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_badge_description"
+            app:layout_constraintVertical_bias="1" />
+
+        <TextView
+            android:id="@+id/tv_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:ellipsize="end"
+            android:letterSpacing="0.125"
+            android:lineSpacingExtra="1sp"
+            android:maxLines="1"
+            android:paddingStart="30dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="30dp"
+            android:paddingBottom="20dp"
+            android:text="@string/next"
+            android:textAllCaps="true"
+            android:textColor="@color/color_white"
+            android:textSize="13sp"
+           android:fontFamily="@font/muli_bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@id/btn_share_badge"
+            app:layout_constraintRight_toRightOf="@id/btn_share_badge" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <ImageView
+        android:id="@+id/iv_badge_back"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/guideline"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_badge"
+        tools:tint="#000000" />
+
+    <ImageView
+        android:id="@+id/iv_badge"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/iv_badge_back"
+        app:layout_constraintEnd_toEndOf="@id/iv_badge_back"
+        app:layout_constraintStart_toStartOf="@id/iv_badge_back"
+        app:layout_constraintTop_toTopOf="@id/iv_badge_back"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_badge" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

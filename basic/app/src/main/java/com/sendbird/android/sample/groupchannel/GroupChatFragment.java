@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -50,12 +51,17 @@ import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.ConnectionManager;
 import com.sendbird.android.sample.utils.FileUtils;
+import com.sendbird.android.sample.utils.GenericDialog;
 import com.sendbird.android.sample.utils.MediaPlayerActivity;
+import com.sendbird.android.sample.utils.MediaUtils;
 import com.sendbird.android.sample.utils.PhotoViewerActivity;
 import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.UrlPreviewInfo;
 import com.sendbird.android.sample.utils.WebUtils;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageOptions;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONException;
 
@@ -63,6 +69,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+
+import kotlin.Unit;
+
+import static com.sendbird.android.sample.utils.MediaUtils.MEDIA_REQUEST_CODE;
+import static com.sendbird.android.sample.utils.MediaUtils.useCamera;
+import static com.sendbird.android.sample.utils.TextUtils.THEME_MATH;
 
 
 public class GroupChatFragment extends Fragment {
@@ -93,6 +105,7 @@ public class GroupChatFragment extends Fragment {
     private Toolbar toolbar_group_channel;
     private TextView mCurrentEventText;
     private TextView mUserName;
+    private TextView countdownTxt;
 
     private GroupChannel mChannel;
     private String mChannelUrl;
@@ -102,6 +115,11 @@ public class GroupChatFragment extends Fragment {
 
     private int mCurrentState = STATE_NORMAL;
     private BaseMessage mEditingMessage = null;
+
+    private GenericDialog uploadFileDialog =
+            new GenericDialog().newInstance(THEME_MATH)
+                    .setTitle("Upload a file")
+                    .setMessage(R.string.empty);
 
     /**
      * To create an instance of this fragment, a Channel URL should be required.
@@ -149,6 +167,7 @@ public class GroupChatFragment extends Fragment {
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
         mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
         mUserName = rootView.findViewById(R.id.userName);
+        countdownTxt = rootView.findViewById(R.id.countdownTxt);
 
         toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
         mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
@@ -157,20 +176,23 @@ public class GroupChatFragment extends Fragment {
         mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
 
-        toolbar_group_channel.setNavigationOnClickListener( view -> {
+        toolbar_group_channel.setNavigationOnClickListener(view -> {
             getActivity().getSupportFragmentManager().popBackStack();
         });
 
+        long minute = 30;
+        countTime(minute);
+
         mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
 
-            if (actionId == EditorInfo.IME_ACTION_SEND){
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
                 sendTextMessage();
             }
 
             return false;
         });
 
-        mUploadFileButton.setOnClickListener(v -> requestMedia());
+        mUploadFileButton.setOnClickListener(v -> pickMedia());
 
         mIsTyping = false;
         mMessageEditText.addTextChangedListener(new TextWatcher() {
@@ -198,6 +220,35 @@ public class GroupChatFragment extends Fragment {
         setHasOptionsMenu(true);
 
         return rootView;
+    }
+
+    private void countTime(long minute) {
+
+        if (minute != 0) {
+            timer(minute);
+        } else {
+            requireActivity().finish();
+        }
+        if (minute == 5) {
+            countdownTxt.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void timer(long minute) {
+
+        new CountDownTimer(59000, 1000) {
+
+            @Override
+            public void onTick(long l) {
+                countdownTxt.setText(String.format("%02d", minute - 1) + ":" + String.format("%02d", l / 1000));
+            }
+
+            @Override
+            public void onFinish() {
+                countTime(minute - 1);
+            }
+        }.start();
+
     }
 
     private void sendTextMessage() {
@@ -384,6 +435,24 @@ public class GroupChatFragment extends Fragment {
         // Set this as true to restore background connection management.
         SendBird.setAutoBackgroundDetection(true);
 
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if (resultCode == Activity.RESULT_OK) {
+
+                if (result.getUri() != null) {
+                    sendFileWithThumbnail(result.getUri());
+                    Log.d("okh", result.getUri() + "");
+                    uploadFileDialog.dismiss();
+                }
+
+            }
+        } else if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            sendFileWithThumbnail(data.getData());
+            uploadFileDialog.dismiss();
+        }
+
         if (requestCode == INTENT_REQUEST_CHOOSE_MEDIA && resultCode == Activity.RESULT_OK) {
             // If user has successfully chosen the image, show a dialog to confirm upload.
             if (data == null) {
@@ -474,7 +543,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void showMessageOptionsDialog(final BaseMessage message, final int position) {
-        String[] options = new String[] { "Edit message", "Delete message" };
+        String[] options = new String[]{"Edit message", "Delete message"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setItems(options, new DialogInterface.OnClickListener() {
@@ -505,7 +574,7 @@ public class GroupChatFragment extends Fragment {
                 mEditingMessage = editingMessage;
 
                 mUploadFileButton.setVisibility(View.GONE);
-                String messageString = ((UserMessage)editingMessage).getMessage();
+                String messageString = ((UserMessage) editingMessage).getMessage();
                 if (messageString == null) {
                     messageString = "";
                 }
@@ -535,7 +604,7 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((GroupChannelActivity)context).setOnBackPressedListener(new GroupChannelActivity.onBackPressedListener() {
+        ((GroupChannelActivity) context).setOnBackPressedListener(new GroupChannelActivity.onBackPressedListener() {
             @Override
             public boolean onBack() {
                 if (mCurrentState == STATE_EDIT) {
@@ -602,26 +671,23 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    private void requestMedia() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            // If storage permissions are not granted, request permissions at run-time,
-            // as per < API 23 guidelines.
-            requestStoragePermissions();
-        } else {
-            Intent intent = new Intent();
+    private void pickMedia() {
 
-            intent.setType("*/*");
+        uploadFileDialog.setUploadFile(true, () -> {
 
-            intent.setAction(Intent.ACTION_GET_CONTENT);
+            Intent intent = new Intent(requireContext(), MediaUtils.class);
+            intent.putExtra(useCamera, true);
+            startActivityForResult(intent, MEDIA_REQUEST_CODE);
+            return Unit.INSTANCE;
+        }, () -> {
 
-            // Always show the chooser (if there are multiple options available)
-            startActivityForResult(Intent.createChooser(intent, "Select Media"), INTENT_REQUEST_CHOOSE_MEDIA);
+            Intent intent = new Intent(requireContext(), MediaUtils.class);
+            intent.putExtra(useCamera, false);
+            startActivityForResult(intent, MEDIA_REQUEST_CODE);
 
-            // Set this as false to maintain connection
-            // even when an external Activity is started.
-            SendBird.setAutoBackgroundDetection(false);
-        }
+            return Unit.INSTANCE;
+        }).show(requireFragmentManager(), "");
+
     }
 
     private void requestStoragePermissions() {
@@ -688,7 +754,7 @@ public class GroupChatFragment extends Fragment {
     private void updateActionBarTitle() {
         String title = "";
 
-        if(mChannel != null) {
+        if (mChannel != null) {
             title = TextUtils.getGroupChannelTitle(mChannel);
         }
         mUserName.setText(title);

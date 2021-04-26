@@ -17,6 +17,11 @@
     <string name="settings">Settings</string>
     <string name="blocked_members_list">Blocked members</string>
 
+    <plurals name="seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+
     <!-- login -->
     <string name="login_user_id">User ID</string>
     <string name="login_user_nickname">Nickname</string>
@@ -60,5 +65,14 @@
     <string name="message_failed">Failed</string>
     <string name="upload_file">Upload file</string>
     <string name="write_a_reply">Write a reply...</string>
+    <string name="gallery">Gallery</string>
+    <string name="congratulations">Congratulations</string>
+    <string name="camera">Camera</string>
+    <string name="next">Next</string>
+    <string name="share">Share</string>
+    <string name="mathematics">Mathematics</string>
+    <string name="on_boarding_fragment_first_main">Get smarter\nmuch faster</string>
+    <string name="on_boarding_fragment_third_sub">uLesson learning is personalised\nand customized to fit your needs</string>
+    <string name="empty" />
 
 </resources>

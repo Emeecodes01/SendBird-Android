@@ -28,6 +28,8 @@
     <color name="groupChatAdminBackground">#e0fcff</color>
     <color name="groupChatAdminText">#39474e</color>
 
+    <color name="colorPhysics">#7B7FDA</color>
+
     <color name="groupChatDateText">#ffffff</color>
     <color name="groupChatDateBackground">#C0C0C0</color>
 
@@ -45,5 +47,10 @@
 
     <color name="color_white">#ffffff</color>
     <color name="color_black">#000000</color>
+    <color name="colorMaths">#EA7052</color>
+    <color name="colorMathsDark">#E65D47</color>
+    <color name="colorBiology">#4DA47E</color>
+    <color name="colorMaths_40">#40EA7052</color>
+    <color name="path_color_maths">@color/colorMaths</color>
 
 </resources>

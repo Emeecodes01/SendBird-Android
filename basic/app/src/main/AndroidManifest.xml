@@ -71,6 +71,9 @@
             android:launchMode="singleTop"
             android:label="@string/create_group_channel" />
         <activity
+            android:name=".utils.MediaUtils"
+            android:launchMode="singleTop" />
+        <activity
             android:name=".openchannel.ParticipantListActivity"
             android:launchMode="singleTop"
             android:label="@string/participant_list" />

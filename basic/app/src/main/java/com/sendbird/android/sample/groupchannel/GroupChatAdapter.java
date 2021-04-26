@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sendbird.android.AdminMessage;
@@ -92,18 +93,18 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + channelUrl) + ".data");
 
             String content = FileUtils.loadFromFile(dataFile);
-            String [] dataArray = content.split("\n");
+            String[] dataArray = content.split("\n");
 
             mChannel = (GroupChannel) GroupChannel.buildFromSerializedData(Base64.decode(dataArray[0], Base64.DEFAULT | Base64.NO_WRAP));
 
             // Reset message list, then add cached messages.
             mMessageList.clear();
-            for(int i = 1; i < dataArray.length; i++) {
+            for (int i = 1; i < dataArray.length; i++) {
                 mMessageList.add(BaseMessage.buildFromSerializedData(Base64.decode(dataArray[i], Base64.DEFAULT | Base64.NO_WRAP)));
             }
 
             notifyDataSetChanged();
-        } catch(Exception e) {
+        } catch (Exception e) {
             // Nothing to load.
         }
     }
@@ -136,17 +137,17 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 try {
                     String content = FileUtils.loadFromFile(hashFile);
                     // If data has not been changed, do not save.
-                    if(md5.equals(content)) {
+                    if (md5.equals(content)) {
                         return;
                     }
-                } catch(IOException e) {
+                } catch (IOException e) {
                     // File not found. Save the data.
                 }
 
                 FileUtils.saveToFile(dataFile, data);
                 FileUtils.saveToFile(hashFile, md5);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -393,8 +394,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     void delete(long msgId) {
-        for(BaseMessage msg : mMessageList) {
-            if(msg.getMessageId() == msgId) {
+        for (BaseMessage msg : mMessageList) {
+            if (msg.getMessageId() == msgId) {
                 mMessageList.remove(msg);
                 notifyDataSetChanged();
                 break;
@@ -406,7 +407,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         BaseMessage baseMessage;
         for (int index = 0; index < mMessageList.size(); index++) {
             baseMessage = mMessageList.get(index);
-            if(message.getMessageId() == baseMessage.getMessageId()) {
+            if (message.getMessageId() == baseMessage.getMessageId()) {
                 mMessageList.remove(index);
                 mMessageList.add(index, message);
                 notifyDataSetChanged();
@@ -435,8 +436,9 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-     /**
+    /**
      * Load old message list.
+     *
      * @param limit
      * @param handler
      */
@@ -445,12 +447,12 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return;
         }
 
-        if(isMessageListLoading()) {
+        if (isMessageListLoading()) {
             return;
         }
 
         long oldestMessageCreatedAt = Long.MAX_VALUE;
-        if(mMessageList.size() > 0) {
+        if (mMessageList.size() > 0) {
             oldestMessageCreatedAt = mMessageList.get(mMessageList.size() - 1).getCreatedAt();
         }
 
@@ -458,17 +460,17 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mChannel.getPreviousMessagesByTimestamp(oldestMessageCreatedAt, false, limit, true, BaseChannel.MessageTypeFilter.ALL, null, new BaseChannel.GetMessagesHandler() {
             @Override
             public void onResult(List<BaseMessage> list, SendBirdException e) {
-                if(handler != null) {
+                if (handler != null) {
                     handler.onResult(list, e);
                 }
 
                 setMessageListLoading(false);
-                if(e != null) {
+                if (e != null) {
                     e.printStackTrace();
                     return;
                 }
 
-                for(BaseMessage message : list) {
+                for (BaseMessage message : list) {
                     mMessageList.add(message);
                 }
 
@@ -486,42 +488,42 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return;
         }
 
-        if(isMessageListLoading()) {
+        if (isMessageListLoading()) {
             return;
         }
 
         setMessageListLoading(true);
         mChannel.getPreviousMessagesByTimestamp(Long.MAX_VALUE, true, limit, true, BaseChannel.MessageTypeFilter.ALL, null, new BaseChannel.GetMessagesHandler() {
-           @Override
-           public void onResult(List<BaseMessage> list, SendBirdException e) {
-               if(handler != null) {
-                   handler.onResult(list, e);
-               }
+            @Override
+            public void onResult(List<BaseMessage> list, SendBirdException e) {
+                if (handler != null) {
+                    handler.onResult(list, e);
+                }
 
-               setMessageListLoading(false);
-               if(e != null) {
-                   e.printStackTrace();
-                   return;
-               }
+                setMessageListLoading(false);
+                if (e != null) {
+                    e.printStackTrace();
+                    return;
+                }
 
-               if(list.size() <= 0) {
-                   return;
-               }
+                if (list.size() <= 0) {
+                    return;
+                }
 
-               for (BaseMessage message : mMessageList) {
-                   if (isTempMessage(message) || isFailedMessage(message)) {
-                       list.add(0, message);
-                   }
-               }
+                for (BaseMessage message : mMessageList) {
+                    if (isTempMessage(message) || isFailedMessage(message)) {
+                        list.add(0, message);
+                    }
+                }
 
-               mMessageList.clear();
+                mMessageList.clear();
 
-               for(BaseMessage message : list) {
-                   mMessageList.add(message);
-               }
+                for (BaseMessage message : list) {
+                    mMessageList.add(message);
+                }
 
-               notifyDataSetChanged();
-           }
+                notifyDataSetChanged();
+            }
         });
     }
 
@@ -631,11 +633,11 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             // If continuous from previous message, remove extra padding.
-            if (isContinuous) {
-                padding.setVisibility(View.GONE);
-            } else {
-                padding.setVisibility(View.VISIBLE);
-            }
+//            if (isContinuous) {
+//                padding.setVisibility(View.GONE);
+//            } else {
+//                padding.setVisibility(View.VISIBLE);
+//            }
 
             // If the message is sent on a different date than the previous one, display the date.
             if (isNewDay) {
@@ -653,7 +655,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     urlPreviewSiteNameText.setText("@" + previewInfo.getSiteName());
                     urlPreviewTitleText.setText(previewInfo.getTitle());
                     urlPreviewDescriptionText.setText(previewInfo.getDescription());
-                    ImageUtils.displayImageFromUrl(context, previewInfo.getImageUrl(), urlPreviewMainImageView, null);
+                    ImageUtils.displayRoundCornerImageFromUrl(context, previewInfo.getImageUrl(), urlPreviewMainImageView);
                 } catch (JSONException e) {
                     urlPreviewContainer.setVisibility(View.GONE);
                     e.printStackTrace();
@@ -724,7 +726,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 nicknameText.setVisibility(View.GONE);
             } else {
 //                profileImage.setVisibility(View.VISIBLE);
-                ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
+                ImageUtils.displayRoundCornerImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
 //                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
@@ -747,7 +749,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     urlPreviewSiteNameText.setText("@" + previewInfo.getSiteName());
                     urlPreviewTitleText.setText(previewInfo.getTitle());
                     urlPreviewDescriptionText.setText(previewInfo.getDescription());
-                    ImageUtils.displayImageFromUrl(context, previewInfo.getImageUrl(), urlPreviewMainImageView, null);
+                    ImageUtils.displayRoundCornerImageFromUrl(context, previewInfo.getImageUrl(), urlPreviewMainImageView);
                 } catch (JSONException e) {
                     urlPreviewContainer.setVisibility(View.GONE);
                     e.printStackTrace();
@@ -848,7 +850,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 nicknameText.setVisibility(View.GONE);
             } else {
 //                profileImage.setVisibility(View.VISIBLE);
-                ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
+                ImageUtils.displayRoundCornerImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
 //                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
@@ -895,7 +897,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (isTempMessage && tempFileMessageUri != null) {
-                ImageUtils.displayImageFromUrl(context, tempFileMessageUri.toString(), fileThumbnailImage, null);
+                ImageUtils.displayRoundCornerImageFromUrl(context, tempFileMessageUri.toString(), fileThumbnailImage);
             } else {
                 // Get thumbnails from FileMessage
                 ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) message.getThumbnails();
@@ -905,13 +907,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (message.getType().toLowerCase().contains("gif")) {
                         ImageUtils.displayGifImageFromUrl(context, message.getUrl(), fileThumbnailImage, thumbnails.get(0).getUrl());
                     } else {
-                        ImageUtils.displayImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
+                        ImageUtils.displayRoundCornerImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
                     }
                 } else {
                     if (message.getType().toLowerCase().contains("gif")) {
                         ImageUtils.displayGifImageFromUrl(context, message.getUrl(), fileThumbnailImage, (String) null);
                     } else {
-                        ImageUtils.displayImageFromUrl(context, message.getUrl(), fileThumbnailImage);
+                        ImageUtils.displayRoundCornerImageFromUrl(context, message.getUrl(), fileThumbnailImage);
                     }
                 }
             }
@@ -942,6 +944,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             fileThumbnailImage = (ImageView) itemView.findViewById(R.id.image_group_chat_file_thumbnail);
             profileImage = (ImageView) itemView.findViewById(R.id.image_group_chat_profile);
             dateText = (TextView) itemView.findViewById(R.id.text_group_chat_date);
+
+
         }
 
         void bind(Context context, final FileMessage message, GroupChannel channel, boolean isNewDay, boolean isContinuous, final OnItemClickListener listener) {
@@ -961,7 +965,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 nicknameText.setVisibility(View.GONE);
             } else {
 //                profileImage.setVisibility(View.VISIBLE);
-                ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
+                ImageUtils.displayRoundCornerImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
 //                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
@@ -975,13 +979,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (message.getType().toLowerCase().contains("gif")) {
                     ImageUtils.displayGifImageFromUrl(context, message.getUrl(), fileThumbnailImage, thumbnails.get(0).getUrl());
                 } else {
-                    ImageUtils.displayImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
+                    ImageUtils.displayRoundCornerImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
                 }
             } else {
                 if (message.getType().toLowerCase().contains("gif")) {
                     ImageUtils.displayGifImageFromUrl(context, message.getUrl(), fileThumbnailImage, (String) null);
                 } else {
-                    ImageUtils.displayImageFromUrl(context, message.getUrl(), fileThumbnailImage);
+                    ImageUtils.displayRoundCornerImageFromUrl(context, message.getUrl(), fileThumbnailImage);
                 }
             }
 
@@ -1026,14 +1030,14 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (isTempMessage && tempFileMessageUri != null) {
-                ImageUtils.displayImageFromUrl(context, tempFileMessageUri.toString(), fileThumbnailImage, null);
+                ImageUtils.displayRoundCornerImageFromUrl(context, tempFileMessageUri.toString(), fileThumbnailImage);
             } else {
                 // Get thumbnails from FileMessage
                 ArrayList<FileMessage.Thumbnail> thumbnails = (ArrayList<FileMessage.Thumbnail>) message.getThumbnails();
 
                 // If thumbnails exist, get smallest (first) thumbnail and display it in the message
                 if (thumbnails.size() > 0) {
-                    ImageUtils.displayImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
+                    ImageUtils.displayRoundCornerImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
                 }
             }
 
@@ -1063,6 +1067,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             fileThumbnailImage = (ImageView) itemView.findViewById(R.id.image_group_chat_file_thumbnail);
             profileImage = (ImageView) itemView.findViewById(R.id.image_group_chat_profile);
             dateText = (TextView) itemView.findViewById(R.id.text_group_chat_date);
+
         }
 
         void bind(Context context, final FileMessage message, GroupChannel channel, boolean isNewDay, boolean isContinuous, final OnItemClickListener listener) {
@@ -1082,7 +1087,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 nicknameText.setVisibility(View.GONE);
             } else {
 //                profileImage.setVisibility(View.VISIBLE);
-                ImageUtils.displayRoundImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
+                ImageUtils.displayRoundCornerImageFromUrl(context, message.getSender().getProfileUrl(), profileImage);
 
 //                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.setText(message.getSender().getNickname());
@@ -1093,7 +1098,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             // If thumbnails exist, get smallest (first) thumbnail and display it in the message
             if (thumbnails.size() > 0) {
-                ImageUtils.displayImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
+                ImageUtils.displayRoundCornerImageFromUrl(context, thumbnails.get(0).getUrl(), fileThumbnailImage);
             }
 
             if (listener != null) {
