@@ -214,12 +214,7 @@ class GenericDialog : BaseBottomSheetDialog() {
             iv_image.setImageResource(imageResId!!)
         } else {
             iv_image.visibility = View.GONE
-//            tv_title.setMargin(
-//                    iv_image.marginTop,
-//                    tv_title.marginEnd,
-//                    tv_title.marginBottom,
-//                    tv_title.marginStart
-//            )
+
         }
 
         tv_title.text = title

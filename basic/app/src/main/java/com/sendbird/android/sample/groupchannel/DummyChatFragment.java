@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +20,6 @@ import com.sendbird.android.sample.utils.GenericDialog;
 import kotlin.Unit;
 
 import static com.sendbird.android.sample.utils.TextUtils.THEME_MATH;
-
 
 public class DummyChatFragment extends Fragment {
 
@@ -43,27 +43,62 @@ public class DummyChatFragment extends Fragment {
         return fragment;
     }
 
-
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //get question text and uri
         timer();
-        joinChatDialog.setTitle(getString(R.string.tutor_is_ready))
-                        .setMessage(getString(R.string.join_chat));
 
-        joinChatDialog.setPositiveButton(R.string.join, R.drawable.bg_btn_complete, () -> {
-
-            return Unit.INSTANCE;
-        });
+        checkTutorStatus(2);
 
     }
 
-    private void joinChat(){
+    private void joinChat() {
         joinChatDialog.show(requireFragmentManager(), "");
         progressBar.setVisibility(View.GONE);
+    }
+
+    private void checkTutorStatus(int tutorStatus) {
+
+        if (tutorStatus == 0) {
+
+            joinChatDialog.setTitle(getString(R.string.tutor_is_ready))
+                    .setMessage(getString(R.string.join_chat));
+
+            joinChatDialog.setPositiveButton(R.string.join, R.drawable.bg_btn_complete, () -> {
+
+                return Unit.INSTANCE;
+            });
+
+        } else if (tutorStatus == 1) {
+
+            joinChatDialog.setTitle(getString(R.string.no_tutor))
+                    .setMessage(getString(R.string.retry_for_tutor));
+
+
+        } else if (tutorStatus == 2) {
+
+            joinChatDialog.setTitle(getString(R.string.connection_error))
+                    .setMessage(getString(R.string.error_connecting));
+
+        } else {
+            Toast.makeText(requireContext(), "Something went wrong, please retry", Toast.LENGTH_LONG).show();
+        }
+
+        if (tutorStatus == 1 || tutorStatus == 2) {
+
+            joinChatDialog.setPositiveButton(R.string.retry, R.drawable.ic_continue_enabled, () -> {
+
+                return Unit.INSTANCE;
+            });
+
+            joinChatDialog.setNegativeButton(R.string.back, null, () -> {
+                joinChatDialog.dismiss();
+                return Unit.INSTANCE;
+            });
+
+        }
     }
 
     @Nullable
