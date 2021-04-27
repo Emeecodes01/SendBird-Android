@@ -169,13 +169,13 @@ public class FileUtils {
     }
 
     public void takePicture(Fragment fragment, Uri uri, String error, CropImageOptions.PictureSource source) {
-        CropImage
-                .activity()
-                .from(CropImageOptions.PictureSource.CAMERA)
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .setAspectRatio(13, 9)
-                .setCropShape(CropImageView.CropShape.RECTANGLE)
-                .start(fragment.requireContext(), fragment);
+//        CropImage
+//                .activity()
+//                .from(CropImageOptions.PictureSource.CAMERA)
+//                .setGuidelines(CropImageView.Guidelines.ON)
+//                .setAspectRatio(13, 9)
+//                .setCropShape(CropImageView.CropShape.RECTANGLE)
+//                .start(fragment.requireContext(), fragment);
         this.uri = uri;
         this.error = error;
 

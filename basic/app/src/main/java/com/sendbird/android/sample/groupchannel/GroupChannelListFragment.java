@@ -78,8 +78,18 @@ public class GroupChannelListFragment extends Fragment {
         mCreateChannelFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), CreateGroupChannelActivity.class);
-                startActivityForResult(intent, INTENT_REQUEST_NEW_GROUP_CHANNEL);
+//                Intent intent = new Intent(getContext(), CreateGroupChannelActivity.class);
+//                startActivityForResult(intent, INTENT_REQUEST_NEW_GROUP_CHANNEL);
+
+                //get channel uri
+                String channelUrl = "channel url";
+
+                Fragment fragment = DummyChatFragment.newInstance(channelUrl);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container_group_channel, fragment)
+                        .addToBackStack(null)
+                        .commit();
+
             }
         });
 

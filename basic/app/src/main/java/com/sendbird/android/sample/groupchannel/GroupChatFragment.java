@@ -59,9 +59,6 @@ import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.UrlPreviewInfo;
 import com.sendbird.android.sample.utils.WebUtils;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageOptions;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import org.json.JSONException;
 
@@ -435,20 +432,7 @@ public class GroupChatFragment extends Fragment {
         // Set this as true to restore background connection management.
         SendBird.setAutoBackgroundDetection(true);
 
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-
-            if (resultCode == Activity.RESULT_OK) {
-
-                if (result.getUri() != null) {
-                    sendFileWithThumbnail(result.getUri());
-                    Log.d("okh", result.getUri() + "");
-                    uploadFileDialog.dismiss();
-                }
-
-            }
-        } else if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+      if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             sendFileWithThumbnail(data.getData());
             uploadFileDialog.dismiss();
         }

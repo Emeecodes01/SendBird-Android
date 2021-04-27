@@ -85,7 +85,6 @@ public class MediaUtils extends Activity {
                 intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(intent, INTENT_REQUEST_CAMERA_WITH_FILE_PROVIDER);
 
-                SendBird.setAutoBackgroundDetection(false);
             } else {
                 mTempPhotoUri = Uri.fromFile(tempFile);
 
@@ -93,8 +92,8 @@ public class MediaUtils extends Activity {
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, mTempPhotoUri);
                 startActivityForResult(intent, INTENT_REQUEST_CAMERA);
 
-                SendBird.setAutoBackgroundDetection(false);
             }
+            SendBird.setAutoBackgroundDetection(false);
         } catch (Exception e) {
             e.printStackTrace();
         }

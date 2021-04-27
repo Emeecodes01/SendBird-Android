@@ -74,5 +74,8 @@
     <string name="on_boarding_fragment_first_main">Get smarter\nmuch faster</string>
     <string name="on_boarding_fragment_third_sub">uLesson learning is personalised\nand customized to fit your needs</string>
     <string name="empty" />
+    <string name="tutor_is_ready">Your tutor is ready!</string>
+    <string name="join_chat">Join the chat session</string>
+    <string name="sample_question">Use logarithms to solve the equation 25r = 32 x1, given the answer correct to 3 significant figures.</string>
 
 </resources>
