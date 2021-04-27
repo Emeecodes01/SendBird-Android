@@ -77,5 +77,6 @@
     <string name="tutor_is_ready">Your tutor is ready!</string>
     <string name="join_chat">Join the chat session</string>
     <string name="sample_question">Use logarithms to solve the equation 25r = 32 x1, given the answer correct to 3 significant figures.</string>
+    <string name="join">JOIN</string>
 
 </resources>
