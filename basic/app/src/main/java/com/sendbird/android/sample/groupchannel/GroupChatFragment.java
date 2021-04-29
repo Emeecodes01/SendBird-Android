@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -177,7 +178,7 @@ public class GroupChatFragment extends Fragment {
             getActivity().getSupportFragmentManager().popBackStack();
         });
 
-        long minute = 30;
+        long minute = 5;
         countTime(minute);
 
         mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
@@ -588,18 +589,23 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((GroupChannelActivity) context).setOnBackPressedListener(new GroupChannelActivity.onBackPressedListener() {
+
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+
             @Override
-            public boolean onBack() {
+            public void handleOnBackPressed() {
                 if (mCurrentState == STATE_EDIT) {
                     setState(STATE_NORMAL, null, -1);
-                    return true;
+                    mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
                 }
+                requireActivity().getSupportFragmentManager().popBackStack();
 
-                mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
-                return false;
             }
-        });
+
+        };
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+
     }
 
     private void retryFailedMessage(final BaseMessage message) {

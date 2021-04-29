@@ -1,107 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="86.5dp"
-    android:paddingLeft="14dp"
-    android:paddingRight="14dp"
-    android:background="?attr/selectableItemBackground"
-    android:clickable="true">
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="14dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="13dp"
+    android:background="@drawable/shape_white_rounded"
+    android:clickable="true"
+    android:focusable="true">
 
-    <com.stfalcon.multiimageview.MultiImageView
-        android:id="@+id/image_group_channel_list_cover"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:scaleType="centerCrop"
-        android:layout_centerVertical="true"/>
-
-    <LinearLayout
-        android:id="@+id/container_group_channel_list_topic"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/text_group_channel_list_message"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/image_group_channel_list_cover"
-        android:layout_alignTop="@id/image_group_channel_list_cover"
-        android:layout_marginLeft="16dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="15dp"
+        android:alpha="0.5"
+        android:ellipsize="end"
+        android:fontFamily="@font/muli_regular"
+        android:maxLines="2"
+        android:textColor="#313848"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@id/text_group_channel_list_unread_count"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Use logarithms to solve the equation of a line bisecting a circle of radi..." />
 
-        <TextView
-            android:id="@+id/text_group_channel_list_topic"
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:maxWidth="160dp"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="" />
-
-        <TextView
-            android:id="@+id/text_group_channel_list_member_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:background="@drawable/group_channel_list_member_background"
-            android:gravity="center"
-            android:maxLines="1"
-            android:minWidth="16dp"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp"
-            android:textSize="12sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/container_group_channel_list_message"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/text_group_channel_list_subject"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/container_group_channel_list_topic"
-        android:layout_alignLeft="@id/container_group_channel_list_topic"
-        android:orientation="horizontal">
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/muli_regular"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        android:text="Mathematics"
+        android:textColor="#313848"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/container_group_channel_list_typing_indicator"
+        app:layout_constraintStart_toEndOf="@id/subjectIcon"
+        app:layout_constraintTop_toBottomOf="@id/text_group_channel_list_message" />
 
-
-        <include layout="@layout/layout_typing_indicator"
-            android:id="@+id/container_group_channel_list_typing_indicator"
-            android:layout_width="32dp"
-            android:layout_marginTop="4dp"
-            android:layout_height="16dp"/>
-
-        <TextView
-            android:id="@+id/text_group_channel_list_message"
-            android:layout_width="223dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="2dp"
-            android:textSize="14sp"
-            android:textColor="#8e8e8e"
-            android:ellipsize="end"
-            android:maxLines="2" />
-
-    </LinearLayout>
+    <include
+        android:id="@+id/container_group_channel_list_typing_indicator"
+        layout="@layout/layout_typing_indicator"
+        android:layout_width="32dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="@id/text_group_channel_list_date"
+        app:layout_constraintEnd_toStartOf="@id/text_group_channel_list_date"
+        app:layout_constraintTop_toTopOf="@id/text_group_channel_list_date" />
 
     <TextView
         android:id="@+id/text_group_channel_list_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11.5sp"
         android:layout_marginTop="3dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/container_group_channel_list_topic"
-        android:maxLines="1"/>
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="11dp"
+        android:alpha="0.5"
+        android:maxLines="1"
+        android:text="11:45"
+        android:textColor="#313848"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/subjectIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/text_group_channel_list_subject"
+        app:layout_constraintStart_toStartOf="@id/text_group_channel_list_message"
+        app:layout_constraintTop_toTopOf="@id/text_group_channel_list_subject"
+        app:srcCompat="@drawable/ic_subject_icon" />
 
     <TextView
         android:id="@+id/text_group_channel_list_unread_count"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="16dp"
-        android:textColor="@color/groupChannelUnreadCountText"
-        android:background="@drawable/group_channel_list_unread_background"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="18dp"
+        android:background="@drawable/ic_unread_bg"
         android:gravity="center"
-        android:maxLines="1"/>
+        android:maxLines="1"
+        android:textColor="@color/groupChannelUnreadCountText"
+        android:textSize="12sp"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintBottom_toBottomOf="@id/text_group_channel_list_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_group_channel_list_message"
+        tools:text="1" />
 
 
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

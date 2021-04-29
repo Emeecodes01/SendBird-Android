@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 
 import com.sendbird.android.SendBird;
+import com.sendbird.android.sample.BuildConfig;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,11 +68,12 @@ public class MediaUtils extends Activity {
         mRequestingCamera = true;
 
         try {
-            File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//            File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            File imagePath = this.getExternalFilesDir(null);
             File tempFile = File.createTempFile("SendBird_" + System.currentTimeMillis(), ".jpg", imagePath);
 
             if (Build.VERSION.SDK_INT >= 24) {
-                mTempPhotoUri = FileProvider.getUriForFile(this, "com.sendbird.android.sample.fileprovider", tempFile);
+                mTempPhotoUri = FileProvider.getUriForFile(this, "com.ulesson.debug.theprovider", tempFile);
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 

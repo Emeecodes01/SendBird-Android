@@ -50,7 +50,7 @@ public class DummyChatFragment extends Fragment {
         //get question text and uri
         timer();
 
-        checkTutorStatus(2);
+        checkTutorStatus(0);
 
     }
 

@@ -217,20 +217,18 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
      */
     private class ChannelHolder extends RecyclerView.ViewHolder {
 
-        TextView topicText, lastMessageText, unreadCountText, dateText, memberCountText;
-        MultiImageView coverImage;
+//        memberCountText, topicText
+        TextView lastMessageText, unreadCountText, dateText;
         LinearLayout typingIndicatorContainer;
 
         ChannelHolder(View itemView) {
             super(itemView);
 
-            topicText = (TextView) itemView.findViewById(R.id.text_group_channel_list_topic);
+//            topicText = (TextView) itemView.findViewById(R.id.text_group_channel_list_topic);
             lastMessageText = (TextView) itemView.findViewById(R.id.text_group_channel_list_message);
             unreadCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_unread_count);
             dateText = (TextView) itemView.findViewById(R.id.text_group_channel_list_date);
-            memberCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_member_count);
-            coverImage = (MultiImageView) itemView.findViewById(R.id.image_group_channel_list_cover);
-            coverImage.setShape(MultiImageView.Shape.CIRCLE);
+//            memberCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_member_count);
 
             typingIndicatorContainer = (LinearLayout) itemView.findViewById(R.id.container_group_channel_list_typing_indicator);
         }
@@ -245,10 +243,6 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         void bind(final Context context, int position, final GroupChannel channel,
                   @Nullable final OnItemClickListener clickListener,
                   @Nullable final OnItemLongClickListener longClickListener) {
-            topicText.setText(TextUtils.getGroupChannelTitle(channel));
-            memberCountText.setText(String.valueOf(channel.getMemberCount()));
-
-            setChannelImage(context, position, channel, coverImage);
 
             int unreadCount = channel.getUnreadMessageCount();
             // If there are no unread messages, hide the unread count badge.
@@ -334,75 +328,5 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
         }
 
-        private void setChannelImage(Context context, int position, GroupChannel channel, MultiImageView multiImageView) {
-            List<Member> members = channel.getMembers();
-            int size = members.size();
-            if (size >= 1) {
-                int imageNum = size;
-                if (size >= 4) {
-                    imageNum = 4;
-                }
-
-                if (!mChannelImageNumMap.containsKey(channel.getUrl())) {
-                    mChannelImageNumMap.put(channel.getUrl(), imageNum);
-                    mChannelImageViewMap.put(channel.getUrl(), multiImageView);
-
-                    multiImageView.clear();
-
-                    for (int index = 0; index < imageNum; index++) {
-                        SimpleTarget<Bitmap> simpleTarget = new SimpleTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap bitmap, Transition<? super Bitmap> glideAnimation) {
-                                GroupChannel channel = mSimpleTargetGroupChannelMap.get(this);
-                                Integer index = mSimpleTargetIndexMap.get(this);
-                                if (channel != null && index != null) {
-                                    SparseArray<Bitmap> bitmapSparseArray = mChannelBitmapMap.get(channel.getUrl());
-                                    if (bitmapSparseArray == null) {
-                                        bitmapSparseArray = new SparseArray<>();
-                                        mChannelBitmapMap.put(channel.getUrl(), bitmapSparseArray);
-                                    }
-                                    bitmapSparseArray.put(index, bitmap);
-
-                                    Integer num = mChannelImageNumMap.get(channel.getUrl());
-                                    if (num != null && num == bitmapSparseArray.size()) {
-                                        MultiImageView multiImageView = (MultiImageView) mChannelImageViewMap.get(channel.getUrl());
-                                        if (multiImageView != null) {
-                                            for (int i = 0; i < bitmapSparseArray.size(); i++) {
-                                                multiImageView.addImage(bitmapSparseArray.get(i));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        };
-
-                        mSimpleTargetIndexMap.put(simpleTarget, index);
-                        mSimpleTargetGroupChannelMap.put(simpleTarget, channel);
-
-                        RequestOptions myOptions = new RequestOptions()
-                                .dontAnimate()
-                                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC);
-
-                        Glide.with(context)
-                                .asBitmap()
-                                .load(members.get(index).getProfileUrl())
-                                .apply(myOptions)
-                                .into(simpleTarget);
-                    }
-                } else {
-                    SparseArray<Bitmap> bitmapSparseArray = mChannelBitmapMap.get(channel.getUrl());
-                    if (bitmapSparseArray != null) {
-                        Integer num = mChannelImageNumMap.get(channel.getUrl());
-                        if (num != null && num == bitmapSparseArray.size()) {
-                            multiImageView.clear();
-
-                            for (int i = 0; i < bitmapSparseArray.size(); i++) {
-                                multiImageView.addImage(bitmapSparseArray.get(i));
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

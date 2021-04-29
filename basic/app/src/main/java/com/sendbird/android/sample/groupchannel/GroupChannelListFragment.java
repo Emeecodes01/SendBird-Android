@@ -5,16 +5,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sendbird.android.BaseChannel;
@@ -40,9 +45,9 @@ public class GroupChannelListFragment extends Fragment {
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
 
     private RecyclerView mRecyclerView;
+    private CardView nochatCardView;
     private LinearLayoutManager mLayoutManager;
     private GroupChannelListAdapter mChannelListAdapter;
-    private FloatingActionButton mCreateChannelFab;
     private GroupChannelListQuery mChannelListQuery;
     private SwipeRefreshLayout mSwipeRefresh;
 
@@ -55,42 +60,17 @@ public class GroupChannelListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        Log.d("LIFECYCLE", "GroupChannelListFragment onCreateView()");
-
         View rootView = inflater.inflate(R.layout.fragment_group_channel_list, container, false);
 
         setRetainInstance(true);
 
-        // Change action bar title
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
+        nochatCardView = rootView.findViewById(R.id.nochatCardView);
+        mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_group_channel_list);
-        mCreateChannelFab = (FloatingActionButton) rootView.findViewById(R.id.fab_group_channel_list);
-        mSwipeRefresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_layout_group_channel_list);
-
-        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mSwipeRefresh.setRefreshing(true);
-                refresh();
-            }
-        });
-
-        mCreateChannelFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(getContext(), CreateGroupChannelActivity.class);
-//                startActivityForResult(intent, INTENT_REQUEST_NEW_GROUP_CHANNEL);
-
-                //get channel uri
-                String channelUrl = "channel url";
-
-                Fragment fragment = DummyChatFragment.newInstance(channelUrl);
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container_group_channel, fragment)
-                        .addToBackStack(null)
-                        .commit();
-
-            }
+        mSwipeRefresh.setOnRefreshListener(() -> {
+            mSwipeRefresh.setRefreshing(true);
+            refresh();
         });
 
         mChannelListAdapter = new GroupChannelListAdapter(getActivity());
@@ -104,14 +84,8 @@ public class GroupChannelListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        Log.d("LIFECYCLE", "GroupChannelListFragment onResume()");
 
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, new ConnectionManager.ConnectionManagementHandler() {
-            @Override
-            public void onConnected(boolean reconnect) {
-                refresh();
-            }
-        });
+        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, reconnect -> refresh());
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
@@ -136,8 +110,6 @@ public class GroupChannelListFragment extends Fragment {
     @Override
     public void onPause() {
         mChannelListAdapter.save();
-
-        Log.d("LIFECYCLE", "GroupChannelListFragment onPause()");
 
         ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
         SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
@@ -165,7 +137,6 @@ public class GroupChannelListFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mChannelListAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
         // If user scrolls to bottom of the list, loads more channels.
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -180,19 +151,9 @@ public class GroupChannelListFragment extends Fragment {
 
     // Sets up channel list adapter
     private void setUpChannelListAdapter() {
-        mChannelListAdapter.setOnItemClickListener(new GroupChannelListAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(GroupChannel channel) {
-                enterGroupChannel(channel);
-            }
-        });
+        mChannelListAdapter.setOnItemClickListener(channel -> enterGroupChannel(channel));
 
-        mChannelListAdapter.setOnItemLongClickListener(new GroupChannelListAdapter.OnItemLongClickListener() {
-            @Override
-            public void onItemLongClick(final GroupChannel channel) {
-                showChannelOptionsDialog(channel);
-            }
-        });
+        mChannelListAdapter.setOnItemLongClickListener(channel -> showChannelOptionsDialog(channel));
     }
 
     /**
@@ -278,7 +239,7 @@ public class GroupChannelListFragment extends Fragment {
     void enterGroupChannel(String channelUrl) {
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
         getFragmentManager().beginTransaction()
-                .replace(R.id.container_group_channel, fragment)
+                .replace(android.R.id.content, fragment)
                 .addToBackStack(null)
                 .commit();
     }
@@ -308,6 +269,17 @@ public class GroupChannelListFragment extends Fragment {
 
                 mChannelListAdapter.clearMap();
                 mChannelListAdapter.setGroupChannelList(list);
+
+//                list.clear();
+
+                if (list.isEmpty()){
+                    mRecyclerView.setVisibility(View.GONE);
+                    nochatCardView.setVisibility(View.VISIBLE);
+                }else{
+                    nochatCardView.setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+
+                }
             }
         });
 

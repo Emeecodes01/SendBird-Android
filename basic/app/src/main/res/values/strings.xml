@@ -84,5 +84,6 @@
     <string name="back">BACK</string>
     <string name="connection_error">Connection Error</string>
     <string name="error_connecting">There was an error connecting you to a tutor</string>
+    <string name="see_all"><u>See all</u></string>
 
 </resources>
