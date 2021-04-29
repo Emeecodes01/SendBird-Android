@@ -21,8 +21,6 @@ public class BaseApplication extends Application {
 
         SendBird.init(APP_ID, getApplicationContext());
 
-
-
         PushUtils.registerPushHandler(new MyFirebaseMessagingService());
     }
 }

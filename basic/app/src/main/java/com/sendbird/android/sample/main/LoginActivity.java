@@ -1,8 +1,11 @@
 package com.sendbird.android.sample.main;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,60 +51,68 @@ public class LoginActivity extends AppCompatActivity {
             PreferenceUtils.setUserId(userId);
             PreferenceUtils.setNickname(userNickname);
 
-            connectToSendBird(userId, userNickname);
+            connectToSendBird(userId, userNickname, this);
         });
 
-        mUserIdConnectEditText.setSelectAllOnFocus(true);
-        mUserNicknameEditText.setSelectAllOnFocus(true);
+//        mUserIdConnectEditText.setSelectAllOnFocus(true);
+//        mUserNicknameEditText.setSelectAllOnFocus(true);
 
         // Display current SendBird and app versions in a TextView
-        String sdkVersion = String.format(getResources().getString(R.string.all_app_version),
-                BaseApplication.VERSION, SendBird.getSDKVersion());
+//        String sdkVersion = String.format(getResources().getString(R.string.all_app_version),
+//                BaseApplication.VERSION, SendBird.getSDKVersion());
 
-        ((TextView) findViewById(R.id.text_login_versions)).setText(sdkVersion);
+//        ((TextView) findViewById(R.id.text_login_versions)).setText(sdkVersion);
     }
 
     /**
      * Attempts to connect a user to SendBird.
      * @param userId    The unique ID of the user.
-     * @param userNickname  The user's nickname, which will be displayed in chats.
+     * @param userNickname  The user's nickname, which will be displayed in cats.
      */
-    private void connectToSendBird(final String userId, final String userNickname) {
+
+    public boolean connectToSendBird(final String userId, final String userNickname, final Activity activity) {
+
+        final boolean[] isConnected = {false};
+
         if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(userNickname)) {
-            return;
+            return false;
         }
         // Show the loading indicator
-        showProgressBar(true);
+//        showProgressBar(true);
         ConnectionManager.login(userId, new SendBird.ConnectHandler() {
             @Override
             public void onConnected(User user, SendBirdException e) {
                 // Callback received; hide the progress bar.
-                showProgressBar(false);
+//                showProgressBar(false);
 
                 if (e != null) {
+
+                    Log.d("okh", e.getMessage()+"");
                     // Error!
-                    Toast.makeText(
-                            LoginActivity.this, "" + e.getCode() + ": " + e.getMessage(),
-                            Toast.LENGTH_SHORT)
-                            .show();
+//                    Toast.makeText(
+//                            LoginActivity.this, "" + e.getCode() + ": " + e.getMessage(),
+//                            Toast.LENGTH_SHORT)
+//                            .show();
 
                     // Show login failure snackbar
-                    showSnackbar("Login to SendBird failed");
+//                    showSnackbar("Login to SendBird failed");
                     return;
                 }
 
-                PreferenceUtils.setConnected(true);
+                isConnected[0] = true;
+//                PreferenceUtils.setConnected(true);
 
                 // Update the user's nickname
                 updateCurrentUserInfo(userNickname);
                 PushUtils.registerPushHandler(new MyFirebaseMessagingService());
 
                 // Proceed to MainActivity
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
+
+//                finish();
             }
         });
+
+        return isConnected[0];
     }
 
     /**
@@ -114,13 +125,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onUpdated(SendBirdException e) {
                 if (e != null) {
                     // Error!
-                    Toast.makeText(
-                            LoginActivity.this, "" + e.getCode() + ":" + e.getMessage(),
-                            Toast.LENGTH_SHORT)
-                            .show();
+//                    Toast.makeText(
+//                            LoginActivity.this, "" + e.getCode() + ":" + e.getMessage(),
+//                            Toast.LENGTH_SHORT)
+//                            .show();
 
                     // Show update failed snackbar
-                    showSnackbar("Update user nickname failed");
+//                    showSnackbar("Update user nickname failed");
 
                     return;
                 }

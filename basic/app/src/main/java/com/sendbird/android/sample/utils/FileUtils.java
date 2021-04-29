@@ -15,10 +15,6 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageOptions;
-import com.theartofdev.edmodo.cropper.CropImageView;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -168,16 +164,4 @@ public class FileUtils {
         }
     }
 
-    public void takePicture(Fragment fragment, Uri uri, String error, CropImageOptions.PictureSource source) {
-//        CropImage
-//                .activity()
-//                .from(CropImageOptions.PictureSource.CAMERA)
-//                .setGuidelines(CropImageView.Guidelines.ON)
-//                .setAspectRatio(13, 9)
-//                .setCropShape(CropImageView.CropShape.RECTANGLE)
-//                .start(fragment.requireContext(), fragment);
-        this.uri = uri;
-        this.error = error;
-
-    }
 }
