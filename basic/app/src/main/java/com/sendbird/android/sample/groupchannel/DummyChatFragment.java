@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.sendbird.android.sample.R;
@@ -24,6 +25,7 @@ import static com.sendbird.android.sample.utils.TextUtils.THEME_MATH;
 public class DummyChatFragment extends Fragment {
 
     private Toolbar dummy_toolbar;
+    private ConstraintLayout layout_group_chat_root;
     private TextView dummy_message_text;
     private ProgressBar progressBar;
 
@@ -67,7 +69,7 @@ public class DummyChatFragment extends Fragment {
                     .setMessage(getString(R.string.join_chat));
 
             joinChatDialog.setPositiveButton(R.string.join, R.drawable.bg_btn_complete, () -> {
-
+                joinChatDialog.dismiss();
                 return Unit.INSTANCE;
             });
 
@@ -89,7 +91,7 @@ public class DummyChatFragment extends Fragment {
         if (tutorStatus == 1 || tutorStatus == 2) {
 
             joinChatDialog.setPositiveButton(R.string.retry, R.drawable.ic_continue_enabled, () -> {
-
+                joinChatDialog.dismiss();
                 return Unit.INSTANCE;
             });
 
@@ -107,6 +109,7 @@ public class DummyChatFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.dummy_group_chat, container, false);
 
         dummy_toolbar = rootView.findViewById(R.id.dummy_toolbar);
+        layout_group_chat_root = rootView.findViewById(R.id.layout_group_chat_root);
         dummy_message_text = rootView.findViewById(R.id.dummy_message_text);
         progressBar = rootView.findViewById(R.id.progressBar);
 
@@ -115,6 +118,8 @@ public class DummyChatFragment extends Fragment {
         dummy_toolbar.setNavigationOnClickListener(view -> {
             getActivity().getSupportFragmentManager().popBackStack();
         });
+
+        layout_group_chat_root.setOnClickListener(view -> joinChatDialog.dismiss());
 
         return rootView;
     }

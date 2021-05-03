@@ -79,38 +79,38 @@ public class LoginActivity extends AppCompatActivity {
         }
         // Show the loading indicator
 //        showProgressBar(true);
-        ConnectionManager.login(userId, new SendBird.ConnectHandler() {
-            @Override
-            public void onConnected(User user, SendBirdException e) {
-                // Callback received; hide the progress bar.
-//                showProgressBar(false);
-
-                if (e != null) {
-
-                    Log.d("okh", e.getMessage()+"");
-                    // Error!
-//                    Toast.makeText(
-//                            LoginActivity.this, "" + e.getCode() + ": " + e.getMessage(),
-//                            Toast.LENGTH_SHORT)
-//                            .show();
-
-                    // Show login failure snackbar
-//                    showSnackbar("Login to SendBird failed");
-                    return;
-                }
-
-                isConnected[0] = true;
-//                PreferenceUtils.setConnected(true);
-
-                // Update the user's nickname
-                updateCurrentUserInfo(userNickname);
-                PushUtils.registerPushHandler(new MyFirebaseMessagingService());
-
-                // Proceed to MainActivity
-
-//                finish();
-            }
-        });
+//        ConnectionManager.login(userId, new SendBird.ConnectHandler() {
+//            @Override
+//            public void onConnected(User user, SendBirdException e) {
+//                // Callback received; hide the progress bar.
+////                showProgressBar(false);
+//
+//                if (e != null) {
+//
+//                    Log.d("okh", e.getMessage()+"");
+//                    // Error!
+////                    Toast.makeText(
+////                            LoginActivity.this, "" + e.getCode() + ": " + e.getMessage(),
+////                            Toast.LENGTH_SHORT)
+////                            .show();
+//
+//                    // Show login failure snackbar
+////                    showSnackbar("Login to SendBird failed");
+//                    return;
+//                }
+//
+//                isConnected[0] = true;
+////                PreferenceUtils.setConnected(true);
+//
+//                // Update the user's nickname
+//                updateCurrentUserInfo(userNickname);
+//                PushUtils.registerPushHandler(new MyFirebaseMessagingService());
+//
+//                // Proceed to MainActivity
+//
+////                finish();
+//            }
+//        });
 
         return isConnected[0];
     }

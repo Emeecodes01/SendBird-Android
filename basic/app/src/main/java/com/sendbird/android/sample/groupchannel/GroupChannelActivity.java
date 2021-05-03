@@ -5,14 +5,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+
 import android.view.MenuItem;
 
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.sample.R;
-import com.sendbird.android.sample.main.StartSendBird;
+import com.sendbird.android.sample.main.SendBirdChat;
 
 
 public class GroupChannelActivity extends AppCompatActivity{
@@ -22,22 +22,24 @@ public class GroupChannelActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-
-       new StartSendBird().start(new SendBird.ConnectHandler() {
-           @Override
-           public void onConnected(User user, SendBirdException e) {
-
-               Fragment fragment = GroupChannelListFragment.newInstance();
-
-               FragmentManager manager = getSupportFragmentManager();
-               manager.popBackStack();
-
-               manager.beginTransaction()
-                       .replace(R.id.container_group_channel, fragment)
-                       .commit();
-
-           }
-       });
+//        new SendBirdChat().createChat( this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"), new SendBirdChat.UserData("448178", "448178", ""));
+        new SendBirdChat().showChatList(this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"));
+//
+//        new SendBirdChat().start("448178", "448178", new SendBird.ConnectHandler() {
+//           @Override
+//           public void onConnected(User user, SendBirdException e) {
+//
+//               Fragment fragment = GroupChannelListFragment.newInstance();
+//
+//               FragmentManager manager = getSupportFragmentManager();
+//               manager.popBackStack();
+//
+//               manager.beginTransaction()
+//                       .replace(R.id.container_group_channel, fragment)
+//                       .commit();
+//
+//           }
+//       });
 
 
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");

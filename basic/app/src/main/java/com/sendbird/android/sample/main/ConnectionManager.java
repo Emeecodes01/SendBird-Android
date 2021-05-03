@@ -10,8 +10,8 @@ public class ConnectionManager {
         return PreferenceUtils.getConnected();
     }
 
-    public static void login(String userId, final SendBird.ConnectHandler handler) {
-        SendBird.connect(userId, new SendBird.ConnectHandler() {
+    public static void login(String userId, String accessToken, final SendBird.ConnectHandler handler) {
+        SendBird.connect(userId, accessToken,new SendBird.ConnectHandler() {
             @Override
             public void onConnected(User user, SendBirdException e) {
                 if (handler != null) {
@@ -59,11 +59,7 @@ public class ConnectionManager {
             SendBird.connect(userId, new SendBird.ConnectHandler() {
                 @Override
                 public void onConnected(User user, SendBirdException e) {
-                    if (e != null) {
-                        return;
-                    }
-
-                    if (handler != null) {
+                    if (e != null || handler != null) {
                         handler.onConnected(false);
                     }
                 }

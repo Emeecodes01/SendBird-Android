@@ -33,7 +33,7 @@ import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.TypingIndicator;
-import com.stfalcon.multiimageview.MultiImageView;
+//import com.stfalcon.multiimageview.MultiImageView;
 
 import java.io.File;
 import java.io.IOException;

@@ -210,6 +210,8 @@ class GenericDialog : BaseBottomSheetDialog() {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        dialogRoot.setOnClickListener { dismiss() }
         if (imageResId != null) {
             iv_image.setImageResource(imageResId!!)
         } else {

@@ -6,7 +6,6 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="14dp"
     android:layout_marginTop="5dp"
-    android:layout_marginBottom="13dp"
     android:background="@drawable/shape_white_rounded"
     android:clickable="true"
     android:focusable="true">

@@ -80,7 +80,7 @@ public class GroupChatFragment extends Fragment {
     private static final String LOG_TAG = GroupChatFragment.class.getSimpleName();
 
     private static final int CHANNEL_LIST_LIMIT = 30;
-    private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHAT";
+    public static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHAT";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_CHAT";
 
     private static final int STATE_NORMAL = 0;

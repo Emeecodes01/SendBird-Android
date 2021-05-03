@@ -162,6 +162,29 @@ public class MediaUtils extends Activity {
         }
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == CAMERA_REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                requestCamera();
+            } else {
+                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG)
+                        .show();
+            }
+        }
+        if (requestCode == MEDIA_REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                requestMedia();
+            } else {
+                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG)
+                        .show();
+            }
+        }
+    }
+
     private void returnURI(Uri uri, int resultCode) {
         returnIntent.setData(uri);
         setResult(resultCode, returnIntent);

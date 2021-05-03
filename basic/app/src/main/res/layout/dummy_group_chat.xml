@@ -5,6 +5,8 @@
     android:id="@+id/layout_group_chat_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     android:background="#E5E5E5"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 

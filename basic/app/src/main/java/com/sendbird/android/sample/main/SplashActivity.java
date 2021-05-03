@@ -13,6 +13,8 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.groupchannel.GroupChannelActivity;
 import com.sendbird.android.sample.utils.PreferenceUtils;
 
+import java.util.ArrayList;
+
 public class SplashActivity extends AppCompatActivity {
 
     @Override
@@ -26,22 +28,15 @@ public class SplashActivity extends AppCompatActivity {
 
         String userId = PreferenceUtils.getUserId();
         if (ConnectionManager.isLogin() && !TextUtils.isEmpty(userId)) {
-            ConnectionManager.login(userId, new SendBird.ConnectHandler() {
-                @Override
-                public void onConnected(User user, SendBirdException e) {
-//                    startActivity(getNextIntent());
-                    getNextIntent();
-                }
-            });
+//            ConnectionManager.login(userId, new SendBird.ConnectHandler() {
+//                @Override
+//                public void onConnected(User user, SendBirdException e) {
+////                    startActivity(getNextIntent());
+//                    getNextIntent();
+//                }
+//            });
         } else {
-//            startActivity(getNextIntent());
-            new StartSendBird().start( new SendBird.ConnectHandler() {
-
-                @Override
-                public void onConnected(User user, SendBirdException e) {
-                    getNextIntent();
-                }
-            });
+           getNextIntent();
 
 //            finish();
         }
