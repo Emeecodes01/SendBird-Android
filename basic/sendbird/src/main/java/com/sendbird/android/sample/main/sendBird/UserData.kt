@@ -1,3 +1,7 @@
 package com.sendbird.android.sample.main.sendBird
 
-data class UserData(val id: String, val nickname: String, val accessToken: String = "")
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
+data class UserData(val id: String, val nickname: String, val accessToken: String = "") : Parcelable
