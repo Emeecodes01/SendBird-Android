@@ -18,8 +18,13 @@ buildscript {
 
 allprojects {
     repositories {
+
         google()
         jcenter()
+
+        maven {
+            url 'https://maven.google.com'
+        }
         maven { url "https://jitpack.io" }
         maven { url "https://repo.sendbird.com/public/maven" }
     }
