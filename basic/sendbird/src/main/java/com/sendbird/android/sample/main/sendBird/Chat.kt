@@ -30,7 +30,7 @@ class Chat {
                 createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
                     val fragment = GroupChatFragment.newInstance(groupChannel.url)
                     activity.supportFragmentManager.beginTransaction()
-                            .add(R.id.content, fragment)
+                            .add(android.R.id.content, fragment)
                             .addToBackStack(fragment.tag)
                             .commit()
                 }
@@ -44,7 +44,7 @@ class Chat {
 
                             val fragment = GroupChatFragment.newInstance(groupChannel.url)
                             activity.supportFragmentManager.beginTransaction()
-                                    .add(R.id.container_group_channel, fragment)
+                                    .add(android.R.id.content, fragment)
                                     .addToBackStack(fragment.tag)
                                     .commit()
                         }
@@ -70,8 +70,8 @@ class Chat {
                 createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
                     val fragment = GroupChatFragment.newInstance(groupChannel.url)
                     activity?.supportFragmentManager?.beginTransaction()
-                            ?.replace(R.id.content, fragment)
-                            ?.addToBackStack(null)
+                            ?.add(android.R.id.content, fragment)
+                            ?.addToBackStack(fragment.tag)
                             ?.commit()
                 }
 
@@ -85,8 +85,8 @@ class Chat {
 
                             val fragment = GroupChatFragment.newInstance(groupChannel.url)
                             activity?.supportFragmentManager?.beginTransaction()
-                                    ?.replace(R.id.content, fragment)
-                                    ?.addToBackStack(null)
+                                    ?.add(android.R.id.content, fragment)
+                                    ?.addToBackStack(fragment.tag)
                                     ?.commit()
                         }
 
@@ -103,7 +103,7 @@ class Chat {
 
     private fun createGroupChat(hostId: String, otherId: String, groupChannelCreateHandler: GroupChannelCreateHandler) {
         val userIdList = listOf(hostId, otherId)
-        GroupChannel.createChannelWithUserIds(userIdList, true, GroupChannelCreateHandler { groupChannel, e ->
+        GroupChannel.createChannelWithUserIds(userIdList, true, "$hostId and $otherId Chat", "", "", "", GroupChannelCreateHandler { groupChannel, e ->
             if (e != null) {
                 // Error!
                 return@GroupChannelCreateHandler
