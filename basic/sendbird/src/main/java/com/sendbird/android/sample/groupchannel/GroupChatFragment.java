@@ -667,6 +667,7 @@ public class GroupChatFragment extends Fragment {
 
             Intent intent = new Intent(requireContext(), MediaUtils.class);
             intent.putExtra(useCamera, true);
+
             startActivityForResult(intent, MEDIA_REQUEST_CODE);
             return Unit.INSTANCE;
         }, () -> {

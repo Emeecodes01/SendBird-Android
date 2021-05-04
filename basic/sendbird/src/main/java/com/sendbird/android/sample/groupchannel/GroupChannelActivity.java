@@ -1,21 +1,29 @@
 package com.sendbird.android.sample.groupchannel;
 
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.sample.R;
-import com.sendbird.android.sample.main.SendBirdChat;
+import com.sendbird.android.sample.main.ConnectionManager;
+import com.sendbird.android.sample.main.sendBird.Chat;
+import com.sendbird.android.sample.main.sendBird.Connect;
+import com.sendbird.android.sample.main.sendBird.UserData;
+import com.sendbird.android.sample.network.createUser.CreateUserRequest;
+
+import kotlin.Unit;
 
 
-public class GroupChannelActivity extends AppCompatActivity{
+public class GroupChannelActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -23,27 +31,43 @@ public class GroupChannelActivity extends AppCompatActivity{
         setContentView(R.layout.activity_group_channel);
 
 //        new SendBirdChat().createChat( this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"), new SendBirdChat.UserData("448178", "448178", ""));
-        new SendBirdChat().showChatList(this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"));
+//        new SendBirdChat().showChatList(this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"));
+
+//        CreateUserRequest user = new CreateUserRequest("newuser", "New User", "https://pbs.twimg.com/profile_images/1388521890294161415/SVbNtY_T_400x400.jpg", true);
 //
-//        new SendBirdChat().start("448178", "448178", new SendBird.ConnectHandler() {
-//           @Override
-//           public void onConnected(User user, SendBirdException e) {
+//        new User().createUser(user,  (CreateUserRequest ) -> {
 //
-//               Fragment fragment = GroupChannelListFragment.newInstance();
+//            String accessToken = CreateUserRequest.getAccess_token();
 //
-//               FragmentManager manager = getSupportFragmentManager();
-//               manager.popBackStack();
+//            Log.d("okh", accessToken);
 //
-//               manager.beginTransaction()
-//                       .replace(R.id.container_group_channel, fragment)
-//                       .commit();
+//            return Unit.INSTANCE;
+//        });
+
+//        new Chat().showChatList(this, new Chat.UserData("newuser", "newuser","1bb9a80704d7f7f3574f8597711834572777f326"));
+
+//        new Chat().createChat(this, new Chat.UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326"), new Chat.UserData("448178", "448178", "f3238e3bef7e7a627076c7eff8b7c0f1df826328"));
+
+//        UserData userData = new UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326");
+
+//        new Connect().logout();
+
+//        new Connect().login(userData, new SendBird.ConnectHandler() {
+//            @Override
+//            public void onConnected(User user, SendBirdException e) {
 //
-//           }
-//       });
+//                Log.d("okh", user.getUserId());
+//            }
+//        });
+
+        UserData hostUserData = new UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326");
+        UserData otherUserData = new UserData("448178", "448178", "f3238e3bef7e7a627076c7eff8b7c0f1df826328");
+
+        new Chat().createChat(this, otherUserData, hostUserData);
 
 
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
-        if(channelUrl != null) {
+        if (channelUrl != null) {
             // If started from notification
             Fragment fragment = GroupChatFragment.newInstance(channelUrl);
             FragmentManager manager = getSupportFragmentManager();
@@ -57,6 +81,7 @@ public class GroupChannelActivity extends AppCompatActivity{
     interface onBackPressedListener {
         boolean onBack();
     }
+
     private onBackPressedListener mOnBackPressedListener;
 
     public void setOnBackPressedListener(onBackPressedListener listener) {
