@@ -1,29 +1,21 @@
-package com.sendbird.android.sample.groupchannel;
+package com.sendbird.android.sample.main.allChat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
@@ -32,13 +24,18 @@ import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.sample.R;
+import com.sendbird.android.sample.groupchannel.CreateGroupChannelActivity;
+import com.sendbird.android.sample.groupchannel.GroupChatFragment;
 import com.sendbird.android.sample.main.ConnectionManager;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
-public class GroupChannelListFragment extends Fragment {
+public class GroupAllChatListFragment extends Fragment {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String IS_ACTIVE = "IS_ACTIVE";
@@ -49,18 +46,17 @@ public class GroupChannelListFragment extends Fragment {
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
 
     private RecyclerView mRecyclerView;
-    private CardView nochatCardView;
     private LinearLayoutManager mLayoutManager;
-    private GroupChannelListAdapter mChannelListAdapter;
+    private GroupAllChatListAdapter mChannelListAdapter;
     private GroupChannelListQuery mChannelListQuery;
     private SwipeRefreshLayout mSwipeRefresh;
     private Boolean isActive;
 
-    public static GroupChannelListFragment newInstance(@NonNull Boolean isActive) {
-        GroupChannelListFragment fragment = new GroupChannelListFragment();
+    public static GroupAllChatListFragment newInstance(@NonNull Boolean isActive) {
+        GroupAllChatListFragment fragment = new GroupAllChatListFragment();
 
         Bundle args = new Bundle();
-        args.putBoolean(GroupChannelListFragment.IS_ACTIVE, isActive);
+        args.putBoolean(GroupAllChatListFragment.IS_ACTIVE, isActive);
         fragment.setArguments(args);
 
         return fragment;
@@ -70,12 +66,11 @@ public class GroupChannelListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_group_channel_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_all_chat_channel_list, container, false);
 
         setRetainInstance(true);
 
-        mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
-        nochatCardView = rootView.findViewById(R.id.nochatCardView);
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_all_chat_list);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
         mSwipeRefresh.setOnRefreshListener(() -> {
@@ -84,10 +79,10 @@ public class GroupChannelListFragment extends Fragment {
         });
 
         if (getArguments() != null) {
-            isActive = getArguments().getBoolean(GroupChannelListFragment.IS_ACTIVE, true);
+            isActive = getArguments().getBoolean(GroupAllChatListFragment.IS_ACTIVE, true);
         }
 
-        mChannelListAdapter = new GroupChannelListAdapter(getActivity());
+        mChannelListAdapter = new GroupAllChatListAdapter(getActivity());
         mChannelListAdapter.load();
 
         setUpRecyclerView();
@@ -283,15 +278,37 @@ public class GroupChannelListFragment extends Fragment {
                 }
 
                 mChannelListAdapter.clearMap();
-                mChannelListAdapter.setGroupChannelList(list);
+
+                List<GroupChannel> isActiveChannel = new ArrayList<>();
+                List<GroupChannel> isPastChannel = new ArrayList<>();
+
+                for (int i = 0; i < list.size(); i++) {
+
+                    int finalI = i;
+
+                    list.get(i).getAllMetaData((map, e1) -> {
+
+                        if (Objects.requireNonNull(map.get("isActive")).equalsIgnoreCase("true")) {
+                            isActiveChannel.add(list.get(finalI));
+                        } else {
+                            isPastChannel.add(list.get(finalI));
+                        }
+
+                        if (isActive) {
+                            mChannelListAdapter.setGroupChannelList(isActiveChannel);
+                        } else {
+                            mChannelListAdapter.setGroupChannelList(isPastChannel);
+                        }
+                    });
+
+                }
+
 
 //                list.clear();
 
                 if (list.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
-                    nochatCardView.setVisibility(View.VISIBLE);
                 } else {
-                    nochatCardView.setVisibility(View.GONE);
                     mRecyclerView.setVisibility(View.VISIBLE);
 
                 }

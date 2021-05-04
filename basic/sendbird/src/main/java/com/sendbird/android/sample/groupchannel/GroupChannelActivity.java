@@ -60,11 +60,11 @@ public class GroupChannelActivity extends AppCompatActivity {
 //            }
 //        });
 
-//        UserData hostUserData = new UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326");
-        UserData otherUserData = new UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f");
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "567053530d8d9daec7d59379f6760e60bb2a2155");
+//        UserData otherUserData = new UserData("1829", "Ayodeji Okikiolu", "ad8008a525b64f1f505c8fe62773e223a70840bc");
 
-//        new Chat().createChat(this, otherUserData, hostUserData);
-        new Chat().showChatList(this, R.id.container_group_channel, otherUserData);
+//        new Chat().createChat(this, hostUserData, otherUserData);
+        new Chat().showChatList(this, R.id.container_group_channel, hostUserData);
 
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
