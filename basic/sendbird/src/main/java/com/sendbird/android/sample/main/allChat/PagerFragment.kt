@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.sendbird.android.sample.R
+import kotlinx.android.synthetic.main.fragment_chat_pager.*
 import kotlinx.android.synthetic.main.fragment_chat_pager.view.*
 
 class PagerFragment : Fragment() {
@@ -24,6 +25,10 @@ class PagerFragment : Fragment() {
         val chatPager = view.chatViewPager
         val tabLayout = view.tabLayout
 
+        view.toolbar_group_channel.setNavigationOnClickListener {
+            activity?.supportFragmentManager?.popBackStack()
+        }
+
         chatPagerAdapter = ChatPagerAdapter(this)
         chatPager.adapter = chatPagerAdapter
 
@@ -31,7 +36,7 @@ class PagerFragment : Fragment() {
 
             when (position) {
                 0 -> tab.text = Html.fromHtml("\t\t\t\tACTIVE\t\t\t\t")
-                1 -> tab.text =Html.fromHtml("\t\t\t\tPAST\t\t\t\t")
+                1 -> tab.text = Html.fromHtml("\t\t\t\tPAST\t\t\t\t")
             }
         }.attach()
 

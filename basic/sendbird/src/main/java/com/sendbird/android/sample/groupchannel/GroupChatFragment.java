@@ -402,31 +402,6 @@ public class GroupChatFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        inflater.inflate(R.menu.menu_group_chat, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_group_channel_invite) {
-            Intent intent = new Intent(getActivity(), InviteMemberActivity.class);
-            intent.putExtra(EXTRA_CHANNEL_URL, mChannelUrl);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.action_group_channel_view_members) {
-            Intent intent = new Intent(getActivity(), MemberListActivity.class);
-            intent.putExtra(EXTRA_CHANNEL_URL, mChannelUrl);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -450,19 +425,24 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void setUpRecyclerView() {
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        mLayoutManager.setReverseLayout(true);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setItemViewCacheSize(50);
-        mRecyclerView.setAdapter(mChatAdapter);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
-                    mChatAdapter.loadPreviousMessages(CHANNEL_LIST_LIMIT, null);
+
+        if (getActivity() != null ) {
+
+            mLayoutManager = new LinearLayoutManager(getActivity());
+            mLayoutManager.setReverseLayout(true);
+            mRecyclerView.setLayoutManager(mLayoutManager);
+            mRecyclerView.setItemViewCacheSize(50);
+            mRecyclerView.setAdapter(mChatAdapter);
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
+                        mChatAdapter.loadPreviousMessages(CHANNEL_LIST_LIMIT, null);
+                    }
                 }
-            }
-        });
+            });
+        }
+
     }
 
     private void setUpChatListAdapter() {
@@ -821,7 +801,7 @@ public class GroupChatFragment extends Fragment {
                     Log.e(LOG_TAG, e.toString());
                     if (getActivity() != null) {
                         Toast.makeText(
-                                getActivity(),
+                                requireContext(),
                                 "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
                                 .show();
                     }

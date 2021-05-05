@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.ConnectionManager;
+import com.sendbird.android.sample.main.sendBird.Chat;
+import com.sendbird.android.sample.main.sendBird.UserData;
 
 import java.util.List;
 
@@ -49,6 +52,7 @@ public class GroupChannelListFragment extends Fragment {
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
 
     private RecyclerView mRecyclerView;
+    private Button seeAllBtn;
     private CardView nochatCardView;
     private LinearLayoutManager mLayoutManager;
     private GroupChannelListAdapter mChannelListAdapter;
@@ -75,12 +79,22 @@ public class GroupChannelListFragment extends Fragment {
         setRetainInstance(true);
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
+        seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
         nochatCardView = rootView.findViewById(R.id.nochatCardView);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
         mSwipeRefresh.setOnRefreshListener(() -> {
             mSwipeRefresh.setRefreshing(true);
             refresh();
+        });
+
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "567053530d8d9daec7d59379f6760e60bb2a2155");
+
+        seeAllBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData);
+            }
         });
 
         if (getArguments() != null) {
@@ -125,8 +139,8 @@ public class GroupChannelListFragment extends Fragment {
     public void onPause() {
         mChannelListAdapter.save();
 
-        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
-        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
+//        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
+//        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }
 
@@ -253,10 +267,13 @@ public class GroupChannelListFragment extends Fragment {
      */
     void enterGroupChannel(String channelUrl) {
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                .add(android.R.id.content, fragment)
-                .addToBackStack(fragment.getTag())
-                .commit();
+        if (getActivity() !=null && !fragment.isAdded()){
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .add(android.R.id.content, fragment)
+                    .addToBackStack(fragment.getTag())
+                    .commit();
+        }
+
     }
 
     private void refresh() {
