@@ -12,6 +12,7 @@ import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
 import com.sendbird.android.sample.groupchannel.GroupChatFragment
 import com.sendbird.android.sample.groupchannel.GroupChatFragment.CONNECTION_HANDLER_ID
 import com.sendbird.android.sample.main.ConnectionManager
+import com.sendbird.android.sample.main.allChat.PagerFragment
 import com.sendbird.android.sample.utils.PreferenceUtils
 
 class Chat {
@@ -121,7 +122,8 @@ class Chat {
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
-                val fragment: Fragment = GroupChannelListFragment.newInstance()
+//                val fragment: Fragment = GroupChannelListFragment.newInstance(true)
+                val fragment: Fragment = PagerFragment()
 
                 val manager: FragmentManager = activity.supportFragmentManager
 
@@ -132,7 +134,8 @@ class Chat {
 
                 login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
 
-                    val fragment: Fragment = GroupChannelListFragment.newInstance()
+//                    val fragment: Fragment = GroupChannelListFragment.newInstance(true)
+                    val fragment: Fragment = PagerFragment()
 
                     val manager: FragmentManager = activity.supportFragmentManager
 

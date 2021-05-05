@@ -20,7 +20,6 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_below="@id/view_group_chat_padding"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/group_chat_date_background"
         android:gravity="center"
         android:paddingLeft="8dp"
@@ -35,10 +34,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_group_chat_date"
+        android:layout_marginVertical="5dp"
         android:layout_toLeftOf="@id/message_status_group_chat"
         android:background="@drawable/me_message_shape"
         android:minWidth="50dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_toStartOf="@id/message_status_group_chat">
 
         <TextView
             android:id="@+id/text_group_chat_message"
