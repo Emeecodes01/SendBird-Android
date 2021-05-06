@@ -56,13 +56,9 @@ public class ConnectionManager {
             }
         } else if (SendBird.getConnectionState() == SendBird.ConnectionState.CLOSED) { // push notification or system kill
             String userId = PreferenceUtils.getUserId();
-            SendBird.connect(userId, new SendBird.ConnectHandler() {
-                @Override
-                public void onConnected(User user, SendBirdException e) {
-                    if (e != null || handler != null) {
-                        handler.onConnected(false);
-                    }
-                }
+            String accessToken = PreferenceUtils.getAccessToken();
+            SendBird.connect(userId, accessToken, (user, e) -> {
+                handler.onConnected(e == null);
             });
         }
     }

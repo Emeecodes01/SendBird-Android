@@ -31,14 +31,14 @@ class Connect {
                 PreferenceUtils.setConnected(true)
 
                 // Update the user's nickname
-                updateCurrentUserInfo(userData.id, userData.nickname)
+                updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
                 PushUtils.registerPushHandler(MyFirebaseMessagingService())
             }
             handler.onConnected(user, e)
         })
     }
 
-    private fun updateCurrentUserInfo(userId: String, userNickname: String) {
+    private fun updateCurrentUserInfo(userId: String, userNickname: String, accessToken : String) {
 
         SendBird.updateCurrentUserInfo(userNickname, null, object : UserInfoUpdateHandler {
 
@@ -48,6 +48,7 @@ class Connect {
                 }
 
                 PreferenceUtils.setUserId(userId)
+                PreferenceUtils.setAccessToken(accessToken)
                 PreferenceUtils.setNickname(userNickname)
             }
 

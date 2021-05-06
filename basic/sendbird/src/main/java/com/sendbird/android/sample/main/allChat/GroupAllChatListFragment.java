@@ -29,15 +29,15 @@ import com.sendbird.android.sample.groupchannel.GroupChatFragment;
 import com.sendbird.android.sample.main.ConnectionManager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.TimeZone;
 
 import static android.app.Activity.RESULT_OK;
 
 public class GroupAllChatListFragment extends Fragment {
 
-    public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String IS_ACTIVE = "IS_ACTIVE";
     private static final int INTENT_REQUEST_NEW_GROUP_CHANNEL = 302;
 
@@ -120,8 +120,8 @@ public class GroupAllChatListFragment extends Fragment {
     public void onPause() {
         mChannelListAdapter.save();
 
-//        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
-//        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
+        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
+        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }
 

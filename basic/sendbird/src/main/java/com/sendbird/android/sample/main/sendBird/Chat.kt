@@ -9,13 +9,15 @@ import androidx.fragment.app.FragmentManager
 import com.sendbird.android.*
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.SendBird.ConnectHandler
-import com.sendbird.android.sample.R
 import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
 import com.sendbird.android.sample.groupchannel.GroupChatFragment
 import com.sendbird.android.sample.groupchannel.GroupChatFragment.CONNECTION_HANDLER_ID
 import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.main.allChat.PagerFragment
+import com.sendbird.android.sample.network.NetworkRequest
+import com.sendbird.android.sample.network.createUser.UpdateUserRequest
 import com.sendbird.android.sample.utils.PreferenceUtils
+import java.util.*
 
 class Chat {
 
@@ -35,7 +37,7 @@ class Chat {
                     activity.supportFragmentManager.beginTransaction()
                             .add(android.R.id.content, fragment)
                             .addToBackStack(fragment.tag)
-                            .commit()
+                            .commitAllowingStateLoss()
                 }
 
             } else {
@@ -49,7 +51,7 @@ class Chat {
                             activity.supportFragmentManager.beginTransaction()
                                     .add(android.R.id.content, fragment)
                                     .addToBackStack(fragment.tag)
-                                    .commit()
+                                    .commitAllowingStateLoss()
                         }
                     } else {
                         Toast.makeText(activity.baseContext, e.message, Toast.LENGTH_LONG).show()
@@ -75,7 +77,7 @@ class Chat {
                     activity?.supportFragmentManager?.beginTransaction()
                             ?.add(android.R.id.content, fragment)
                             ?.addToBackStack(fragment.tag)
-                            ?.commit()
+                            ?.commitAllowingStateLoss()
                 }
 
             } else {
@@ -90,7 +92,7 @@ class Chat {
                             activity?.supportFragmentManager?.beginTransaction()
                                     ?.add(android.R.id.content, fragment)
                                     ?.addToBackStack(fragment.tag)
-                                    ?.commit()
+                                    ?.commitAllowingStateLoss()
                         }
 
                     } else {
@@ -114,6 +116,40 @@ class Chat {
 
             groupChannelCreateHandler.onResult(groupChannel, e)
         })
+    }
+
+    private fun getTime() {
+
+        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
+//        val hour = calendar.get(Calendar.HOUR)
+//        val minutes = calendar.get(Calendar.MINUTE)
+//        val seconds = calendar.get(Calendar.SECOND)
+
+        val hour = 0
+        val minutes = 20
+        val seconds = 10
+
+        val currentHour = 0
+        val currentMinutes = 20 + 5
+        val currentSeconds = 10
+
+        val endHour = hour + ((minutes + 20) / 60)
+        val endMinutes = (minutes + 20) % 60
+
+        val endTime = (endHour * 60 * 60) + (endMinutes * 60) + seconds
+        val currentTime = (currentHour * 60 * 60) + (currentMinutes * 60) + currentSeconds
+
+        val countDownTime = endTime - currentTime
+
+        val countDownHour: Int = countDownTime / 3600
+        val countDownMinutes: Int = countDownTime / 60
+        val countDownSeconds: Int = countDownTime - (60 * countDownMinutes)
+
+        Log.d("okh", "start $hour $minutes $seconds")
+        Log.d("okh", "current $currentHour $currentMinutes $currentSeconds \n")
+        Log.d("okh", "end $endHour $endMinutes $seconds")
+        Log.d("okh", "countdown $countDownHour $countDownMinutes $countDownSeconds")
+
     }
 
     fun updateGroupChat(channelUrl: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
@@ -171,40 +207,72 @@ class Chat {
 
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData) {
 
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
-            if (it) {
-                val fragment: Fragment = GroupChannelListFragment.newInstance(true)
+        if (PreferenceUtils.getUserId() != hostUserData.id) {
+            login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
 
-                if (activity != null && !fragment.isAdded) {
-                    val manager: FragmentManager = activity.supportFragmentManager
+                if (user != null || PreferenceUtils.getUserId().isNotEmpty()) {
 
-                    manager.beginTransaction()
-                            .add(layoutId, fragment)
-                            .commit()
-                }
+                    val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
 
-            } else {
+                    if (activity != null && !fragment.isAdded) {
+                        val manager: FragmentManager = activity.supportFragmentManager
 
-                login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
-
-                    if (user != null || PreferenceUtils.getUserId().isNotEmpty()) {
-
-                        val fragment: Fragment = GroupChannelListFragment.newInstance(true)
-
-                        if (activity != null && !fragment.isAdded) {
-                            val manager: FragmentManager = activity.supportFragmentManager
-
-                            manager.beginTransaction()
-                                    .add(layoutId, fragment)
-                                    .commit()
-                        }
+                        manager.beginTransaction()
+                                .add(layoutId, fragment)
+                                .commitAllowingStateLoss()
                     }
-
                 }
-            }
 
+            }
+        } else {
+
+           PreferenceUtils.setAccessToken(hostUserData.accessToken)
+
+            ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
+
+                if (it) {
+                    gotoChatListFragment(activity, hostUserData, layoutId)
+
+                } else {
+
+                    val networkRequest = NetworkRequest()
+                    networkRequest.updateUser(UpdateUserRequest(hostUserData.id, true), {
+
+                        val loginData = UserData(hostUserData.id, hostUserData.nickname, it.access_token)
+
+                        PreferenceUtils.setUserId(hostUserData.id)
+                        PreferenceUtils.setNickname(hostUserData.nickname)
+                        PreferenceUtils.setAccessToken(it.access_token)
+
+                        Connect().login(loginData) { user, loginError ->
+
+                            user?.let {
+                                gotoChatListFragment(activity, hostUserData, layoutId)
+                            } ?: kotlin.run {
+
+                            }
+                        }
+
+                    }) {
+                        gotoChatListFragment(activity, hostUserData, layoutId)
+                    }
+                }
+
+            }
         }
 
+    }
+
+    private fun gotoChatListFragment(activity: AppCompatActivity?, hostUserData: UserData, layoutId: Int) {
+        val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
+
+        if (activity != null && !fragment.isAdded) {
+            val manager: FragmentManager = activity.supportFragmentManager
+
+            manager.beginTransaction()
+                    .add(layoutId, fragment)
+                    .commitAllowingStateLoss()
+        }
     }
 
     private fun login(userData: UserData, connectHandler: ConnectHandler) {

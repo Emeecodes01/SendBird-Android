@@ -30,40 +30,11 @@ public class GroupChannelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-//        new SendBirdChat().createChat( this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"), new SendBirdChat.UserData("448178", "448178", ""));
-//        new SendBirdChat().showChatList(this, new SendBirdChat.UserData("taiwo", "taiwo", "7a6b647f303fa9663609c4c56296ed9ad152a70f"));
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "b65d82c19996bce103118a2812bb0f14f6c69d7e");
+        UserData otherUserData = new UserData("1347", "Tamilore Oyola", "0d9de2754af300a0cc82e9a837a7b4f63fdae954");
+        CreateUserRequest errorUserDataRequest = new CreateUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+                true);
 
-//        CreateUserRequest user = new CreateUserRequest("newuser", "New User", "https://pbs.twimg.com/profile_images/1388521890294161415/SVbNtY_T_400x400.jpg", true);
-//
-//        new User().createUser(user,  (CreateUserRequest ) -> {
-//
-//            String accessToken = CreateUserRequest.getAccess_token();
-//
-//            Log.d("okh", accessToken);
-//
-//            return Unit.INSTANCE;
-//        });
-
-//        new Chat().showChatList(this, new Chat.UserData("newuser", "newuser","1bb9a80704d7f7f3574f8597711834572777f326"));
-
-//        new Chat().createChat(this, new Chat.UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326"), new Chat.UserData("448178", "448178", "f3238e3bef7e7a627076c7eff8b7c0f1df826328"));
-
-//        UserData userData = new UserData("newuser", "newuser", "1bb9a80704d7f7f3574f8597711834572777f326");
-
-//        new Connect().logout();
-
-//        new Connect().login(userData, new SendBird.ConnectHandler() {
-//            @Override
-//            public void onConnected(User user, SendBirdException e) {
-//
-//                Log.d("okh", user.getUserId());
-//            }
-//        });
-
-        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "567053530d8d9daec7d59379f6760e60bb2a2155");
-//        UserData otherUserData = new UserData("1829", "Ayodeji Okikiolu", "ad8008a525b64f1f505c8fe62773e223a70840bc");
-
-//        new Chat().createChat(this, hostUserData, otherUserData);
         new Chat().showChatList(this, R.id.container_group_channel, hostUserData);
 
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");

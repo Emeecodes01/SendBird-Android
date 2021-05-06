@@ -36,7 +36,9 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.ConnectionManager;
 import com.sendbird.android.sample.main.sendBird.Chat;
 import com.sendbird.android.sample.main.sendBird.UserData;
+import com.sendbird.android.sample.utils.PreferenceUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
@@ -45,6 +47,7 @@ public class GroupChannelListFragment extends Fragment {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String IS_ACTIVE = "IS_ACTIVE";
+    public static final String HOST_USER_DATA = "HOST_USER_DATA";
     private static final int INTENT_REQUEST_NEW_GROUP_CHANNEL = 302;
 
     private static final int CHANNEL_LIST_LIMIT = 15;
@@ -59,15 +62,26 @@ public class GroupChannelListFragment extends Fragment {
     private GroupChannelListQuery mChannelListQuery;
     private SwipeRefreshLayout mSwipeRefresh;
     private Boolean isActive;
+    private UserData hostUserData;
 
-    public static GroupChannelListFragment newInstance(@NonNull Boolean isActive) {
+    public static GroupChannelListFragment newInstance(@NonNull Boolean isActive, UserData hostUserData) {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
 
         Bundle args = new Bundle();
         args.putBoolean(GroupChannelListFragment.IS_ACTIVE, isActive);
+        args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
         fragment.setArguments(args);
 
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        if (getArguments() != null) {
+            isActive = getArguments().getBoolean(GroupChannelListFragment.IS_ACTIVE, true);
+            hostUserData = getArguments().getParcelable(GroupChannelListFragment.HOST_USER_DATA);
+        }
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -88,18 +102,12 @@ public class GroupChannelListFragment extends Fragment {
             refresh();
         });
 
-        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "567053530d8d9daec7d59379f6760e60bb2a2155");
-
         seeAllBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData);
             }
         });
-
-        if (getArguments() != null) {
-            isActive = getArguments().getBoolean(GroupChannelListFragment.IS_ACTIVE, true);
-        }
 
         mChannelListAdapter = new GroupChannelListAdapter(getActivity());
         mChannelListAdapter.load();
@@ -267,7 +275,7 @@ public class GroupChannelListFragment extends Fragment {
      */
     void enterGroupChannel(String channelUrl) {
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
-        if (getActivity() !=null && !fragment.isAdded()){
+        if (getActivity() != null && !fragment.isAdded()) {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, fragment)
                     .addToBackStack(fragment.getTag())
@@ -290,19 +298,17 @@ public class GroupChannelListFragment extends Fragment {
         mChannelListQuery = GroupChannel.createMyGroupChannelListQuery();
         mChannelListQuery.setLimit(numChannels);
 
-        mChannelListQuery.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
-            @Override
-            public void onResult(List<GroupChannel> list, SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    e.printStackTrace();
-                    return;
-                }
+        mChannelListQuery.next((list, e) -> {
+            if (e != null) {
+                // Error!
+                e.printStackTrace();
+//                    return;
+            }
+
+            if (list != null) {
 
                 mChannelListAdapter.clearMap();
                 mChannelListAdapter.setGroupChannelList(list);
-
-//                list.clear();
 
                 if (list.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
@@ -310,9 +316,9 @@ public class GroupChannelListFragment extends Fragment {
                 } else {
                     nochatCardView.setVisibility(View.GONE);
                     mRecyclerView.setVisibility(View.VISIBLE);
-
                 }
             }
+
         });
 
         if (mSwipeRefresh.isRefreshing()) {

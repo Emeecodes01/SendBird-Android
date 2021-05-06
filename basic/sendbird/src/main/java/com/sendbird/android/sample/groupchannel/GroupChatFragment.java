@@ -229,11 +229,7 @@ public class GroupChatFragment extends Fragment {
         } else {
 
             if (getActivity() != null){
-                new Chat().updateGroupChat(mChannelUrl, new GroupChannel.GroupChannelUpdateHandler() {
-                    @Override
-                    public void onResult(GroupChannel groupChannel, SendBirdException e) {
-                    }
-                });
+                new Chat().updateGroupChat(mChannelUrl, (groupChannel, e) -> { });
                 getActivity().getSupportFragmentManager().popBackStack();
             }
 
@@ -409,7 +405,6 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(STATE_CHANNEL_URL, mChannelUrl);
-
         super.onSaveInstanceState(outState);
     }
 

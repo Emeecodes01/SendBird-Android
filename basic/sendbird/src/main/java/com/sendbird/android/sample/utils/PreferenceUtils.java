@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 public class PreferenceUtils {
 
     private static final String PREFERENCE_KEY_USER_ID = "userId";
+    private static final String PREFERENCE_KEY_ACCESS_TOKEN = "accessToken";
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
 
@@ -37,6 +38,15 @@ public class PreferenceUtils {
 
     public static String getUserId() {
         return getSharedPreferences().getString(PREFERENCE_KEY_USER_ID, "");
+    }
+
+    public static void setAccessToken(String accessToken) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PREFERENCE_KEY_ACCESS_TOKEN, accessToken).apply();
+    }
+
+    public static String getAccessToken() {
+        return getSharedPreferences().getString(PREFERENCE_KEY_ACCESS_TOKEN, "");
     }
 
     public static void setNickname(String nickname) {

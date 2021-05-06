@@ -74,7 +74,6 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mChannelImageNumMap = new ConcurrentHashMap<>();
         mChannelImageViewMap = new ConcurrentHashMap<>();
         mChannelBitmapMap = new ConcurrentHashMap<>();
-
         mChannelList = new ArrayList<>();
     }
 
