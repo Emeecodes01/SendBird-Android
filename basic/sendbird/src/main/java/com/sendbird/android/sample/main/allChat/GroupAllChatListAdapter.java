@@ -26,6 +26,7 @@ import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
+import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.TypingIndicator;
 
@@ -41,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private List<GroupChannel> mChannelList;
+    private List<GroupChannel> mAllChannelList;
     private Context mContext;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, Integer> mSimpleTargetIndexMap;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, GroupChannel> mSimpleTargetGroupChannelMap;
@@ -69,6 +71,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mChannelBitmapMap = new ConcurrentHashMap<>();
 
         mChannelList = new ArrayList<>();
+        mAllChannelList = new ArrayList<>();
     }
 
     void clearMap() {
@@ -84,15 +87,15 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
 
-            File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".data");
+            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
 
             String content = FileUtils.loadFromFile(dataFile);
             String[] dataArray = content.split("\n");
 
             // Reset channel list, then add cached data.
             mChannelList.clear();
-            for (int i = 0; i < dataArray.length; i++) {
-                mChannelList.add((GroupChannel) BaseChannel.buildFromSerializedData(Base64.decode(dataArray[i], Base64.DEFAULT | Base64.NO_WRAP)));
+            for (String s : dataArray) {
+                mChannelList.add((GroupChannel) BaseChannel.buildFromSerializedData(Base64.decode(s, Base64.DEFAULT | Base64.NO_WRAP)));
             }
 
             notifyDataSetChanged();
@@ -109,8 +112,8 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
 
-            File hashFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".hash");
-            File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".data");
+            File hashFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".hash");
+            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
 
             if (mChannelList != null && mChannelList.size() > 0) {
                 // Convert current data into string.
@@ -169,8 +172,13 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         notifyDataSetChanged();
     }
 
-    void addLast(GroupChannel channel) {
-        mChannelList.add(channel);
+    void setAllGroupChannelList(List<GroupChannel> channelList) {
+        mChannelList = channelList;
+        notifyDataSetChanged();
+    }
+
+    void addLast(List<GroupChannel> channel) {
+        mChannelList.addAll(channel);
         notifyItemInserted(mChannelList.size() - 1);
     }
 

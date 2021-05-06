@@ -120,8 +120,8 @@ public class GroupAllChatListFragment extends Fragment {
     public void onPause() {
         mChannelListAdapter.save();
 
-        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
-        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
+//        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
+//        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }
 
@@ -279,32 +279,26 @@ public class GroupAllChatListFragment extends Fragment {
 
                 mChannelListAdapter.clearMap();
 
+                mChannelListAdapter.setAllGroupChannelList(list);
+
                 List<GroupChannel> isActiveChannel = new ArrayList<>();
                 List<GroupChannel> isPastChannel = new ArrayList<>();
 
                 for (int i = 0; i < list.size(); i++) {
 
-                    int finalI = i;
+                    if (list.get(i).getData().equalsIgnoreCase("active")) {
+                        isActiveChannel.add(list.get(i));
+                    } else {
+                        isPastChannel.add(list.get(i));
+                    }
 
-                    list.get(i).getAllMetaData((map, e1) -> {
-
-                        if (Objects.requireNonNull(map.get("isActive")).equalsIgnoreCase("true")) {
-                            isActiveChannel.add(list.get(finalI));
-                        } else {
-                            isPastChannel.add(list.get(finalI));
-                        }
-
-                        if (isActive) {
-                            mChannelListAdapter.setGroupChannelList(isActiveChannel);
-                        } else {
-                            mChannelListAdapter.setGroupChannelList(isPastChannel);
-                        }
-                    });
+                    if (isActive) {
+                        mChannelListAdapter.setGroupChannelList(isActiveChannel);
+                    } else {
+                        mChannelListAdapter.setGroupChannelList(isPastChannel);
+                    }
 
                 }
-
-
-//                list.clear();
 
                 if (list.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
@@ -333,8 +327,23 @@ public class GroupAllChatListFragment extends Fragment {
                     return;
                 }
 
-                for (GroupChannel channel : list) {
-                    mChannelListAdapter.addLast(channel);
+                List<GroupChannel> isActiveChannel = new ArrayList<>();
+                List<GroupChannel> isPastChannel = new ArrayList<>();
+
+                for (int i = 0; i < list.size(); i++) {
+
+                    if (list.get(i).getData().equalsIgnoreCase("active")) {
+                        isActiveChannel.add(list.get(i));
+                    } else {
+                        isPastChannel.add(list.get(i));
+                    }
+
+                    if (isActive) {
+                        mChannelListAdapter.addLast(isActiveChannel);
+                    } else {
+                        mChannelListAdapter.addLast(isPastChannel);
+                    }
+
                 }
             }
         });

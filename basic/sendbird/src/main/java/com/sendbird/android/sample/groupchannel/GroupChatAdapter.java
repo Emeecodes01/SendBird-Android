@@ -25,6 +25,7 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.ImageUtils;
+import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.UrlPreviewInfo;
 import com.sendbird.android.sample.widget.MessageStatusView;
@@ -90,7 +91,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
 
-            File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + channelUrl) + ".data");
+            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + channelUrl) + ".data");
 
             String content = FileUtils.loadFromFile(dataFile);
             String[] dataArray = content.split("\n");
@@ -131,8 +132,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
                 appDir.mkdirs();
 
-                File hashFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + mChannel.getUrl()) + ".hash");
-                File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + mChannel.getUrl()) + ".data");
+                File hashFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel.getUrl()) + ".hash");
+                File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel.getUrl()) + ".data");
 
                 try {
                     String content = FileUtils.loadFromFile(hashFile);
@@ -277,28 +278,31 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (message instanceof UserMessage) {
             UserMessage userMessage = (UserMessage) message;
             // If the sender is current user
-            if (userMessage.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())) {
-                return VIEW_TYPE_USER_MESSAGE_ME;
-            } else {
-                return VIEW_TYPE_USER_MESSAGE_OTHER;
+            if (userMessage.getSender() != null && userMessage.getSender().getUserId() != null){
+                if (userMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                    return VIEW_TYPE_USER_MESSAGE_ME;
+                } else {
+                    return VIEW_TYPE_USER_MESSAGE_OTHER;
+                }
             }
+
         } else if (message instanceof FileMessage) {
             FileMessage fileMessage = (FileMessage) message;
             if (fileMessage.getType().toLowerCase().startsWith("image")) {
                 // If the sender is current user
-                if (fileMessage.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                     return VIEW_TYPE_FILE_MESSAGE_IMAGE_ME;
                 } else {
                     return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
                 }
             } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
-                if (fileMessage.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                     return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
                 } else {
                     return VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER;
                 }
             } else {
-                if (fileMessage.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                     return VIEW_TYPE_FILE_MESSAGE_ME;
                 } else {
                     return VIEW_TYPE_FILE_MESSAGE_OTHER;
@@ -308,7 +312,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return VIEW_TYPE_ADMIN_MESSAGE;
         }
 
-        return -1;
+        return VIEW_TYPE_USER_MESSAGE_ME;
     }
 
     @Override

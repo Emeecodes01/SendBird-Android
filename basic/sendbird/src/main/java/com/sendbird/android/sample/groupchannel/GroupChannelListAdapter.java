@@ -31,6 +31,7 @@ import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
+import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.TypingIndicator;
 //import com.stfalcon.multiimageview.MultiImageView;
@@ -90,7 +91,7 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
 
-            File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".data");
+            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
 
             String content = FileUtils.loadFromFile(dataFile);
             String[] dataArray = content.split("\n");
@@ -115,8 +116,8 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
 
-            File hashFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".hash");
-            File dataFile = new File(appDir, TextUtils.generateMD5(SendBird.getCurrentUser().getUserId() + "channel_list") + ".data");
+            File hashFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".hash");
+            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
 
             if (mChannelList != null && mChannelList.size() > 0) {
                 // Convert current data into string.

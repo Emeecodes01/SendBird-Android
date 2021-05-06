@@ -48,6 +48,15 @@ public class PreferenceUtils {
         return getSharedPreferences().getString(PREFERENCE_KEY_NICKNAME, "");
     }
 
+//    public static void setCountDown(String time) {
+//        SharedPreferences.Editor editor = getSharedPreferences().edit();
+//        editor.putString(PREFERENCE_KEY_NICKNAME, nickname).apply();
+//    }
+//
+//    public static String getCountDown() {
+//        return getSharedPreferences().getString(PREFERENCE_KEY_NICKNAME, "");
+//    }
+
     public static void setConnected(boolean tf) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putBoolean(PREFERENCE_KEY_CONNECTED, tf).apply();

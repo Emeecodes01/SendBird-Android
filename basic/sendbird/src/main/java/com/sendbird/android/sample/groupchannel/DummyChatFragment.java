@@ -116,7 +116,11 @@ public class DummyChatFragment extends Fragment {
         dummy_message_text.setText(R.string.sample_question);
 
         dummy_toolbar.setNavigationOnClickListener(view -> {
-            getActivity().getSupportFragmentManager().popBackStack();
+
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+
         });
 
         layout_group_chat_root.setOnClickListener(view -> joinChatDialog.dismiss());

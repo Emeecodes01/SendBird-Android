@@ -16,12 +16,12 @@ public class TextUtils {
     public static String getGroupChannelTitle(GroupChannel channel) {
         List<Member> members = channel.getMembers();
 
-        if (members.size() < 2 || SendBird.getCurrentUser() == null) {
+        if (members.size() < 2 || PreferenceUtils.getUserId().isEmpty()) {
             return "No Members";
         } else if (members.size() == 2) {
             StringBuffer names = new StringBuffer();
             for (Member member : members) {
-                if (member.getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (member.getUserId().equals(PreferenceUtils.getUserId())) {
                     continue;
                 }
 
@@ -32,7 +32,7 @@ public class TextUtils {
             int count = 0;
             StringBuffer names = new StringBuffer();
             for (User member : members) {
-                if (member.getUserId().equals(SendBird.getCurrentUser().getUserId())) {
+                if (member.getUserId().equals(PreferenceUtils.getUserId())) {
                     continue;
                 }
 

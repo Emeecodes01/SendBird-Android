@@ -26,13 +26,14 @@ class Connect {
 
             if (e != null) {
                 Log.d("okh", e.message + "")
+
+            } else {
+                PreferenceUtils.setConnected(true)
+
+                // Update the user's nickname
+                updateCurrentUserInfo(userData.id, userData.nickname)
+                PushUtils.registerPushHandler(MyFirebaseMessagingService())
             }
-
-            PreferenceUtils.setConnected(true)
-
-            // Update the user's nickname
-            updateCurrentUserInfo(userData.id, userData.nickname)
-            PushUtils.registerPushHandler(MyFirebaseMessagingService())
             handler.onConnected(user, e)
         })
     }
