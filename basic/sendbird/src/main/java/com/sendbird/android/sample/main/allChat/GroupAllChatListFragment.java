@@ -271,25 +271,30 @@ public class GroupAllChatListFragment extends Fragment {
         mChannelListQuery.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
             @Override
             public void onResult(List<GroupChannel> list, SendBirdException e) {
+
+                List<GroupChannel> allChannelList = list;
+
                 if (e != null) {
                     // Error!
                     e.printStackTrace();
-                    return;
+                    allChannelList = mChannelListAdapter.load();
+//                    return;
+                }else{
+                    allChannelList = list;
                 }
 
                 mChannelListAdapter.clearMap();
-
-                mChannelListAdapter.setAllGroupChannelList(list);
+                mChannelListAdapter.setAllGroupChannelList(allChannelList);
 
                 List<GroupChannel> isActiveChannel = new ArrayList<>();
                 List<GroupChannel> isPastChannel = new ArrayList<>();
 
-                for (int i = 0; i < list.size(); i++) {
+                for (int i = 0; i < allChannelList.size(); i++) {
 
-                    if (list.get(i).getData().equalsIgnoreCase("active")) {
-                        isActiveChannel.add(list.get(i));
+                    if (allChannelList.get(i).getData().equalsIgnoreCase("active")) {
+                        isActiveChannel.add(allChannelList.get(i));
                     } else {
-                        isPastChannel.add(list.get(i));
+                        isPastChannel.add(allChannelList.get(i));
                     }
 
                     if (isActive) {
@@ -300,7 +305,7 @@ public class GroupAllChatListFragment extends Fragment {
 
                 }
 
-                if (list.isEmpty()) {
+                if (allChannelList.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
                 } else {
                     mRecyclerView.setVisibility(View.VISIBLE);

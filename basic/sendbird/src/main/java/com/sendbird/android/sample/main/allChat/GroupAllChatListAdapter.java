@@ -82,7 +82,8 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mChannelBitmapMap.clear();
     }
 
-    public void load() {
+    public List<GroupChannel> load() {
+
         try {
             File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
             appDir.mkdirs();
@@ -93,15 +94,17 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String[] dataArray = content.split("\n");
 
             // Reset channel list, then add cached data.
-            mChannelList.clear();
+            mAllChannelList.clear();
             for (String s : dataArray) {
-                mChannelList.add((GroupChannel) BaseChannel.buildFromSerializedData(Base64.decode(s, Base64.DEFAULT | Base64.NO_WRAP)));
+                mAllChannelList.add((GroupChannel) BaseChannel.buildFromSerializedData(Base64.decode(s, Base64.DEFAULT | Base64.NO_WRAP)));
             }
 
             notifyDataSetChanged();
         } catch(Exception e) {
             // Nothing to load.
         }
+
+        return mAllChannelList;
     }
 
     public void save() {
@@ -115,11 +118,11 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             File hashFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".hash");
             File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
 
-            if (mChannelList != null && mChannelList.size() > 0) {
+            if (mAllChannelList != null && mAllChannelList.size() > 0) {
                 // Convert current data into string.
                 GroupChannel channel = null;
-                for (int i = 0; i < Math.min(mChannelList.size(), 100); i++) {
-                    channel = mChannelList.get(i);
+                for (int i = 0; i < Math.min(mAllChannelList.size(), 100); i++) {
+                    channel = mAllChannelList.get(i);
                     sb.append("\n");
                     sb.append(Base64.encodeToString(channel.serialize(), Base64.DEFAULT | Base64.NO_WRAP));
                 }
@@ -173,8 +176,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     void setAllGroupChannelList(List<GroupChannel> channelList) {
-        mChannelList = channelList;
-        notifyDataSetChanged();
+        mAllChannelList = channelList;
     }
 
     void addLast(List<GroupChannel> channel) {

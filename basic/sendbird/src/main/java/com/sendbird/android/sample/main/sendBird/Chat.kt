@@ -1,5 +1,6 @@
 package com.sendbird.android.sample.main.sendBird
 
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -23,7 +24,7 @@ class Chat {
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
-    fun createChat(activity : AppCompatActivity, hostUserData: UserData, otherUserData: UserData) {
+    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData) {
 
         PreferenceUtils.init(activity.baseContext)
 
@@ -115,17 +116,30 @@ class Chat {
         })
     }
 
+    fun updateGroupChat(channelUrl: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
+
+        GroupChannel.getChannel(channelUrl) { groupChannel, e ->
+
+            val groupChannelParams = GroupChannelParams()
+            groupChannelParams.setData("past")
+            groupChannel.updateChannel(groupChannelParams, groupChannelUpdateHandler)
+
+            groupChannelUpdateHandler.onResult(groupChannel, e)
+        }
+
+    }
+
     /**
      * Show all the chat list of a user, pass in the data of the user you want to show
      */
 
-    fun showAllChat(activity: FragmentActivity?, layoutId : Int, hostUserData: UserData) {
+    fun showAllChat(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
                 val fragment: Fragment = PagerFragment()
 
-                if (activity != null && !fragment.isAdded){
+                if (activity != null && !fragment.isAdded) {
                     val manager: FragmentManager = activity.supportFragmentManager
                     manager.beginTransaction()
                             .add(layoutId, fragment)
@@ -139,7 +153,7 @@ class Chat {
 
                     val fragment: Fragment = PagerFragment()
 
-                    if (activity != null && !fragment.isAdded){
+                    if (activity != null && !fragment.isAdded) {
                         val manager: FragmentManager = activity.supportFragmentManager
 
                         manager.beginTransaction()
@@ -155,13 +169,13 @@ class Chat {
 
     }
 
-    fun showChatList(activity: AppCompatActivity?, layoutId : Int, hostUserData: UserData) {
+    fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData) {
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
                 val fragment: Fragment = GroupChannelListFragment.newInstance(true)
 
-                if (activity != null && !fragment.isAdded){
+                if (activity != null && !fragment.isAdded) {
                     val manager: FragmentManager = activity.supportFragmentManager
 
                     manager.beginTransaction()
@@ -173,11 +187,11 @@ class Chat {
 
                 login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
 
-                    if (user != null || PreferenceUtils.getUserId().isNotEmpty()){
+                    if (user != null || PreferenceUtils.getUserId().isNotEmpty()) {
 
                         val fragment: Fragment = GroupChannelListFragment.newInstance(true)
 
-                        if (activity != null && !fragment.isAdded){
+                        if (activity != null && !fragment.isAdded) {
                             val manager: FragmentManager = activity.supportFragmentManager
 
                             manager.beginTransaction()

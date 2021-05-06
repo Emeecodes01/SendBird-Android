@@ -51,6 +51,7 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.ConnectionManager;
+import com.sendbird.android.sample.main.sendBird.Chat;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.GenericDialog;
 import com.sendbird.android.sample.utils.MediaPlayerActivity;
@@ -178,7 +179,8 @@ public class GroupChatFragment extends Fragment {
             getActivity().getSupportFragmentManager().popBackStack();
         });
 
-        long minute = 5;
+//        long minute = 5;
+        long minute = 1;
         countTime(minute);
 
         mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
@@ -225,16 +227,26 @@ public class GroupChatFragment extends Fragment {
         if (minute != 0) {
             timer(minute);
         } else {
-            requireActivity().finish();
+
+            if (getActivity() != null){
+                new Chat().updateGroupChat(mChannelUrl, new GroupChannel.GroupChannelUpdateHandler() {
+                    @Override
+                    public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                    }
+                });
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+
         }
-        if (minute == 5) {
+        if (minute == 1) {
             countdownTxt.setVisibility(View.VISIBLE);
         }
     }
 
     private void timer(long minute) {
 
-        new CountDownTimer(59000, 1000) {
+//        new CountDownTimer(59000, 1000) {
+        new CountDownTimer(10000, 1000) {
 
             @Override
             public void onTick(long l) {
