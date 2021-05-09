@@ -5,6 +5,9 @@ import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +20,7 @@ import androidx.fragment.app.Fragment;
 
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.utils.GenericDialog;
+import com.sendbird.android.sample.utils.TimerUtils;
 
 import kotlin.Unit;
 
@@ -28,6 +32,9 @@ public class DummyChatFragment extends Fragment {
     private ConstraintLayout layout_group_chat_root;
     private TextView dummy_message_text;
     private ProgressBar progressBar;
+    private EditText edittext_group_chat_message;
+    private ImageButton button_voice;
+    private Button button_record_voice;
 
     GenericDialog joinChatDialog =
             new GenericDialog().newInstance(THEME_MATH);
@@ -50,7 +57,11 @@ public class DummyChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         //get question text and uri
-        timer();
+
+        new TimerUtils().timer(5, (l) -> Unit.INSTANCE, () -> {
+            joinChat();
+            return Unit.INSTANCE;
+        });
 
         checkTutorStatus(0);
 
@@ -109,6 +120,9 @@ public class DummyChatFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.dummy_group_chat, container, false);
 
         dummy_toolbar = rootView.findViewById(R.id.dummy_toolbar);
+        edittext_group_chat_message = rootView.findViewById(R.id.edittext_group_chat_message);
+        button_voice = rootView.findViewById(R.id.button_voice);
+        button_record_voice = rootView.findViewById(R.id.button_record_voice);
         layout_group_chat_root = rootView.findViewById(R.id.layout_group_chat_root);
         dummy_message_text = rootView.findViewById(R.id.dummy_message_text);
         progressBar = rootView.findViewById(R.id.progressBar);
@@ -125,23 +139,11 @@ public class DummyChatFragment extends Fragment {
 
         layout_group_chat_root.setOnClickListener(view -> joinChatDialog.dismiss());
 
+        edittext_group_chat_message.setEnabled(false);
+        button_record_voice.setEnabled(false);
+        button_voice.setEnabled(false);
+
         return rootView;
-    }
-
-    private void timer() {
-
-        new CountDownTimer(2000, 1000) {
-
-            @Override
-            public void onTick(long l) {
-            }
-
-            @Override
-            public void onFinish() {
-                joinChat();
-            }
-        }.start();
-
     }
 
 }

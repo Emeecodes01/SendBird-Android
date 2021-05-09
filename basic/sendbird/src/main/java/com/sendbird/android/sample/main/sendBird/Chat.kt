@@ -118,39 +118,11 @@ class Chat {
         })
     }
 
-    private fun getTime() {
+    //make default end time -1
+    //if endTime -1, save the end time mapped with the channel url with current time
+    //if endTime != -1, subtract current time from end time which is countdown
+    //on countdown finished to 0, do nothing
 
-        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
-//        val hour = calendar.get(Calendar.HOUR)
-//        val minutes = calendar.get(Calendar.MINUTE)
-//        val seconds = calendar.get(Calendar.SECOND)
-
-        val hour = 0
-        val minutes = 20
-        val seconds = 10
-
-        val currentHour = 0
-        val currentMinutes = 20 + 5
-        val currentSeconds = 10
-
-        val endHour = hour + ((minutes + 20) / 60)
-        val endMinutes = (minutes + 20) % 60
-
-        val endTime = (endHour * 60 * 60) + (endMinutes * 60) + seconds
-        val currentTime = (currentHour * 60 * 60) + (currentMinutes * 60) + currentSeconds
-
-        val countDownTime = endTime - currentTime
-
-        val countDownHour: Int = countDownTime / 3600
-        val countDownMinutes: Int = countDownTime / 60
-        val countDownSeconds: Int = countDownTime - (60 * countDownMinutes)
-
-        Log.d("okh", "start $hour $minutes $seconds")
-        Log.d("okh", "current $currentHour $currentMinutes $currentSeconds \n")
-        Log.d("okh", "end $endHour $endMinutes $seconds")
-        Log.d("okh", "countdown $countDownHour $countDownMinutes $countDownSeconds")
-
-    }
 
     fun updateGroupChat(channelUrl: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
 
@@ -226,7 +198,7 @@ class Chat {
             }
         } else {
 
-           PreferenceUtils.setAccessToken(hostUserData.accessToken)
+            PreferenceUtils.setAccessToken(hostUserData.accessToken)
 
             ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
 

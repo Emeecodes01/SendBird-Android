@@ -1,6 +1,7 @@
 package com.sendbird.android.sample.groupchannel;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -59,6 +60,7 @@ import com.sendbird.android.sample.utils.MediaUtils;
 import com.sendbird.android.sample.utils.PhotoViewerActivity;
 import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.TextUtils;
+import com.sendbird.android.sample.utils.TimerUtils;
 import com.sendbird.android.sample.utils.UrlPreviewInfo;
 import com.sendbird.android.sample.utils.WebUtils;
 
@@ -68,6 +70,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 
 import kotlin.Unit;
 
@@ -100,6 +103,7 @@ public class GroupChatFragment extends Fragment {
     private LinearLayoutManager mLayoutManager;
     private EditText mMessageEditText;
     private Button mRecordVoiceButton;
+    private Button button_voice;
     private ImageButton mUploadFileButton;
     private Toolbar toolbar_group_channel;
     private TextView mCurrentEventText;
@@ -164,6 +168,7 @@ public class GroupChatFragment extends Fragment {
         setRetainInstance(true);
 
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+
         mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
         mUserName = rootView.findViewById(R.id.userName);
         countdownTxt = rootView.findViewById(R.id.countdownTxt);
@@ -173,15 +178,31 @@ public class GroupChatFragment extends Fragment {
 
         mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
         mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
+        button_voice = rootView.findViewById(R.id.button_voice);
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
 
         toolbar_group_channel.setNavigationOnClickListener(view -> {
             getActivity().getSupportFragmentManager().popBackStack();
         });
 
-//        long minute = 5;
-        long minute = 1;
-        countTime(minute);
+        new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
+
+            int countDownMinutes = countDownTime / 60;
+            int countDownSeconds = countDownTime - (60 * countDownMinutes);
+
+            countTime(countDownMinutes, countDownSeconds);
+
+            return Unit.INSTANCE;
+        }, () -> {
+
+            countdownTxt.setVisibility(View.GONE);
+
+            mMessageEditText.setEnabled(false);
+            mUploadFileButton.setEnabled(false);
+            button_voice.setEnabled(false);
+
+            return Unit.INSTANCE;
+        });
 
         mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
 
@@ -195,6 +216,7 @@ public class GroupChatFragment extends Fragment {
         mUploadFileButton.setOnClickListener(v -> pickMedia());
 
         mIsTyping = false;
+
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -217,45 +239,39 @@ public class GroupChatFragment extends Fragment {
         });
 
         setUpRecyclerView();
+
         setHasOptionsMenu(true);
 
         return rootView;
     }
 
-    private void countTime(long minute) {
+    @SuppressLint("SetTextI18n")
+    private void countTime(long minute, long seconds) {
 
-        if (minute != 0) {
-            timer(minute);
+        if (minute >= 0) {
+
+            new TimerUtils().timer(seconds, (l) -> {
+
+                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l / 1000));
+
+                return Unit.INSTANCE;
+            }, () -> {
+
+                countTime(minute - 1, 59);
+                return Unit.INSTANCE;
+            });
+
         } else {
-
-            if (getActivity() != null){
-                new Chat().updateGroupChat(mChannelUrl, (groupChannel, e) -> { });
+            if (getActivity() != null) {
+                new Chat().updateGroupChat(mChannelUrl, (groupChannel, e) -> {
+                });
                 getActivity().getSupportFragmentManager().popBackStack();
             }
 
         }
-        if (minute == 1) {
-            countdownTxt.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void timer(long minute) {
-
-//        new CountDownTimer(59000, 1000) {
-        new CountDownTimer(10000, 1000) {
-
-            @Override
-            public void onTick(long l) {
-                countdownTxt.setText(String.format("%02d", minute - 1) + ":" + String.format("%02d", l / 1000));
-            }
-
-            @Override
-            public void onFinish() {
-                countTime(minute - 1);
-            }
-        }.start();
 
     }
+
 
     private void sendTextMessage() {
         String userInput = mMessageEditText.getText().toString();
@@ -273,7 +289,6 @@ public class GroupChatFragment extends Fragment {
             }
         }
     }
-
 
     private void refresh() {
         if (mChannel == null) {
@@ -415,7 +430,7 @@ public class GroupChatFragment extends Fragment {
         // Set this as true to restore background connection management.
         SendBird.setAutoBackgroundDetection(true);
 
-      if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             sendFileWithThumbnail(data.getData());
             uploadFileDialog.dismiss();
         }
@@ -433,7 +448,7 @@ public class GroupChatFragment extends Fragment {
 
     private void setUpRecyclerView() {
 
-        if (getActivity() != null ) {
+        if (getActivity() != null) {
 
             mLayoutManager = new LinearLayoutManager(getActivity());
             mLayoutManager.setReverseLayout(true);

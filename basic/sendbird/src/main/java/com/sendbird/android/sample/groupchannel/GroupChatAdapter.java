@@ -3,6 +3,7 @@ package com.sendbird.android.sample.groupchannel;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +36,12 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.TimeZone;
 
 
 class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -278,7 +283,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (message instanceof UserMessage) {
             UserMessage userMessage = (UserMessage) message;
             // If the sender is current user
-            if (userMessage.getSender() != null && userMessage.getSender().getUserId() != null){
+            if (userMessage.getSender() != null && userMessage.getSender().getUserId() != null) {
                 if (userMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                     return VIEW_TYPE_USER_MESSAGE_ME;
                 } else {

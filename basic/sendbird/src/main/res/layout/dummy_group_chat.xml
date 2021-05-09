@@ -5,17 +5,17 @@
     android:id="@+id/layout_group_chat_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#E5E5E5"
     android:clickable="true"
     android:focusable="true"
-    android:background="#E5E5E5"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
         android:background="@color/color_white"
+        android:fitsSystemWindows="true"
         app:elevation="0.3dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -103,6 +103,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="8dp"
             android:layout_marginStart="19dp"
+            android:layout_marginLeft="19dp"
             android:padding="7dp"
             android:scaleType="center"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -116,10 +117,10 @@
             android:layout_height="60dp"
             android:indeterminate="true"
             android:indeterminateDrawable="@drawable/progress_bar"
-            app:layout_constraintStart_toStartOf="@id/loader"
+            app:layout_constraintBottom_toBottomOf="@id/loader"
             app:layout_constraintEnd_toEndOf="@id/loader"
-            app:layout_constraintTop_toTopOf="@id/loader"
-            app:layout_constraintBottom_toBottomOf="@id/loader" />
+            app:layout_constraintStart_toStartOf="@id/loader"
+            app:layout_constraintTop_toTopOf="@id/loader" />
 
         <TextView
             android:id="@+id/waitTxt"
@@ -158,7 +159,9 @@
         android:background="#FCFBF9"
         android:minHeight="80dp"
         android:paddingStart="18dp"
+        android:paddingLeft="18dp"
         android:paddingEnd="27dp"
+        android:paddingRight="27dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -179,6 +182,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginEnd="11dp"
+                android:layout_marginRight="11dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/write_a_reply"
                 android:imeActionLabel="Send"
@@ -190,16 +194,17 @@
                 android:textColorHint="#4D434958"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/button_group_chat_upload"
-                app:layout_constraintStart_toEndOf="@id/button_emoji"
+                app:layout_constraintStart_toEndOf="@id/button_voice"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
-                android:id="@+id/button_emoji"
+                android:id="@+id/button_voice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginEnd="22dp"
+                android:layout_marginRight="22dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/upload_file"
                 android:padding="5dp"
@@ -213,6 +218,7 @@
                 android:layout_width="14dp"
                 android:layout_height="20dp"
                 android:layout_marginEnd="22dp"
+                android:layout_marginRight="22dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/upload_file"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -228,6 +234,7 @@
             android:layout_height="40dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="11dp"
+            android:layout_marginLeft="11dp"
             android:background="@drawable/ic_voice"
             android:gravity="center"
             android:textColor="@drawable/selector_btn_send"
