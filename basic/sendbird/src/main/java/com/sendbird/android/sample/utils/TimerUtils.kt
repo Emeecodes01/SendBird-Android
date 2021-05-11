@@ -10,7 +10,7 @@ class TimerUtils {
     fun timer(seconds : Long, onTick: (Long) -> Unit, finished: () -> Unit) {
         object : CountDownTimer(seconds * 1000, 1000) {
             override fun onTick(l: Long) {
-                onTick(l)
+                onTick(l/1000)
             }
 
             override fun onFinish() {

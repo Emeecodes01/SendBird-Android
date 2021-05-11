@@ -252,7 +252,7 @@ public class GroupChatFragment extends Fragment {
 
             new TimerUtils().timer(seconds, (l) -> {
 
-                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l / 1000));
+                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l ));
 
                 return Unit.INSTANCE;
             }, () -> {

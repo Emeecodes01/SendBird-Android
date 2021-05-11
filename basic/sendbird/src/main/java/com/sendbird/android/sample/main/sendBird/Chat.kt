@@ -30,78 +30,12 @@ class Chat {
 
         PreferenceUtils.init(activity.baseContext)
 
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
-            if (it) {
-                createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-                    val fragment = GroupChatFragment.newInstance(groupChannel.url)
-                    activity.supportFragmentManager.beginTransaction()
-                            .add(android.R.id.content, fragment)
-                            .addToBackStack(fragment.tag)
-                            .commitAllowingStateLoss()
-                }
-
-            } else {
-
-                login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
-
-                    if (user != null) {
-                        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-
-                            val fragment = GroupChatFragment.newInstance(groupChannel.url)
-                            activity.supportFragmentManager.beginTransaction()
-                                    .add(android.R.id.content, fragment)
-                                    .addToBackStack(fragment.tag)
-                                    .commitAllowingStateLoss()
-                        }
-                    } else {
-                        Toast.makeText(activity.baseContext, e.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-
-
-        }
-
-    }
-
-    fun Fragment.createChat(hostUserData: UserData, otherUserData: UserData) {
-
-        PreferenceUtils.init(this.requireContext())
-
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
-
-            if (it) {
-
-                createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-                    val fragment = GroupChatFragment.newInstance(groupChannel.url)
-                    activity?.supportFragmentManager?.beginTransaction()
-                            ?.add(android.R.id.content, fragment)
-                            ?.addToBackStack(fragment.tag)
-                            ?.commitAllowingStateLoss()
-                }
-
-            } else {
-
-                login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
-
-                    if (user != null) {
-
-                        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-
-                            val fragment = GroupChatFragment.newInstance(groupChannel.url)
-                            activity?.supportFragmentManager?.beginTransaction()
-                                    ?.add(android.R.id.content, fragment)
-                                    ?.addToBackStack(fragment.tag)
-                                    ?.commitAllowingStateLoss()
-                        }
-
-                    } else {
-                        Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
-                    }
-
-                }
-            }
-
+        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
+            val fragment = GroupChatFragment.newInstance(groupChannel.url)
+            activity.supportFragmentManager.beginTransaction()
+                    .add(android.R.id.content, fragment)
+                    .addToBackStack(fragment.tag)
+                    .commitAllowingStateLoss()
         }
 
     }
@@ -117,11 +51,6 @@ class Chat {
             groupChannelCreateHandler.onResult(groupChannel, e)
         })
     }
-
-    //make default end time -1
-    //if endTime -1, save the end time mapped with the channel url with current time
-    //if endTime != -1, subtract current time from end time which is countdown
-    //on countdown finished to 0, do nothing
 
 
     fun updateGroupChat(channelUrl: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
@@ -143,99 +72,20 @@ class Chat {
 
     fun showAllChat(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
 
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
-            if (it) {
-                val fragment: Fragment = PagerFragment()
+        val fragment: Fragment = PagerFragment()
 
-                if (activity != null && !fragment.isAdded) {
-                    val manager: FragmentManager = activity.supportFragmentManager
-                    manager.beginTransaction()
-                            .add(layoutId, fragment)
-                            .addToBackStack(fragment.tag)
-                            .commit()
-                }
-
-            } else {
-
-                login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
-
-                    val fragment: Fragment = PagerFragment()
-
-                    if (activity != null && !fragment.isAdded) {
-                        val manager: FragmentManager = activity.supportFragmentManager
-
-                        manager.beginTransaction()
-                                .add(layoutId, fragment)
-                                .addToBackStack(fragment.tag)
-                                .commit()
-                    }
-
-                }
-            }
-
+        if (activity != null && !fragment.isAdded) {
+            val manager: FragmentManager = activity.supportFragmentManager
+            manager.beginTransaction()
+                    .add(layoutId, fragment)
+                    .addToBackStack(fragment.tag)
+                    .commit()
         }
 
     }
 
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData) {
 
-        if (PreferenceUtils.getUserId() != hostUserData.id) {
-            login(UserData(hostUserData.id, hostUserData.nickname, hostUserData.accessToken)) { user, e ->
-
-                if (user != null || PreferenceUtils.getUserId().isNotEmpty()) {
-
-                    val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
-
-                    if (activity != null && !fragment.isAdded) {
-                        val manager: FragmentManager = activity.supportFragmentManager
-
-                        manager.beginTransaction()
-                                .add(layoutId, fragment)
-                                .commitAllowingStateLoss()
-                    }
-                }
-
-            }
-        } else {
-
-            PreferenceUtils.setAccessToken(hostUserData.accessToken)
-
-            ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
-
-                if (it) {
-                    gotoChatListFragment(activity, hostUserData, layoutId)
-
-                } else {
-
-                    val networkRequest = NetworkRequest()
-                    networkRequest.updateUser(UpdateUserRequest(hostUserData.id, true), {
-
-                        val loginData = UserData(hostUserData.id, hostUserData.nickname, it.access_token)
-
-                        PreferenceUtils.setUserId(hostUserData.id)
-                        PreferenceUtils.setNickname(hostUserData.nickname)
-                        PreferenceUtils.setAccessToken(it.access_token)
-
-                        Connect().login(loginData) { user, loginError ->
-
-                            user?.let {
-                                gotoChatListFragment(activity, hostUserData, layoutId)
-                            } ?: kotlin.run {
-
-                            }
-                        }
-
-                    }) {
-                        gotoChatListFragment(activity, hostUserData, layoutId)
-                    }
-                }
-
-            }
-        }
-
-    }
-
-    private fun gotoChatListFragment(activity: AppCompatActivity?, hostUserData: UserData, layoutId: Int) {
         val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
 
         if (activity != null && !fragment.isAdded) {
@@ -245,10 +95,7 @@ class Chat {
                     .add(layoutId, fragment)
                     .commitAllowingStateLoss()
         }
-    }
 
-    private fun login(userData: UserData, connectHandler: ConnectHandler) {
-        Connect().login(userData) { user, e -> connectHandler.onConnected(user, e) }
     }
 
 }

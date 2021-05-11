@@ -24,10 +24,7 @@ class Connect {
 
         ConnectionManager.login(userData.id, userData.accessToken, ConnectHandler { user, e ->
 
-            if (e != null) {
-                Log.d("okh", e.message + "")
-
-            } else {
+            if (e == null) {
                 PreferenceUtils.setConnected(true)
 
                 // Update the user's nickname
@@ -38,7 +35,7 @@ class Connect {
         })
     }
 
-    private fun updateCurrentUserInfo(userId: String, userNickname: String, accessToken : String) {
+    private fun updateCurrentUserInfo(userId: String, userNickname: String, accessToken: String) {
 
         SendBird.updateCurrentUserInfo(userNickname, null, object : UserInfoUpdateHandler {
 

@@ -10,13 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.User;
 import com.sendbird.android.sample.R;
-import com.sendbird.android.sample.main.ConnectionManager;
 import com.sendbird.android.sample.main.sendBird.Chat;
-import com.sendbird.android.sample.main.sendBird.Connect;
+import com.sendbird.android.sample.main.sendBird.User;
 import com.sendbird.android.sample.main.sendBird.UserData;
 import com.sendbird.android.sample.network.createUser.CreateUserRequest;
 
@@ -30,12 +26,23 @@ public class GroupChannelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "b65d82c19996bce103118a2812bb0f14f6c69d7e");
-        UserData otherUserData = new UserData("1347", "Tamilore Oyola", "0d9de2754af300a0cc82e9a837a7b4f63fdae954");
-        CreateUserRequest errorUserDataRequest = new CreateUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+        UserData hostUserData = new UserData("1826", "Taiwo Adebayo", "");
+        UserData otherUserData = new UserData("1347", "Tamilore Oyola", "f9bc7477acd30881efa43db18ccc8fe4ca17ba8b");
+        CreateUserRequest createUserData = new CreateUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                 true);
 
-        new Chat().showChatList(this, R.id.container_group_channel, hostUserData);
+        new User().connectUser(createUserData, null, (userResponse) -> {
+            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
+
+            new Chat().createChat(this, otherUserData, hostUserData);
+            return Unit.INSTANCE;
+        }, (errorData) -> {
+
+            return Unit.INSTANCE;
+        }, (updateAccessToken) -> {
+            Log.d("okh", updateAccessToken + "");
+            return Unit.INSTANCE;
+        });
 
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
