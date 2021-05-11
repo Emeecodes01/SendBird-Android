@@ -1,8 +1,7 @@
 package com.sendbird.android.sample.main.sendBird
 
-import android.widget.Toast
 import com.sendbird.android.sample.network.NetworkRequest
-import com.sendbird.android.sample.network.createUser.CreateUserRequest
+import com.sendbird.android.sample.network.createUser.ConnectUserRequest
 import com.sendbird.android.sample.network.createUser.UpdateUserRequest
 import com.sendbird.android.sample.network.createUser.UserResponse
 
@@ -10,7 +9,7 @@ class User {
 
     private val networkRequest = NetworkRequest()
 
-    fun connectUser(userData: CreateUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken : (String) -> Unit) {
+    fun connectUser(userData: ConnectUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken : (String) -> Unit) {
 
         if (accessToken.isNullOrEmpty()) {
 

@@ -1,6 +1,6 @@
 package com.sendbird.android.sample.network
 
-import com.sendbird.android.sample.network.createUser.CreateUserRequest
+import com.sendbird.android.sample.network.createUser.ConnectUserRequest
 import com.sendbird.android.sample.network.createUser.UpdateUserRequest
 import com.sendbird.android.sample.network.createUser.UserResponse
 import retrofit2.Call
@@ -11,7 +11,7 @@ class NetworkRequest {
 
     private var api = RetrofitInstance().getClient().create(Api::class.java)
 
-    fun createUser(userData: CreateUserRequest, createUserResponse: (UserResponse) -> Unit, error: (String) -> Unit) {
+    fun createUser(userData: ConnectUserRequest, createUserResponse: (UserResponse) -> Unit, error: (String) -> Unit) {
 
         api.createUser(userData).enqueue(object : Callback<UserResponse> {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {

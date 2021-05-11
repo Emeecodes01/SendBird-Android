@@ -14,7 +14,7 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.sendBird.Chat;
 import com.sendbird.android.sample.main.sendBird.User;
 import com.sendbird.android.sample.main.sendBird.UserData;
-import com.sendbird.android.sample.network.createUser.CreateUserRequest;
+import com.sendbird.android.sample.network.createUser.ConnectUserRequest;
 
 import kotlin.Unit;
 
@@ -28,7 +28,7 @@ public class GroupChannelActivity extends AppCompatActivity {
 
         UserData hostUserData = new UserData("1826", "Taiwo Adebayo", "");
         UserData otherUserData = new UserData("1347", "Tamilore Oyola", "f9bc7477acd30881efa43db18ccc8fe4ca17ba8b");
-        CreateUserRequest createUserData = new CreateUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+        ConnectUserRequest createUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                 true);
 
         new User().connectUser(createUserData, null, (userResponse) -> {
