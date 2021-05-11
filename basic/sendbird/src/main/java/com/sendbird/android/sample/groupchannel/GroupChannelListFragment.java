@@ -147,8 +147,8 @@ public class GroupChannelListFragment extends Fragment {
     public void onPause() {
         mChannelListAdapter.save();
 
-//        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
-//        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
+        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
+        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }
 

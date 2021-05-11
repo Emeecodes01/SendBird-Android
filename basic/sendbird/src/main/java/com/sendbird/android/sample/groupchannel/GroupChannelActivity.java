@@ -26,21 +26,23 @@ public class GroupChannelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-        UserData hostUserData = new UserData("1826", "Taiwo Adebayo", "");
-        UserData otherUserData = new UserData("1347", "Tamilore Oyola", "f9bc7477acd30881efa43db18ccc8fe4ca17ba8b");
-        ConnectUserRequest createUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "e5e5464ced91b325eee18fe842bffa43384a270a");
+        UserData otherUserData = new UserData("1347", "Tamilore Oyola", "b1a2a46618d338605ef5589fc17a9b2042fd06df");
+        ConnectUserRequest createUserData = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                 true);
 
-        new User().connectUser(createUserData, null, (userResponse) -> {
+//        new Chat().showChatList(this, R.id.container_group_channel, hostUserData);
+
+        new User().connectUser(createUserData, "ef533d923e468c0f29bb0c10d28b51a48d801f13", (userResponse) -> {
             new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
 
             new Chat().createChat(this, otherUserData, hostUserData);
             return Unit.INSTANCE;
         }, (errorData) -> {
-
+            Log.d("okh", errorData.getMessage() + "message");
             return Unit.INSTANCE;
         }, (updateAccessToken) -> {
-            Log.d("okh", updateAccessToken + "");
+            Log.d("okh", updateAccessToken + "update token");
             return Unit.INSTANCE;
         });
 

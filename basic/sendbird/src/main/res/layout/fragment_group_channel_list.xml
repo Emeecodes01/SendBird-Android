@@ -28,114 +28,111 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/recentChatTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/itim_regular"
+                android:text="Recent Chats"
+                android:textColor="#313848"
+                android:textSize="24sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/recentChatTxt"
-                    android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/seeAllBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="14dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/itim_regular"
+                android:gravity="center_vertical|end"
+                android:text="@string/see_all"
+                android:textAllCaps="false"
+                android:textColor="#7B7FDA"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="@id/recentChatTxt"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/recentChatTxt"
+                app:layout_constraintVertical_bias="0.5" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/nochatCardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:visibility="gone"
+                app:layout_constraintVertical_bias="0.4"
+                app:cardCornerRadius="15dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/recentChatTxt">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:layout_marginTop="10dp"
-                    android:fontFamily="@font/itim_regular"
-                    android:text="Recent Chats"
-                    android:textColor="#313848"
-                    android:textSize="24sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:paddingBottom="30dp">
 
-                <Button
-                    android:id="@+id/seeAllBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="14dp"
-                    android:fontFamily="@font/itim_regular"
-                    android:text="@string/see_all"
-                    android:textColor="#7B7FDA"
-                    android:textAllCaps="false"
-                    android:gravity="center_vertical|end"
-                    android:background="@android:color/transparent"
-                    app:layout_constraintTop_toTopOf="@id/recentChatTxt"
-                    app:layout_constraintVertical_bias="0.5"
-                    android:textSize="15sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintBottom_toBottomOf="@id/recentChatTxt" />
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/nochatCardView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:visibility="gone"
-                    app:cardCornerRadius="15dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/recentChatTxt">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:id="@+id/nochatImg"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingBottom="30dp">
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="40dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/ic_empty_chat" />
 
-                        <ImageView
-                            android:id="@+id/nochatImg"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginTop="40dp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:srcCompat="@drawable/ic_empty_chat" />
+                    <TextView
+                        android:id="@+id/noChatTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="17dp"
+                        android:fontFamily="@font/itim_regular"
+                        android:text="You have no chats"
+                        android:textColor="#313848"
+                        android:textSize="24sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/nochatImg" />
 
-                        <TextView
-                            android:id="@+id/noChatTxt"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="17dp"
-                            android:fontFamily="@font/itim_regular"
-                            android:text="You have no chats"
-                            android:textColor="#313848"
-                            android:textSize="24sp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/nochatImg" />
+                    <TextView
+                        android:id="@+id/askQuestionChatTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:fontFamily="@font/itim_regular"
+                        android:text="Ask a question to start a chat with a tutor"
+                        android:textColor="#313848"
+                        android:textSize="14sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/noChatTxt" />
 
-                        <TextView
-                            android:id="@+id/askQuestionChatTxt"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="7dp"
-                            android:fontFamily="@font/itim_regular"
-                            android:text="Ask a question to start a chat with a tutor"
-                            android:textColor="#313848"
-                            android:textSize="14sp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/noChatTxt" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </androidx.cardview.widget.CardView>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_group_channel_list"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/list_item_group_channel"
+                android:layout_height="0dp"
                 android:layout_marginVertical="10dp"
                 android:scrollbars="vertical"
-                android:visibility="visible" />
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/recentChatTxt"
+                tools:listitem="@layout/list_item_group_channel" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

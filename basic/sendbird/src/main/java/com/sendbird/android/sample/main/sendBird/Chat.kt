@@ -86,6 +86,8 @@ class Chat {
 
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData) {
 
+//        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
+//            if (it) {
         val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
 
         if (activity != null && !fragment.isAdded) {
@@ -95,6 +97,9 @@ class Chat {
                     .add(layoutId, fragment)
                     .commitAllowingStateLoss()
         }
+
+//            }
+//        }
 
     }
 
