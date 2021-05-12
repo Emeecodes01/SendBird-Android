@@ -43,8 +43,8 @@
             android:layout_width="228dp"
             android:layout_height="148dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/me_message_shape"
             android:adjustViewBounds="true"
+            android:background="@drawable/me_message_shape"
             android:scaleType="centerCrop" />
 
         <ImageView
@@ -67,7 +67,7 @@
         android:textColor="#8e8e8e"
         android:textSize="10dp" />
 
-    <com.sendbird.android.sample.widget.MessageStatusView
+    <com.sendbird.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

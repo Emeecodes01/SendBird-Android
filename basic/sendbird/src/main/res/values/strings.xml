@@ -17,7 +17,7 @@
     <string name="settings">Settings</string>
     <string name="blocked_members_list">Blocked members</string>
     <string name="get_channel_failed">failed to get channel.</string>
-    <string name="send_message_error">Send failed with error: %d : %s</string>
+    <string name="send_message_error">Couldn\'t send chat, please check your internet</string>
 
     <plurals name="seconds">
         <item quantity="one">%d second</item>

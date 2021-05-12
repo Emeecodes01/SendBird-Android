@@ -46,8 +46,8 @@
         android:id="@+id/image_group_chat_file_thumbnail"
         android:layout_width="228dp"
         android:layout_height="148dp"
-        android:layout_marginTop="10dp"
         android:layout_below="@id/text_group_chat_date"
+        android:layout_marginTop="10dp"
         android:background="@drawable/other_message_shape"
         android:padding="2dp"
         android:scaleType="center" />

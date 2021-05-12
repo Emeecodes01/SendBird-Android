@@ -111,9 +111,6 @@ public class GroupChatFragment extends Fragment {
 
     private long mLastRead;
 
-    /**
-     * To create an instance of this fragment, a Channel URL should be required.
-     */
     public static GroupChatFragment newInstance(@NonNull String channelUrl) {
         GroupChatFragment fragment = new GroupChatFragment();
 
@@ -342,31 +339,6 @@ public class GroupChatFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_group_chat, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_group_channel_invite) {
-            Intent intent = new Intent(getActivity(), InviteMemberActivity.class);
-            intent.putExtra(EXTRA_CHANNEL_URL, mChannelUrl);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.action_group_channel_view_members) {
-            Intent intent = new Intent(getActivity(), MemberListActivity.class);
-            intent.putExtra(EXTRA_CHANNEL, mChannel.serialize());
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -387,17 +359,14 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((GroupChannelActivity) context).setOnBackPressedListener(new GroupChannelActivity.onBackPressedListener() {
-            @Override
-            public boolean onBack() {
-                if (mCurrentState == STATE_EDIT) {
-                    setState(STATE_NORMAL, null, -1);
-                    return true;
-                }
-
-                mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
-                return false;
+        ((GroupChannelActivity) context).setOnBackPressedListener(() -> {
+            if (mCurrentState == STATE_EDIT) {
+                setState(STATE_NORMAL, null, -1);
+                return true;
             }
+
+            mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+            return false;
         });
     }
 
@@ -839,20 +808,17 @@ public class GroupChatFragment extends Fragment {
                 }
 
                 UserMessage tempUserMessage = null;
-                BaseChannel.SendUserMessageHandler handler = new BaseChannel.SendUserMessageHandler() {
-                    @Override
-                    public void onSent(UserMessage userMessage, SendBirdException e) {
-                        if (e != null) {
-                            // Error!
-                            Log.e(LOG_TAG, e.toString());
-                            Toast.makeText(
-                                    getActivity(),
-                                    getString(R.string.send_message_error, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT)
-                                    .show();
-                        }
-
-                        mMessageCollection.handleSendMessageResponse(userMessage, e);
+                BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
+                    if (e != null) {
+                        // Error!
+                        Log.e(LOG_TAG, e.toString());
+                        Toast.makeText(
+                                getActivity(),
+                                getString(R.string.send_message_error, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT)
+                                .show();
                     }
+
+                    mMessageCollection.handleSendMessageResponse(userMessage, e);
                 };
 
                 try {
@@ -884,20 +850,17 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        final UserMessage pendingMessage = mChannel.sendUserMessage(text, new BaseChannel.SendUserMessageHandler() {
-            @Override
-            public void onSent(UserMessage userMessage, SendBirdException e) {
-                if (mMessageCollection != null) {
-                    mMessageCollection.handleSendMessageResponse(userMessage, e);
-                    mMessageCollection.fetchAllNextMessages(null);
-                }
+        final UserMessage pendingMessage = mChannel.sendUserMessage(text, (userMessage, e) -> {
+            if (mMessageCollection != null) {
+                mMessageCollection.handleSendMessageResponse(userMessage, e);
+                mMessageCollection.fetchAllNextMessages(null);
+            }
 
-                if (e != null) {
-                    // Error!
-                    Log.e(LOG_TAG, e.toString());
-                    Toast.makeText(getActivity(), getString(R.string.send_message_error, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (e != null) {
+                // Error!
+                Log.e(LOG_TAG, e.toString());
+                Toast.makeText(getActivity(), getString(R.string.send_message_error, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
+                return;
             }
         });
 
@@ -906,11 +869,6 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    /**
-     * Notify other users whether the current user is typing.
-     *
-     * @param typing Whether the user is currently typing.
-     */
     private void setTypingStatus(boolean typing) {
         if (mChannel == null) {
             return;
@@ -923,12 +881,6 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    /**
-     * Sends a File Message containing an image file.
-     * Also requests thumbnails to be generated in specified sizes.
-     *
-     * @param uri The URI of the image, which in this case is received through an Intent request.
-     */
     private void sendFileWithThumbnail(Uri uri) {
         if (mChannel == null) {
             return;
@@ -989,28 +941,19 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        mChannel.updateUserMessage(message.getMessageId(), editedMessage, null, null, new BaseChannel.UpdateUserMessageHandler() {
-            @Override
-            public void onUpdated(UserMessage userMessage, SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    Toast.makeText(getActivity(), getString(R.string.sendbird_error_with_code, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        mChannel.updateUserMessage(message.getMessageId(), editedMessage, null, null, (userMessage, e) -> {
+            if (e != null) {
+                // Error!
+                Toast.makeText(getActivity(), getString(R.string.sendbird_error_with_code, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                if (mMessageCollection != null) {
-                    mMessageCollection.updateMessage(userMessage);
-                }
+            if (mMessageCollection != null) {
+                mMessageCollection.updateMessage(userMessage);
             }
         });
     }
 
-    /**
-     * Deletes a message within the channel.
-     * Note that users can only delete messages sent by oneself.
-     *
-     * @param message The message to delete.
-     */
     private void deleteMessage(final BaseMessage message) {
         if (message.getMessageId() == 0) {
             mMessageCollection.deleteMessage(message);
@@ -1019,17 +962,14 @@ public class GroupChatFragment extends Fragment {
                 return;
             }
 
-            mChannel.deleteMessage(message, new BaseChannel.DeleteMessageHandler() {
-                @Override
-                public void onResult(SendBirdException e) {
-                    if (e != null) {
-                        // Error!
-                        Toast.makeText(getActivity(), getString(R.string.sendbird_error_with_code, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    mMessageCollection.deleteMessage(message);
+            mChannel.deleteMessage(message, e -> {
+                if (e != null) {
+                    // Error!
+                    Toast.makeText(getActivity(), getString(R.string.sendbird_error_with_code, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                mMessageCollection.deleteMessage(message);
             });
         }
     }

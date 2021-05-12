@@ -2,9 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
     android:background="#E5E5E5"
     android:minWidth="50dp"
-    android:layout_marginBottom="5dp"
     android:paddingLeft="8dp">
 
     <TextView
@@ -51,11 +51,11 @@
         android:id="@+id/group_chat_message_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="50dp"
-        android:layout_marginVertical="5dp"
         android:layout_below="@id/text_group_chat_date"
+        android:layout_marginVertical="5dp"
         android:layout_toRightOf="@id/image_group_chat_profile"
         android:background="@drawable/other_message_shape"
+        android:minWidth="50dp"
         android:orientation="vertical">
 
         <TextView
@@ -158,10 +158,10 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"
         android:layout_marginBottom="4dp"
-        android:visibility="gone"
         android:layout_toRightOf="@id/group_chat_message_container"
         android:text="21:27"
         android:textColor="#8e8e8e"
-        android:textSize="10dp" />
+        android:textSize="10dp"
+        android:visibility="gone" />
 
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package com.sendbird.syncmanager.sample.main;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,7 +19,7 @@ import com.sendbird.syncmanager.sample.groupchannel.GroupChannelActivity;
 import com.sendbird.syncmanager.sample.utils.PreferenceUtils;
 import com.sendbird.syncmanager.sample.view.BaseActivity;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends Activity {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
 
@@ -30,7 +31,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar_main);
-        setSupportActionBar(mToolbar);
+//        setSupportActionBar(mToolbar);
 
         findViewById(R.id.linear_layout_group_channels).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,19 +56,19 @@ public class MainActivity extends BaseActivity {
                 BaseApplication.VERSION, SendBird.getSDKVersion(), SendBirdSyncManager.getSDKVersion());
         ((TextView) findViewById(R.id.text_main_versions)).setText(sdkVersion);
 
-        connect();
+//        connect();
     }
 
-    @Override
-    protected String getConnectionHandlerId() {
-        return "CONNECTION_HANDLER_MAIN_ACTIVITY";
-    }
+//    @Override
+//    protected String getConnectionHandlerId() {
+//        return "CONNECTION_HANDLER_MAIN_ACTIVITY";
+//    }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        connect();
+//        connect();
     }
 
     @Override
@@ -77,11 +78,11 @@ public class MainActivity extends BaseActivity {
 
     private void connect() {
         if (SendBird.getConnectionState() != SendBird.ConnectionState.OPEN) {
-            showProgressBar(true);
+//            showProgressBar(true);
             ConnectionManager.connect(this, PreferenceUtils.getUserId(), PreferenceUtils.getNickname(), new SendBird.ConnectHandler() {
                 @Override
                 public void onConnected(User user, SendBirdException e) {
-                    showProgressBar(false);
+//                    showProgressBar(false);
                     if (e != null) {
                         e.printStackTrace();
                     } else {

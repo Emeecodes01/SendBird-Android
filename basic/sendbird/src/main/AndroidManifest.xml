@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.sendbird.android.sample">
+    package="com.sendbird">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -10,8 +10,6 @@
     <uses-permission
         android:name="android.permission.VIBRATE"
         android:maxSdkVersion="18" />
-
-<!--    <uses-sdk tools:overrideLibrary="com.stfalcon.multiimageview" /> &lt;!&ndash; min 16 &ndash;&gt;-->
 
     <application
         android:name=".main.BaseApplication"
@@ -31,23 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".main.LoginActivity"
-            android:launchMode="singleTop" />
-
-        <activity
-            android:name=".main.MainActivity"
-            android:label="@string/select_channel_type"
-            android:launchMode="singleTask" />
-        <activity
-            android:name=".main.SettingsActivity"
-            android:label="@string/settings"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".main.BlockedMembersListActivity"
-            android:label="@string/blocked_members_list"
-            android:launchMode="singleTop" />
         <activity
             android:name=".utils.PhotoViewerActivity"
             android:launchMode="singleTop" />
@@ -56,41 +37,8 @@
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTop" />
         <activity
-            android:name=".openchannel.CreateOpenChannelActivity"
-            android:label="@string/create_open_channel"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateVisible" />
-        <activity
-            android:name=".groupchannel.InviteMemberActivity"
-            android:label="@string/invite_member"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".groupchannel.MemberListActivity"
-            android:label="@string/member_list"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".groupchannel.MemberInfoActivity"
-            android:label="@string/member_info"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".groupchannel.CreateGroupChannelActivity"
-            android:label="@string/create_group_channel"
-            android:launchMode="singleTop" />
-        <activity
             android:name=".utils.MediaUtils"
             android:launchMode="singleTop" />
-        <activity
-            android:name=".openchannel.ParticipantListActivity"
-            android:label="@string/participant_list"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".openchannel.OpenChannelActivity"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateHidden" />
-<!--        <activity-->
-<!--            android:name=".groupchannel.GroupChannelActivity"-->
-<!--            android:launchMode="singleTop"-->
-<!--            android:windowSoftInputMode="stateHidden" />-->
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -101,16 +49,6 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
-<!--        <provider-->
-<!--            android:name="androidx.core.content.FileProvider"-->
-<!--            android:authorities="${applicationId}.theprovider"-->
-<!--            android:exported="false"-->
-<!--            android:grantUriPermissions="true"-->
-<!--            tools:replace="android:authorities">-->
-<!--            <meta-data-->
-<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
-<!--                android:resource="@xml/file_paths" />-->
-<!--        </provider>-->
 
     </application>
 

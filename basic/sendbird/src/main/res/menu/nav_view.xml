@@ -13,7 +13,8 @@
 
     </group>
 
-    <group android:id="@+id/nav_group_actions"
+    <group
+        android:id="@+id/nav_group_actions"
         android:checkableBehavior="single">
         <item
             android:id="@+id/nav_item_disconnect"

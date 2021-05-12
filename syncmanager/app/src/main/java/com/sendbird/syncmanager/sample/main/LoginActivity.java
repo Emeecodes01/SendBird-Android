@@ -1,5 +1,6 @@
 package com.sendbird.syncmanager.sample.main;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -18,7 +19,7 @@ import com.sendbird.syncmanager.sample.utils.PreferenceUtils;
 import com.sendbird.syncmanager.sample.utils.SyncManagerUtils;
 import com.sendbird.syncmanager.sample.view.BaseActivity;
 
-public class LoginActivity extends BaseActivity {
+public class LoginActivity extends Activity {
 
     private CoordinatorLayout mLoginLayout;
     private TextInputEditText mUserIdConnectEditText, mUserNicknameEditText;
@@ -71,22 +72,22 @@ public class LoginActivity extends BaseActivity {
         ConnectionManager.connect(LoginActivity.this, userId, userNickname, new SendBird.ConnectHandler() {
             @Override
             public void onConnected(User user, SendBirdException e) {
-                showProgressBar(false);
+//                showProgressBar(false);
                 if (e == null) {
-                    SyncManagerUtils.setup(LoginActivity.this, PreferenceUtils.getUserId(), new CompletionHandler() {
-                        @Override
-                        public void onCompleted(SendBirdException e) {
-                            if (e != null) {
-                                e.printStackTrace();
-                                return;
-                            }
-                            PreferenceUtils.setConnected(true);
-
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
-                    });
+//                    SyncManagerUtils.setup(LoginActivity.this, PreferenceUtils.getUserId(), new CompletionHandler() {
+//                        @Override
+//                        public void onCompleted(SendBirdException e) {
+//                            if (e != null) {
+//                                e.printStackTrace();
+//                                return;
+//                            }
+//                            PreferenceUtils.setConnected(true);
+//
+//                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+////                            startActivity(intent);
+////                            finish();
+//                        }
+//                    });
                 } else {
                     showSnackbar(getString(R.string.login_failed));
                     PreferenceUtils.setConnected(false);

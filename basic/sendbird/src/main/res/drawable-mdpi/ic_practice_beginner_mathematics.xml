@@ -1,32 +1,56 @@
-<vector android:autoMirrored="true" android:height="72dp"
-    android:viewportHeight="69" android:viewportWidth="71"
-    android:width="72dp" xmlns:android="http://schemas.android.com/apk/res/android">
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:autoMirrored="true"
+    android:viewportWidth="71"
+    android:viewportHeight="69">
 
     <!-- Background -->
-    <path android:name="background" android:fillColor="@color/colorMaths" android:pathData="M33.8562,66.7244C59.3601,64.7791 74.7315,39.3094 66.5309,19.6184C58.3302,-0.0726 18.7208,-4.3341 5.9031,14.3295C-7.3148,33.6875 12.7902,68.3699 33.8562,66.7244Z"/>
+    <path
+        android:name="background"
+        android:fillColor="@color/colorMaths"
+        android:pathData="M33.8562,66.7244C59.3601,64.7791 74.7315,39.3094 66.5309,19.6184C58.3302,-0.0726 18.7208,-4.3341 5.9031,14.3295C-7.3148,33.6875 12.7902,68.3699 33.8562,66.7244Z" />
 
     <!-- Bubble -->
     <group android:name="bubble_group">
-        <clip-path android:pathData="M35.2782,0.2709C23.1397,8.5741 25.5322,22.4175 35.2781,29.8629 45.024,37.3083 63.2495,31.297 64.2637,18.3185 65.2775,4.8791 45.2933,-6.6067 35.2782,0.2709Z M 0,0"/>
-        <path android:name="bubble" android:fillColor="@color/colorBiology" android:pathData="m33.8818,66.7335c25.5039,-1.9453 40.8753,-27.415 32.6747,-47.106 -8.2007,-19.691 -47.8101,-23.9525 -60.6278,-5.2889 -13.2179,19.358 6.8871,54.0404 27.9531,52.3949z"/>
+        <clip-path android:pathData="M35.2782,0.2709C23.1397,8.5741 25.5322,22.4175 35.2781,29.8629 45.024,37.3083 63.2495,31.297 64.2637,18.3185 65.2775,4.8791 45.2933,-6.6067 35.2782,0.2709Z M 0,0" />
+        <path
+            android:name="bubble"
+            android:fillColor="@color/colorBiology"
+            android:pathData="m33.8818,66.7335c25.5039,-1.9453 40.8753,-27.415 32.6747,-47.106 -8.2007,-19.691 -47.8101,-23.9525 -60.6278,-5.2889 -13.2179,19.358 6.8871,54.0404 27.9531,52.3949z" />
     </group>
 
     <!-- Snail -->
     <group android:name="icon">
-        <path android:fillColor="#00000000"
-              android:pathData="M30.0163,47.5985C37.2052,47.5985 43.0329,41.7708 43.0329,34.582C43.0329,27.3931 37.2052,21.5654 30.0163,21.5654C22.8275,21.5654 16.9998,27.3931 16.9998,34.582C16.9998,41.7708 22.8275,47.5985 30.0163,47.5985Z"
-              android:strokeColor="@color/color_white" android:strokeLineJoin="round" android:strokeWidth="1.5"/>
-        <path android:fillColor="#00000000"
-              android:pathData="M30.0163,40.6562C33.3709,40.6562 36.0903,37.9368 36.0903,34.5822C36.0903,31.2277 33.3709,28.5083 30.0163,28.5083C26.6618,28.5083 23.9424,31.2277 23.9424,34.5822C23.9424,37.9368 26.6618,40.6562 30.0163,40.6562Z"
-              android:strokeColor="@color/color_white" android:strokeLineJoin="round" android:strokeWidth="1.5"/>
-        <path android:fillColor="#00000000"
-              android:pathData="M41.3491,41.4707H44.9786C47.4904,41.4707 49.5307,43.5111 49.5307,46.0228V47.6052H30.3325H17.4439C15.9018,47.6052 15.4372,45.5043 16.8311,44.8511L20.299,43.235"
-              android:strokeColor="@color/color_white" android:strokeLineJoin="round" android:strokeWidth="1.5"/>
-        <path android:fillColor="#00000000"
-              android:pathData="M45.8877,41.558L48.2378,37.814"
-              android:strokeColor="@color/color_white" android:strokeLineJoin="round" android:strokeWidth="1.5"/>
-        <path android:fillColor="#00000000"
-              android:pathData="M48.7295,43.215L53.4364,37.9424"
-              android:strokeColor="@color/color_white" android:strokeLineJoin="round" android:strokeWidth="1.5"/>
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M30.0163,47.5985C37.2052,47.5985 43.0329,41.7708 43.0329,34.582C43.0329,27.3931 37.2052,21.5654 30.0163,21.5654C22.8275,21.5654 16.9998,27.3931 16.9998,34.582C16.9998,41.7708 22.8275,47.5985 30.0163,47.5985Z"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/color_white"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M30.0163,40.6562C33.3709,40.6562 36.0903,37.9368 36.0903,34.5822C36.0903,31.2277 33.3709,28.5083 30.0163,28.5083C26.6618,28.5083 23.9424,31.2277 23.9424,34.5822C23.9424,37.9368 26.6618,40.6562 30.0163,40.6562Z"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/color_white"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M41.3491,41.4707H44.9786C47.4904,41.4707 49.5307,43.5111 49.5307,46.0228V47.6052H30.3325H17.4439C15.9018,47.6052 15.4372,45.5043 16.8311,44.8511L20.299,43.235"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/color_white"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M45.8877,41.558L48.2378,37.814"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/color_white"
+            android:strokeLineJoin="round" />
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M48.7295,43.215L53.4364,37.9424"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/color_white"
+            android:strokeLineJoin="round" />
     </group>
 </vector>
