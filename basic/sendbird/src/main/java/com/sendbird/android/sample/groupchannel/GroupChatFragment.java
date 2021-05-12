@@ -9,14 +9,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -46,7 +43,6 @@ import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.Member;
-import com.sendbird.android.PreviousMessageListQuery;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
@@ -63,6 +59,14 @@ import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.TimerUtils;
 import com.sendbird.android.sample.utils.UrlPreviewInfo;
 import com.sendbird.android.sample.utils.WebUtils;
+import com.sendbird.syncmanager.FailedMessageEventActionReason;
+import com.sendbird.syncmanager.MessageCollection;
+import com.sendbird.syncmanager.MessageEventAction;
+import com.sendbird.syncmanager.MessageFilter;
+import com.sendbird.syncmanager.handler.CompletionHandler;
+import com.sendbird.syncmanager.handler.FetchCompletionHandler;
+import com.sendbird.syncmanager.handler.MessageCollectionCreateHandler;
+import com.sendbird.syncmanager.handler.MessageCollectionHandler;
 
 import org.json.JSONException;
 
@@ -112,14 +116,17 @@ public class GroupChatFragment extends Fragment {
 
     private GroupChannel mChannel;
     private String mChannelUrl;
-    private PreviousMessageListQuery mPrevMessageListQuery;
 
     private boolean mIsTyping;
 
     private int mCurrentState = STATE_NORMAL;
     private BaseMessage mEditingMessage = null;
 
-    private GenericDialog uploadFileDialog =
+    final MessageFilter mMessageFilter = new MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null);
+    private MessageCollection mMessageCollection;
+    private long mLastRead;
+
+    private final GenericDialog uploadFileDialog =
             new GenericDialog().newInstance(THEME_MATH)
                     .setTitle("Upload a file")
                     .setMessage(R.string.empty);
@@ -156,6 +163,7 @@ public class GroupChatFragment extends Fragment {
         mChatAdapter = new GroupChatAdapter(getActivity());
         setUpChatListAdapter();
 
+
         // Load messages from cache.
         mChatAdapter.load(mChannelUrl);
     }
@@ -167,56 +175,30 @@ public class GroupChatFragment extends Fragment {
 
         setRetainInstance(true);
 
-        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        initializeViews(rootView);
 
-        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
-        mUserName = rootView.findViewById(R.id.userName);
-        countdownTxt = rootView.findViewById(R.id.countdownTxt);
+        onBack();
 
-        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
-        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
+        handleTimer();
 
-        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
-        mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
-        button_voice = rootView.findViewById(R.id.button_voice);
-        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
-
-        toolbar_group_channel.setNavigationOnClickListener(view -> {
-            getActivity().getSupportFragmentManager().popBackStack();
-        });
-
-        new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
-
-            int countDownMinutes = countDownTime / 60;
-            int countDownSeconds = countDownTime - (60 * countDownMinutes);
-
-            countTime(countDownMinutes, countDownSeconds);
-
-            return Unit.INSTANCE;
-        }, () -> {
-
-            countdownTxt.setVisibility(View.GONE);
-
-            mMessageEditText.setEnabled(false);
-            mUploadFileButton.setEnabled(false);
-            button_voice.setEnabled(false);
-
-            return Unit.INSTANCE;
-        });
-
-        mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
-
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                sendTextMessage();
-            }
-
-            return false;
-        });
+        sendMessage();
 
         mUploadFileButton.setOnClickListener(v -> pickMedia());
 
         mIsTyping = false;
 
+        onTyping();
+
+        setUpRecyclerView();
+
+        setHasOptionsMenu(true);
+
+        createMessageCollection(mChannelUrl);
+
+        return rootView;
+    }
+
+    private void onTyping() {
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -237,12 +219,61 @@ public class GroupChatFragment extends Fragment {
             public void afterTextChanged(Editable s) {
             }
         });
+    }
 
-        setUpRecyclerView();
+    private void onBack() {
+        toolbar_group_channel.setNavigationOnClickListener(view -> {
 
-        setHasOptionsMenu(true);
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
 
-        return rootView;
+        });
+    }
+
+    private void initializeViews(View rootView) {
+        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
+        mUserName = rootView.findViewById(R.id.userName);
+        countdownTxt = rootView.findViewById(R.id.countdownTxt);
+        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
+        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
+        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
+        mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
+        button_voice = rootView.findViewById(R.id.button_voice);
+        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
+    }
+
+    private void sendMessage() {
+        mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
+
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                sendTextMessage();
+            }
+
+            return false;
+        });
+    }
+
+    private void handleTimer() {
+        new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
+
+            int countDownMinutes = countDownTime / 60;
+            int countDownSeconds = countDownTime - (60 * countDownMinutes);
+
+            countTime(countDownMinutes, countDownSeconds);
+
+            return Unit.INSTANCE;
+        }, () -> {
+
+            countdownTxt.setVisibility(View.GONE);
+
+            mMessageEditText.setEnabled(false);
+            mUploadFileButton.setEnabled(false);
+            button_voice.setEnabled(false);
+
+            return Unit.INSTANCE;
+        });
     }
 
     @SuppressLint("SetTextI18n")
@@ -252,7 +283,7 @@ public class GroupChatFragment extends Fragment {
 
             new TimerUtils().timer(seconds, (l) -> {
 
-                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l ));
+                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l));
 
                 return Unit.INSTANCE;
             }, () -> {
@@ -292,73 +323,105 @@ public class GroupChatFragment extends Fragment {
 
     private void refresh() {
         if (mChannel == null) {
-            GroupChannel.getChannel(mChannelUrl, new GroupChannel.GroupChannelGetHandler() {
-                @Override
-                public void onResult(GroupChannel groupChannel, SendBirdException e) {
-                    if (e != null) {
-                        // Error!
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    mChannel = groupChannel;
-                    mChatAdapter.setChannel(mChannel);
-                    mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, new BaseChannel.GetMessagesHandler() {
-                        @Override
-                        public void onResult(List<BaseMessage> list, SendBirdException e) {
-                            mChatAdapter.markAllMessagesAsRead();
-                        }
-                    });
-                    updateActionBarTitle();
+            GroupChannel.getChannel(mChannelUrl, (groupChannel, e) -> {
+                if (e != null) {
+                    // Error!
+                    e.printStackTrace();
+                    return;
                 }
+
+                mChannel = groupChannel;
+                mChatAdapter.setChannel(mChannel);
+                mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, (list, e1) -> mChatAdapter.markAllMessagesAsRead());
+                updateActionBarTitle();
             });
         } else {
-            mChannel.refresh(new GroupChannel.GroupChannelRefreshHandler() {
-                @Override
-                public void onResult(SendBirdException e) {
-                    if (e != null) {
-                        // Error!
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, new BaseChannel.GetMessagesHandler() {
-                        @Override
-                        public void onResult(List<BaseMessage> list, SendBirdException e) {
-                            mChatAdapter.markAllMessagesAsRead();
-                        }
-                    });
-                    updateActionBarTitle();
+            mChannel.refresh(e -> {
+                if (e != null) {
+                    // Error!
+                    e.printStackTrace();
+                    return;
                 }
+
+                mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, (list, e12) -> mChatAdapter.markAllMessagesAsRead());
+                updateActionBarTitle();
             });
         }
+    }
+
+    private void fetchInitialMessages() {
+        if (mMessageCollection == null) {
+            return;
+        }
+
+        mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, new FetchCompletionHandler() {
+            @Override
+            public void onCompleted(boolean hasMore, SendBirdException e) {
+                mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, new FetchCompletionHandler() {
+                    @Override
+                    public void onCompleted(boolean hasMore, SendBirdException e) {
+                        mMessageCollection.fetchFailedMessages(new CompletionHandler() {
+                            @Override
+                            public void onCompleted(SendBirdException e) {
+                                if (getActivity() == null) {
+                                    return;
+                                }
+
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mChatAdapter.markAllMessagesAsRead();
+                                        mLayoutManager.scrollToPositionWithOffset(mChatAdapter.getLastReadPosition(mLastRead), mRecyclerView.getHeight() / 2);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, new ConnectionManager.ConnectionManagementHandler() {
+        SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
             @Override
-            public void onConnected(boolean reconnect) {
-                refresh();
+            public void onReconnectStarted() {
+            }
+
+            @Override
+            public void onReconnectSucceeded() {
+
+                if (mMessageCollection != null) {
+                    if (mLayoutManager.findFirstVisibleItemPosition() <= 0) {
+                        mMessageCollection.fetchAllNextMessages((hasMore, e) -> {
+                        });
+                    }
+
+                    if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
+                        mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, new FetchCompletionHandler() {
+                            @Override
+                            public void onCompleted(boolean hasMore, SendBirdException e) {
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onReconnectFailed() {
             }
         });
 
-        mChatAdapter.setContext(getActivity()); // Glide bug fix (java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity)
-
-        // Gets channel from URL user requested
-
-        Log.d(LOG_TAG, mChannelUrl);
+        if (getActivity() != null) {
+            mChatAdapter.setContext(getActivity());
+        }
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
             public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
-                if (baseChannel.getUrl().equals(mChannelUrl)) {
-                    mChatAdapter.markAllMessagesAsRead();
-                    // Add new message to view
-                    mChatAdapter.addFirst(baseMessage);
-                }
             }
 
             @Override
@@ -413,7 +476,10 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onDestroy() {
         // Save messages to cache.
-        mChatAdapter.save();
+        if (mMessageCollection != null) {
+            mMessageCollection.setCollectionHandler(null);
+            mMessageCollection.remove();
+        }
         super.onDestroy();
     }
 
@@ -458,8 +524,15 @@ public class GroupChatFragment extends Fragment {
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
-                        mChatAdapter.loadPreviousMessages(CHANNEL_LIST_LIMIT, null);
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        if (mLayoutManager.findFirstVisibleItemPosition() == 0) {
+                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
+                        }
+
+                        if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
+                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
+                        }
+
                     }
                 }
             });
@@ -533,14 +606,11 @@ public class GroupChatFragment extends Fragment {
         String[] options = new String[]{"Edit message", "Delete message"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    setState(STATE_EDIT, message, position);
-                } else if (which == 1) {
-                    deleteMessage(message);
-                }
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                setState(STATE_EDIT, message, position);
+            } else if (which == 1) {
+                deleteMessage(message);
             }
         });
         builder.create().show();
@@ -600,7 +670,10 @@ public class GroupChatFragment extends Fragment {
                     setState(STATE_NORMAL, null, -1);
                     mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
                 }
-                requireActivity().getSupportFragmentManager().popBackStack();
+
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                }
 
             }
 
@@ -610,30 +683,80 @@ public class GroupChatFragment extends Fragment {
 
     }
 
+    private void createMessageCollection(final String channelUrl) {
+        GroupChannel.getChannel(channelUrl, (groupChannel, e) -> {
+            if (e != null) {
+                MessageCollection.create(channelUrl, mMessageFilter, mLastRead, (messageCollection, e1) -> {
+                    if (e1 == null) {
+                        if (mMessageCollection != null) {
+                            mMessageCollection.remove();
+                        }
+
+                        mMessageCollection = messageCollection;
+                        mMessageCollection.setCollectionHandler(mMessageCollectionHandler);
+
+                        mChannel = mMessageCollection.getChannel();
+                        mChatAdapter.setChannel(mChannel);
+
+                        if (getActivity() == null) {
+                            return;
+                        }
+
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mChatAdapter.clear();
+                                updateActionBarTitle();
+                            }
+                        });
+
+                        fetchInitialMessages();
+                    } else {
+                        Toast.makeText(getContext(), getString(R.string.get_channel_failed), Toast.LENGTH_SHORT).show();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                getActivity().onBackPressed();
+                            }
+                        }, 1000);
+                    }
+                });
+            } else {
+                if (mMessageCollection != null) {
+                    mMessageCollection.remove();
+                }
+
+                mMessageCollection = new MessageCollection(groupChannel, mMessageFilter, mLastRead);
+                mMessageCollection.setCollectionHandler(mMessageCollectionHandler);
+
+                mChannel = groupChannel;
+                mChatAdapter.setChannel(mChannel);
+                mChatAdapter.clear();
+                updateActionBarTitle();
+
+                fetchInitialMessages();
+            }
+        });
+    }
+
+
     private void retryFailedMessage(final BaseMessage message) {
         new AlertDialog.Builder(getActivity())
                 .setMessage("Retry?")
-                .setPositiveButton(R.string.resend_message, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_POSITIVE) {
-                            if (message instanceof UserMessage) {
-                                String userInput = ((UserMessage) message).getMessage();
-                                sendUserMessage(userInput);
-                            } else if (message instanceof FileMessage) {
-                                Uri uri = mChatAdapter.getTempFileMessageUri(message);
-                                sendFileWithThumbnail(uri);
-                            }
-                            mChatAdapter.removeFailedMessage(message);
+                .setPositiveButton(R.string.resend_message, (dialog, which) -> {
+                    if (which == DialogInterface.BUTTON_POSITIVE) {
+                        if (message instanceof UserMessage) {
+                            mChannel.resendUserMessage((UserMessage) message, (userMessage, e) -> mMessageCollection.handleSendMessageResponse(userMessage, e));
+                        } else if (message instanceof FileMessage) {
+                            Uri uri = mChatAdapter.getTempFileMessageUri(message);
+                            sendFileWithThumbnail(uri);
                         }
+                        mChatAdapter.removeFailedMessage(message);
                     }
                 })
-                .setNegativeButton(R.string.delete_message, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_NEGATIVE) {
-                            mChatAdapter.removeFailedMessage(message);
-                        }
+                .setNegativeButton(R.string.delete_message, (dialog, which) -> {
+                    if (which == DialogInterface.BUTTON_NEGATIVE) {
+                        mChatAdapter.removeFailedMessage(message);
                     }
                 }).show();
     }
@@ -665,21 +788,23 @@ public class GroupChatFragment extends Fragment {
 
     private void pickMedia() {
 
-        uploadFileDialog.setUploadFile(true, () -> {
+        if (getActivity() != null) {
+            uploadFileDialog.setUploadFile(true, () -> {
 
-            Intent intent = new Intent(requireContext(), MediaUtils.class);
-            intent.putExtra(useCamera, true);
+                Intent intent = new Intent(requireContext(), MediaUtils.class);
+                intent.putExtra(useCamera, true);
 
-            startActivityForResult(intent, MEDIA_REQUEST_CODE);
-            return Unit.INSTANCE;
-        }, () -> {
+                startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                return Unit.INSTANCE;
+            }, () -> {
 
-            Intent intent = new Intent(requireContext(), MediaUtils.class);
-            intent.putExtra(useCamera, false);
-            startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                Intent intent = new Intent(requireContext(), MediaUtils.class);
+                intent.putExtra(useCamera, false);
+                startActivityForResult(intent, MEDIA_REQUEST_CODE);
 
-            return Unit.INSTANCE;
-        }).show(requireFragmentManager(), "");
+                return Unit.INSTANCE;
+            }).show(getActivity().getSupportFragmentManager(), "");
+        }
 
     }
 
@@ -691,13 +816,8 @@ public class GroupChatFragment extends Fragment {
             // For example if the user has previously denied the permission.
             Snackbar.make(mRootLayout, "Storage access permissions are required to upload/download files.",
                     Snackbar.LENGTH_LONG)
-                    .setAction("Okay", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    PERMISSION_WRITE_EXTERNAL_STORAGE);
-                        }
-                    })
+                    .setAction("Okay", view -> requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            PERMISSION_WRITE_EXTERNAL_STORAGE))
                     .show();
         } else {
             // Permission has not been granted yet. Request it directly.
@@ -731,12 +851,9 @@ public class GroupChatFragment extends Fragment {
         } else {
             new AlertDialog.Builder(getActivity())
                     .setMessage("Download file?")
-                    .setPositiveButton(R.string.download, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (which == DialogInterface.BUTTON_POSITIVE) {
-                                FileUtils.downloadFile(getActivity(), message.getUrl(), message.getName());
-                            }
+                    .setPositiveButton(R.string.download, (dialog, which) -> {
+                        if (which == DialogInterface.BUTTON_POSITIVE) {
+                            FileUtils.downloadFile(getActivity(), message.getUrl(), message.getName());
                         }
                     })
                     .setNegativeButton(R.string.cancel, null).show();
@@ -754,22 +871,22 @@ public class GroupChatFragment extends Fragment {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     private void sendUserMessageWithUrl(final String text, String url) {
         if (mChannel == null) {
             return;
         }
+        try {
+            new WebUtils.UrlPreviewAsyncTask() {
 
-        new WebUtils.UrlPreviewAsyncTask() {
-            @Override
-            protected void onPostExecute(UrlPreviewInfo info) {
-                if (mChannel == null) {
-                    return;
-                }
+                @Override
+                protected void onPostExecute(UrlPreviewInfo info) {
+                    if (mChannel == null) {
+                        return;
+                    }
 
-                UserMessage tempUserMessage = null;
-                BaseChannel.SendUserMessageHandler handler = new BaseChannel.SendUserMessageHandler() {
-                    @Override
-                    public void onSent(UserMessage userMessage, SendBirdException e) {
+                    UserMessage tempUserMessage = null;
+                    BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
                         if (e != null) {
                             // Error!
                             Log.e(LOG_TAG, e.toString());
@@ -784,24 +901,29 @@ public class GroupChatFragment extends Fragment {
                         }
 
                         // Update a sent message to RecyclerView
-                        mChatAdapter.markMessageSent(userMessage);
+//                        mChatAdapter.markMessageSent(userMessage);
+                        mMessageCollection.handleSendMessageResponse(userMessage, e);
+                    };
+
+                    try {
+                        // Sending a message with URL preview information and custom type.
+                        String jsonString = info.toJsonString();
+                        tempUserMessage = mChannel.sendUserMessage(text, jsonString, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
+                    } catch (Exception e) {
+                        // Sending a message without URL preview information.
+                        tempUserMessage = mChannel.sendUserMessage(text, handler);
                     }
-                };
 
-                try {
-                    // Sending a message with URL preview information and custom type.
-                    String jsonString = info.toJsonString();
-                    tempUserMessage = mChannel.sendUserMessage(text, jsonString, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
-                } catch (Exception e) {
-                    // Sending a message without URL preview information.
-                    tempUserMessage = mChannel.sendUserMessage(text, handler);
+
+                    if (mMessageCollection != null) {
+                        mMessageCollection.appendMessage(tempUserMessage);
+                    }
                 }
+            }.execute(url);
+        } catch (Exception e) {
 
+        }
 
-                // Display a user message to RecyclerView
-                mChatAdapter.addFirst(tempUserMessage);
-            }
-        }.execute(url);
     }
 
     private void sendUserMessage(String text) {
@@ -815,29 +937,24 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        UserMessage tempUserMessage = mChannel.sendUserMessage(text, new BaseChannel.SendUserMessageHandler() {
-            @Override
-            public void onSent(UserMessage userMessage, SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    Log.e(LOG_TAG, e.toString());
-                    if (getActivity() != null) {
-                        Toast.makeText(
-                                requireContext(),
-                                "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
-                                .show();
-                    }
-                    mChatAdapter.markMessageFailed(userMessage);
-                    return;
-                }
+        final UserMessage pendingMessage = mChannel.sendUserMessage(text, (userMessage, e) -> {
+            if (mMessageCollection != null) {
+                mMessageCollection.handleSendMessageResponse(userMessage, e);
+                mMessageCollection.fetchAllNextMessages(null);
+            }
 
-                // Update a sent message to RecyclerView
-                mChatAdapter.markMessageSent(userMessage);
+            if (e != null) {
+                // Error!
+                Log.e(LOG_TAG, e.toString());
+                Toast.makeText(getActivity(), getString(R.string.send_message_error, e.getCode(), e.getMessage()), Toast.LENGTH_SHORT).show();
+                return;
             }
         });
 
         // Display a user message to RecyclerView
-        mChatAdapter.addFirst(tempUserMessage);
+        if (mMessageCollection != null) {
+            mMessageCollection.appendMessage(pendingMessage);
+        }
     }
 
     /**
@@ -896,26 +1013,29 @@ public class GroupChatFragment extends Fragment {
         if (path == null || path.equals("")) {
             Toast.makeText(getActivity(), "File must be located in local storage.", Toast.LENGTH_LONG).show();
         } else {
-            BaseChannel.SendFileMessageHandler fileMessageHandler = new BaseChannel.SendFileMessageHandler() {
-                @Override
-                public void onSent(FileMessage fileMessage, SendBirdException e) {
-                    if (e != null) {
-                        if (getActivity() != null) {
-                            Toast.makeText(getActivity(), "" + e.getCode() + ":" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                        mChatAdapter.markMessageFailed(fileMessage);
-                        return;
-                    }
+            BaseChannel.SendFileMessageHandler fileMessageHandler = (fileMessage, e) -> {
+                mMessageCollection.handleSendMessageResponse(fileMessage, e);
+                mMessageCollection.fetchAllNextMessages(null);
 
-                    mChatAdapter.markMessageSent(fileMessage);
+                if (e != null) {
+                    if (getActivity() != null) {
+                        Toast.makeText(getActivity(), "" + e.getCode() + ":" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    mChatAdapter.markMessageFailed(fileMessage);
+                    return;
                 }
+
+                mChatAdapter.markMessageSent(fileMessage);
             };
 
             // Send image with thumbnails in the specified dimensions
             FileMessage tempFileMessage = mChannel.sendFileMessage(file, name, mime, size, "", null, thumbnailSizes, fileMessageHandler);
 
             mChatAdapter.addTempFileMessageInfo(tempFileMessage, uri);
-            mChatAdapter.addFirst(tempFileMessage);
+
+            if (mMessageCollection != null) {
+                mMessageCollection.appendMessage(tempFileMessage);
+            }
         }
     }
 
@@ -929,16 +1049,11 @@ public class GroupChatFragment extends Fragment {
             public void onUpdated(UserMessage userMessage, SendBirdException e) {
                 if (e != null) {
                     // Error!
-                    Toast.makeText(getActivity(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, new BaseChannel.GetMessagesHandler() {
-                    @Override
-                    public void onResult(List<BaseMessage> list, SendBirdException e) {
-                        mChatAdapter.markAllMessagesAsRead();
-                    }
-                });
+                mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, (list, e1) -> mChatAdapter.markAllMessagesAsRead());
             }
         });
     }
@@ -954,22 +1069,122 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        mChannel.deleteMessage(message, new BaseChannel.DeleteMessageHandler() {
-            @Override
-            public void onResult(SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    Toast.makeText(getActivity(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, new BaseChannel.GetMessagesHandler() {
-                    @Override
-                    public void onResult(List<BaseMessage> list, SendBirdException e) {
-                        mChatAdapter.markAllMessagesAsRead();
-                    }
-                });
+        mChannel.deleteMessage(message, e -> {
+            if (e != null) {
+                // Error!
+                Toast.makeText(requireContext(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            mChatAdapter.loadLatestMessages(CHANNEL_LIST_LIMIT, (list, e1) -> mChatAdapter.markAllMessagesAsRead());
         });
     }
+
+    private void updateLastSeenTimestamp(List<BaseMessage> messages) {
+        long lastSeenTimestamp = mLastRead == Long.MAX_VALUE ? 0 : mLastRead;
+        for (BaseMessage message : messages) {
+            if (lastSeenTimestamp < message.getCreatedAt()) {
+                lastSeenTimestamp = message.getCreatedAt();
+            }
+        }
+
+        if (lastSeenTimestamp > mLastRead) {
+            PreferenceUtils.setLastRead(mChannelUrl, lastSeenTimestamp);
+            mLastRead = lastSeenTimestamp;
+        }
+    }
+
+    private final MessageCollectionHandler mMessageCollectionHandler = new MessageCollectionHandler() {
+        @Override
+        public void onMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action) {
+        }
+
+        @Override
+        public void onSucceededMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action) {
+
+            if (getActivity() == null) {
+                return;
+            }
+
+            getActivity().runOnUiThread(() -> {
+                switch (action) {
+                    case INSERT:
+                        mChatAdapter.insertSucceededMessages(messages);
+                        mChatAdapter.markAllMessagesAsRead();
+                        break;
+
+                    case REMOVE:
+                        mChatAdapter.removeSucceededMessages(messages);
+                        break;
+
+                    case UPDATE:
+                        mChatAdapter.updateSucceededMessages(messages);
+                        break;
+
+                    case CLEAR:
+                        mChatAdapter.clear();
+                        break;
+                }
+            });
+
+            updateLastSeenTimestamp(messages);
+
+        }
+
+        @Override
+        public void onPendingMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action) {
+            Log.d("SyncManager", "onPendingMessageEvent: size = " + messages.size() + ", action = " + action);
+            if (getActivity() == null) {
+                return;
+            }
+
+            getActivity().runOnUiThread(() -> {
+                switch (action) {
+                    case INSERT:
+                        List<BaseMessage> pendingMessages = new ArrayList<>();
+                        for (BaseMessage message : messages) {
+                            if (!mChatAdapter.failedMessageListContains(message)) {
+                                pendingMessages.add(message);
+                            }
+                        }
+                        mChatAdapter.insertSucceededMessages(pendingMessages);
+                        break;
+
+                    case REMOVE:
+                        mChatAdapter.removeSucceededMessages(messages);
+                        break;
+                }
+            });
+        }
+
+        @Override
+        public void onFailedMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action, final FailedMessageEventActionReason reason) {
+            Log.d("SyncManager", "onFailedMessageEvent: size = " + messages.size() + ", action = " + action);
+            if (getActivity() == null) {
+                return;
+            }
+
+            getActivity().runOnUiThread(() -> {
+                switch (action) {
+                    case INSERT:
+                        mChatAdapter.insertFailedMessages(messages);
+                        break;
+
+                    case REMOVE:
+                        mChatAdapter.removeFailedMessages(messages);
+                        break;
+                    case UPDATE:
+                        if (reason == FailedMessageEventActionReason.UPDATE_RESEND_FAILED) {
+                            mChatAdapter.updateFailedMessages(messages);
+                        }
+                        break;
+                }
+            });
+        }
+
+        @Override
+        public void onNewMessage(MessageCollection collection, BaseMessage message) {
+        }
+    };
+
 }

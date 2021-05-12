@@ -16,6 +16,8 @@
     <string name="select_channel_type">Select channel type</string>
     <string name="settings">Settings</string>
     <string name="blocked_members_list">Blocked members</string>
+    <string name="get_channel_failed">failed to get channel.</string>
+    <string name="send_message_error">Send failed with error: %d : %s</string>
 
     <plurals name="seconds">
         <item quantity="one">%d second</item>

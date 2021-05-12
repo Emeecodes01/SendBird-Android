@@ -68,7 +68,7 @@ public class DummyChatFragment extends Fragment {
     }
 
     private void joinChat() {
-        joinChatDialog.show(requireFragmentManager(), "");
+        joinChatDialog.show(getActivity().getSupportFragmentManager(), "");
         progressBar.setVisibility(View.GONE);
     }
 

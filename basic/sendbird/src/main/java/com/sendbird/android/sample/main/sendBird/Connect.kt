@@ -26,7 +26,6 @@ class Connect {
 
             if (e == null) {
                 PreferenceUtils.setConnected(true)
-
                 // Update the user's nickname
                 updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
                 PushUtils.registerPushHandler(MyFirebaseMessagingService())

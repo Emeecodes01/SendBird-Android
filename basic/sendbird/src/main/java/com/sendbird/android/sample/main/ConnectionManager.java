@@ -1,33 +1,41 @@
 package com.sendbird.android.sample.main;
 
+import android.content.Context;
+
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.sample.utils.PreferenceUtils;
+import com.sendbird.syncmanager.SendBirdSyncManager;
+import com.sendbird.syncmanager.handler.CompletionHandler;
 
 public class ConnectionManager {
+
     public static boolean isLogin() {
         return PreferenceUtils.getConnected();
     }
 
     public static void login(String userId, String accessToken, final SendBird.ConnectHandler handler) {
-        SendBird.connect(userId, accessToken,new SendBird.ConnectHandler() {
-            @Override
-            public void onConnected(User user, SendBirdException e) {
-                if (handler != null) {
-                    handler.onConnected(user, e);
-                }
+        SendBird.connect(userId, accessToken, (user, e) -> {
+            if (handler != null) {
+                handler.onConnected(user, e);
+                sync();
             }
         });
     }
 
+    public static void sync() {
+        Context context = PreferenceUtils.getContext();
+        String userId = PreferenceUtils.getUserId();
+        SyncManagerUtils.setup(context, userId, e -> SendBirdSyncManager.getInstance().resumeSync());
+    }
+
     public static void logout(final SendBird.DisconnectHandler handler) {
-        SendBird.disconnect(new SendBird.DisconnectHandler() {
-            @Override
-            public void onDisconnected() {
-                if (handler != null) {
-                    handler.onDisconnected();
-                }
+        SendBird.disconnect(() -> {
+            SendBirdSyncManager.getInstance().pauseSync();
+
+            if (handler != null) {
+                handler.onDisconnected();
             }
         });
     }
@@ -42,6 +50,7 @@ public class ConnectionManager {
             public void onReconnectSucceeded() {
                 if (handler != null) {
                     handler.onConnected(true);
+                    sync();
                 }
             }
 

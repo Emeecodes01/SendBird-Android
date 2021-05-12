@@ -236,23 +236,20 @@ public class GroupChannelListFragment extends Fragment {
      */
     private void setChannelPushPreferences(final GroupChannel channel, final boolean on) {
         // Change push preferences.
-        channel.setPushPreference(on, new GroupChannel.GroupChannelSetPushPreferenceHandler() {
-            @Override
-            public void onResult(SendBirdException e) {
-                if (e != null) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT)
-                            .show();
-                    return;
-                }
-
-                String toast = on
-                        ? "Push notifications have been turned ON"
-                        : "Push notifications have been turned OFF";
-
-                Toast.makeText(getActivity(), toast, Toast.LENGTH_SHORT)
+        channel.setPushPreference(on, e -> {
+            if (e != null) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT)
                         .show();
+                return;
             }
+
+            String toast = on
+                    ? "Push notifications have been turned ON"
+                    : "Push notifications have been turned OFF";
+
+            Toast.makeText(getActivity(), toast, Toast.LENGTH_SHORT)
+                    .show();
         });
     }
 
@@ -330,18 +327,15 @@ public class GroupChannelListFragment extends Fragment {
      * Loads the next channels from the current query instance.
      */
     private void loadNextChannelList() {
-        mChannelListQuery.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
-            @Override
-            public void onResult(List<GroupChannel> list, SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    e.printStackTrace();
-                    return;
-                }
+        mChannelListQuery.next((list, e) -> {
+            if (e != null) {
+                // Error!
+                e.printStackTrace();
+                return;
+            }
 
-                for (GroupChannel channel : list) {
-                    mChannelListAdapter.addLast(channel);
-                }
+            for (GroupChannel channel : list) {
+                mChannelListAdapter.addLast(channel);
             }
         });
     }
@@ -352,17 +346,14 @@ public class GroupChannelListFragment extends Fragment {
      * @param channel The channel to leave.
      */
     private void leaveChannel(final GroupChannel channel) {
-        channel.leave(new GroupChannel.GroupChannelLeaveHandler() {
-            @Override
-            public void onResult(SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    return;
-                }
-
-                // Re-query message list
-                refresh();
+        channel.leave(e -> {
+            if (e != null) {
+                // Error!
+                return;
             }
+
+            // Re-query message list
+            refresh();
         });
     }
 }

@@ -25,6 +25,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_NOTIFICATIONS_DO_NOT_DISTURB_FROM = "notificationsDoNotDisturbFrom";
     private static final String PREFERENCE_KEY_NOTIFICATIONS_DO_NOT_DISTURB_TO = "notificationsDoNotDisturbTo";
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_DISTINCT = "channelDistinct";
+    private static final String PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ = "last_read";
 
     private static Context mAppContext;
     private static Gson gson = new Gson();
@@ -37,6 +38,9 @@ public class PreferenceUtils {
         mAppContext = appContext;
     }
 
+    public static Context getContext() {
+        return mAppContext;
+    }
     private static SharedPreferences getSharedPreferences() {
         return mAppContext.getSharedPreferences("sendbird", Context.MODE_PRIVATE);
     }
@@ -53,6 +57,15 @@ public class PreferenceUtils {
     public static void setAccessToken(String accessToken) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(PREFERENCE_KEY_ACCESS_TOKEN, accessToken).apply();
+    }
+
+    public static void setLastRead(String groupChannelUrl, long ts) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putLong(PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ + groupChannelUrl, ts).apply();
+    }
+
+    public static long getLastRead(String groupChannelUrl) {
+        return getSharedPreferences().getLong(PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ + groupChannelUrl, Long.MAX_VALUE);
     }
 
     public static String getAccessToken() {

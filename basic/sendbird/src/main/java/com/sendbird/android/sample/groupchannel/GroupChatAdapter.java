@@ -23,6 +23,7 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
+import com.sendbird.android.sample.main.SyncManagerUtils;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.ImageUtils;
@@ -37,10 +38,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 
@@ -60,6 +65,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
     private GroupChannel mChannel;
     private List<BaseMessage> mMessageList;
+    private final List<BaseMessage> mFailedMessageList;
+    private Set<String> mResendingMessageSet;
 
     private OnItemClickListener mItemClickListener;
     private OnItemLongClickListener mItemLongClickListener;
@@ -85,6 +92,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     GroupChatAdapter(Context context) {
         mContext = context;
         mMessageList = new ArrayList<>();
+        mFailedMessageList = new ArrayList<>();
+        mResendingMessageSet = new HashSet<>();
     }
 
     void setContext(Context context) {
@@ -213,15 +222,15 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        BaseMessage message = mMessageList.get(position);
+        BaseMessage message = getMessage(position);
         boolean isContinuous = false;
         boolean isNewDay = false;
         boolean isTempMessage = false;
         Uri tempFileMessageUri = null;
 
         // If there is at least one item preceding the current one, check the previous message.
-        if (position < mMessageList.size() - 1) {
-            BaseMessage prevMessage = mMessageList.get(position + 1);
+        if (position < mMessageList.size() + mFailedMessageList.size() - 1) {
+            BaseMessage prevMessage = getMessage(position + 1);
 
             // If the date of the previous message is different, display the date before the message,
             // and also set isContinuous to false to show information such as the sender's nickname
@@ -232,7 +241,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             } else {
                 isContinuous = isContinuous(message, prevMessage);
             }
-        } else if (position == mMessageList.size() - 1) {
+        } else if (position == mFailedMessageList.size() + mMessageList.size() - 1) {
             isNewDay = true;
         }
 
@@ -278,7 +287,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
 
-        BaseMessage message = mMessageList.get(position);
+        BaseMessage message = getMessage(position);
 
         if (message instanceof UserMessage) {
             UserMessage userMessage = (UserMessage) message;
@@ -322,7 +331,17 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mMessageList.size();
+        return mMessageList.size() + mFailedMessageList.size();
+    }
+
+    private BaseMessage getMessage(int position) {
+        if (position < mFailedMessageList.size()) {
+            return mFailedMessageList.get(position);
+        } else if (position < mFailedMessageList.size() + mMessageList.size()) {
+            return mMessageList.get(position - mFailedMessageList.size());
+        } else {
+            return null;
+        }
     }
 
     void setChannel(GroupChannel channel) {
@@ -338,7 +357,25 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return false;
         }
 
-        return message.getSendingStatus() == BaseMessage.SendingStatus.FAILED;
+        return mFailedMessageList.contains(message);
+    }
+
+    public boolean isResendingMessage(BaseMessage message) {
+        if (message == null) {
+            return false;
+        }
+
+        return mResendingMessageSet.contains(getRequestId(message));
+    }
+
+    private String getRequestId(BaseMessage message) {
+        if (message instanceof UserMessage) {
+            return ((UserMessage) message).getRequestId();
+        } else if (message instanceof FileMessage) {
+            return ((FileMessage) message).getRequestId();
+        }
+
+        return "";
     }
 
 
@@ -397,8 +434,119 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mTempFileMessageUriTable.put(message.getRequestId(), uri);
     }
 
-    void addFirst(BaseMessage message) {
-        mMessageList.add(0, message);
+    void insertSucceededMessages(List<BaseMessage> messages) {
+        for (BaseMessage message : messages) {
+            int index = SyncManagerUtils.findIndexOfMessage(mMessageList, message);
+            mMessageList.add(index, message);
+        }
+
+        notifyDataSetChanged();
+    }
+
+    void updateSucceededMessages(List<BaseMessage> messages) {
+        for (BaseMessage message : messages) {
+            int index = SyncManagerUtils.getIndexOfMessage(mMessageList, message);
+            if (index != -1) {
+                mMessageList.set(index, message);
+                notifyItemChanged(index);
+            }
+        }
+    }
+
+    public void insertFailedMessages(List<BaseMessage> messages) {
+        synchronized (mFailedMessageList) {
+            for (BaseMessage message : messages) {
+                String requestId = getRequestId(message);
+                if (requestId.isEmpty()) {
+                    continue;
+                }
+
+                mResendingMessageSet.add(requestId);
+                mFailedMessageList.add(message);
+            }
+
+            Collections.sort(mFailedMessageList, new Comparator<BaseMessage>() {
+                @Override
+                public int compare(BaseMessage m1, BaseMessage m2) {
+                    long x = m1.getCreatedAt();
+                    long y = m2.getCreatedAt();
+
+                    return (x < y) ? 1 : ((x == y) ? 0 : -1);
+                }
+            });
+        }
+
+        notifyDataSetChanged();
+    }
+
+    void updateFailedMessages(List<BaseMessage> messages) {
+        synchronized (mFailedMessageList) {
+            for (BaseMessage message : messages) {
+                String requestId = getRequestId(message);
+                if (requestId.isEmpty()) {
+                    continue;
+                }
+
+                mResendingMessageSet.remove(requestId);
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    void removeFailedMessages(List<BaseMessage> messages) {
+        synchronized (mFailedMessageList) {
+            for (BaseMessage message : messages) {
+                String requestId = getRequestId(message);
+                mResendingMessageSet.remove(requestId);
+                mFailedMessageList.remove(message);
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    public int getLastReadPosition(long lastRead) {
+        for (int i = 0; i < mMessageList.size(); i++) {
+            if (mMessageList.get(i).getCreatedAt() == lastRead) {
+                return i + mFailedMessageList.size();
+            }
+        }
+
+        return 0;
+    }
+
+    boolean failedMessageListContains(BaseMessage message) {
+        if (mFailedMessageList.isEmpty()) {
+            return false;
+        }
+        for (BaseMessage failedMessage : mFailedMessageList) {
+            if (message instanceof UserMessage && failedMessage instanceof UserMessage) {
+                if (((UserMessage) message).getRequestId().equals(((UserMessage) failedMessage).getRequestId())) {
+                    return true;
+                }
+            } else if (message instanceof FileMessage && failedMessage instanceof FileMessage) {
+                if (((FileMessage) message).getRequestId().equals(((FileMessage) failedMessage).getRequestId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    void clear() {
+        mMessageList.clear();
+        notifyDataSetChanged();
+    }
+
+    void removeSucceededMessages(List<BaseMessage> messages) {
+        for (BaseMessage message : messages) {
+            int index = SyncManagerUtils.getIndexOfMessage(mMessageList, message);
+            if (index != -1) {
+                mMessageList.remove(index);
+            }
+        }
+
         notifyDataSetChanged();
     }
 

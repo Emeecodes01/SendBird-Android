@@ -28,15 +28,15 @@ public class GroupChannelActivity extends AppCompatActivity {
 
         UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "e5e5464ced91b325eee18fe842bffa43384a270a");
         UserData otherUserData = new UserData("1347", "Tamilore Oyola", "b1a2a46618d338605ef5589fc17a9b2042fd06df");
-        ConnectUserRequest createUserData = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+        ConnectUserRequest connectUserData = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                 true);
 
 //        new Chat().showChatList(this, R.id.container_group_channel, hostUserData);
 
-        new User().connectUser(createUserData, "ef533d923e468c0f29bb0c10d28b51a48d801f13", (userResponse) -> {
+        new User().connectUser(connectUserData, "6890058c524ad5198c661fee70aa8dd4c324d69b", (userResponse) -> {
             new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
 
-            new Chat().createChat(this, otherUserData, hostUserData);
+//            new Chat().createChat(this, otherUserData, hostUserData);
             return Unit.INSTANCE;
         }, (errorData) -> {
             Log.d("okh", errorData.getMessage() + "message");

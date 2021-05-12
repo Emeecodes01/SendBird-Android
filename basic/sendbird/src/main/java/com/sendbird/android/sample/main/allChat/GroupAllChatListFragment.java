@@ -248,10 +248,14 @@ public class GroupAllChatListFragment extends Fragment {
      */
     void enterGroupChannel(String channelUrl) {
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                .add(android.R.id.content, fragment)
-                .addToBackStack(fragment.getTag())
-                .commit();
+
+        if (getActivity() != null){
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .add(android.R.id.content, fragment)
+                    .addToBackStack(fragment.getTag())
+                    .commit();
+        }
+
     }
 
     private void refresh() {
