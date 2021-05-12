@@ -1,6 +1,5 @@
 package com.sendbird.main.sendBird
 
-import android.content.Context
 import android.text.TextUtils
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectHandler
@@ -15,23 +14,23 @@ import com.sendbird.utils.PushUtils
 
 class Connect {
 
-    fun login(context: Context, userData: UserData, handler: ConnectHandler) {
+    fun login(userData: UserData, handler: ConnectHandler) {
 
         if (TextUtils.isEmpty(userData.id) || TextUtils.isEmpty(userData.nickname)) {
             return
         }
 
-        ConnectionManager.login(userData.id, userData.accessToken, ConnectHandler { user, e ->
+        ConnectionManager.login(userData.id, userData.accessToken) { user, e ->
 
-            if (e == null) {
+            if (e == null && PreferenceUtils.getContext() != null) {
                 PreferenceUtils.setConnected(true)
                 updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
                 PushUtils.registerPushHandler(MyFirebaseMessagingService())
 
-                SyncManagerUtils.setup(context, userData.id) { SendBirdSyncManager.getInstance().resumeSync() }
+                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.id) { SendBirdSyncManager.getInstance().resumeSync() }
             }
             handler.onConnected(user, e)
-        })
+        }
     }
 
     private fun updateCurrentUserInfo(userId: String, userNickname: String, accessToken: String) {

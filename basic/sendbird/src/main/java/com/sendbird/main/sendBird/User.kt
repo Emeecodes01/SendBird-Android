@@ -18,7 +18,7 @@ class User {
         ConnectionManager.logout {}
     }
 
-    fun connectUser(context: Context, userData: ConnectUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
+    fun connectUser(userData: ConnectUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
 
         if (accessToken.isNullOrEmpty()) {
 
@@ -28,7 +28,7 @@ class User {
 
                 val loginData = UserData(userData.user_id, userData.nickname)
 
-                updateUser(context, loginData, {
+                updateUser(loginData, {
                     userResponse(it)
                 }, {
                     errorResponse(it)
@@ -40,16 +40,16 @@ class User {
 
         } else {
 
-            if (ConnectionManager.isLogin() && PreferenceUtils.getUserId() != null) {
+            if (ConnectionManager.isLogin() && PreferenceUtils.getUserId() != null && PreferenceUtils.getContext() != null) {
 
-                SyncManagerUtils.setup(context, userData.user_id) { SendBirdSyncManager.getInstance().resumeSync() }
+                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.user_id) { SendBirdSyncManager.getInstance().resumeSync() }
 
                 userResponse(UserResponse(userData.user_id, userData.nickname, userData.profile_url, accessToken))
 
             } else {
                 val loginData = UserData(userData.user_id, userData.nickname, accessToken)
 
-                Connect().login(context, loginData) { user, loginError ->
+                Connect().login(loginData) { user, loginError ->
 
                     user?.let {
                         userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, accessToken))
@@ -57,7 +57,7 @@ class User {
                     }
 
                     if (loginError != null) {
-                        updateUser(context, loginData, {
+                        updateUser(loginData, {
                             userResponse(it)
                         }, {
                             errorResponse(it)
@@ -72,13 +72,13 @@ class User {
         }
     }
 
-    private fun updateUser(context: Context, userData: UserData, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
+    private fun updateUser(userData: UserData, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
 
         networkRequest.updateUser(UpdateUserRequest(userData.id, true), { userResponse ->
 
             val loginData = UserData(userData.id, userData.nickname, userResponse.access_token)
 
-            Connect().login(context, loginData) { user, loginError ->
+            Connect().login(loginData) { user, loginError ->
 
                 user?.let {
                     userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, ""))

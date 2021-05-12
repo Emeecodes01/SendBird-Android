@@ -31,7 +31,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         ConnectUserRequest connectUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                 true);
 
-        new User().connectUser(this, connectUserData, "b1a2a46618d338605ef5589fc17a9b2042fd06df", (userResponse) -> {
+        new User().connectUser( connectUserData, "b1a2a46618d338605ef5589fc17a9b2042fd06df", (userResponse) -> {
 
             new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
 
