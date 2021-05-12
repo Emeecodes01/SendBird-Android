@@ -331,8 +331,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             int index = SyncManagerUtils.findIndexOfMessage(mMessageList, message);
             mMessageList.add(index, message);
         }
-
-        notifyDataSetChanged();
+        notifyItemInserted(getItemCount()-1);
     }
 
     void updateSucceededMessages(List<BaseMessage> messages) {
@@ -730,12 +729,9 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (longClickListener != null) {
-                itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        longClickListener.onUserMessageItemLongClick(message, position);
-                        return true;
-                    }
+                itemView.setOnLongClickListener(v -> {
+                    longClickListener.onUserMessageItemLongClick(message, position);
+                    return true;
                 });
             }
 

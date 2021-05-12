@@ -24,8 +24,6 @@ import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.Chat;
 import com.sendbird.main.sendBird.UserData;
 
-import org.greenrobot.eventbus.EventBus;
-
 public class GroupChannelListFragment extends BaseFragment {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
@@ -98,10 +96,6 @@ public class GroupChannelListFragment extends BaseFragment {
 
     @Override
     public void onResume() {
-
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, reconnect -> refresh());
 

@@ -33,6 +33,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -114,6 +115,7 @@ public class GroupChatFragment extends Fragment {
     private int mCurrentState = STATE_NORMAL;
     private BaseMessage mEditingMessage = null;
     private MessageCollection mMessageCollection;
+    private RecyclerView.SmoothScroller smoothScroller;
     private long mLastRead;
     private final MessageCollectionHandler mMessageCollectionHandler = new MessageCollectionHandler() {
         @Override
@@ -132,6 +134,8 @@ public class GroupChatFragment extends Fragment {
                     case INSERT:
                         mChatAdapter.insertSucceededMessages(messages);
                         mChatAdapter.markAllMessagesAsRead();
+                        smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
+                        mLayoutManager.startSmoothScroll(smoothScroller);
                         break;
 
                     case REMOVE:
@@ -168,6 +172,8 @@ public class GroupChatFragment extends Fragment {
                             }
                         }
                         mChatAdapter.insertSucceededMessages(pendingMessages);
+                        smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
+                        mLayoutManager.startSmoothScroll(smoothScroller);
                         break;
 
                     case REMOVE:
@@ -221,14 +227,25 @@ public class GroupChatFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mIMM = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (getActivity() != null) {
+            mIMM = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        }
+
+        smoothScroller = new LinearSmoothScroller(requireContext()) {
+            @Override
+            protected int getVerticalSnapPreference() {
+                return LinearSmoothScroller.SNAP_TO_START;
+            }
+        };
 
         if (savedInstanceState != null) {
             // Get channel URL from saved state.
             mChannelUrl = savedInstanceState.getString(STATE_CHANNEL_URL);
         } else {
             // Get channel URL from GroupChannelListFragment.
-            mChannelUrl = getArguments().getString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL);
+            if (getArguments() != null) {
+                mChannelUrl = getArguments().getString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL);
+            }
         }
 
         mLastRead = PreferenceUtils.getLastRead(mChannelUrl);
@@ -266,6 +283,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void onTyping() {
+
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -402,7 +420,8 @@ public class GroupChatFragment extends Fragment {
 
                     getActivity().runOnUiThread(() -> {
                         mChatAdapter.markAllMessagesAsRead();
-                        mLayoutManager.scrollToPositionWithOffset(mChatAdapter.getLastReadPosition(mLastRead), mRecyclerView.getHeight() / 2);
+                        smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
+                        mLayoutManager.startSmoothScroll(smoothScroller);
                     });
                 });
             }
@@ -609,9 +628,12 @@ public class GroupChatFragment extends Fragment {
         mChatAdapter.setItemLongClickListener(new GroupChatAdapter.OnItemLongClickListener() {
             @Override
             public void onUserMessageItemLongClick(UserMessage message, int position) {
-                if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                    showMessageOptionsDialog(message, position);
+                if (message.getSender().getUserId() != null){
+                    if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                        showMessageOptionsDialog(message, position);
+                    }
                 }
+
             }
 
             @Override
@@ -622,6 +644,7 @@ public class GroupChatFragment extends Fragment {
             public void onAdminMessageItemLongClick(AdminMessage message) {
             }
         });
+
     }
 
     private void showMessageOptionsDialog(final BaseMessage message, final int position) {
@@ -663,18 +686,13 @@ public class GroupChatFragment extends Fragment {
                 }
 
                 mMessageEditText.requestFocus();
-                mMessageEditText.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mIMM.showSoftInput(mMessageEditText, 0);
+                mMessageEditText.postDelayed(() -> {
+                    mIMM.showSoftInput(mMessageEditText, 0);
 
-                        mRecyclerView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mRecyclerView.scrollToPosition(position);
-                            }
-                        }, 500);
-                    }
+                    mRecyclerView.postDelayed(() -> {
+                        smoothScroller.setTargetPosition(position);
+                        mLayoutManager.startSmoothScroll(smoothScroller);
+                    }, 500);
                 }, 100);
                 break;
         }
@@ -902,7 +920,6 @@ public class GroupChatFragment extends Fragment {
                         }
 
                         // Update a sent message to RecyclerView
-//                        mChatAdapter.markMessageSent(userMessage);
                         mMessageCollection.handleSendMessageResponse(userMessage, e);
                     };
 
@@ -914,7 +931,6 @@ public class GroupChatFragment extends Fragment {
                         // Sending a message without URL preview information.
                         tempUserMessage = mChannel.sendUserMessage(text, handler);
                     }
-
 
                     if (mMessageCollection != null) {
                         mMessageCollection.appendMessage(tempUserMessage);
@@ -948,6 +964,10 @@ public class GroupChatFragment extends Fragment {
         if (mMessageCollection != null) {
             mMessageCollection.appendMessage(pendingMessage);
         }
+
+        smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
+        mLayoutManager.startSmoothScroll(smoothScroller);
+
     }
 
     private void setTypingStatus(boolean typing) {

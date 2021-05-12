@@ -4,12 +4,6 @@ import androidx.fragment.app.Fragment;
 
 import com.sendbird.android.SendBird;
 import com.sendbird.syncmanager.SendBirdSyncManager;
-import com.sendbird.utils.ConnectionEvent;
-import com.sendbird.utils.PreferenceUtils;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 public class BaseFragment extends Fragment {
 
@@ -18,10 +12,6 @@ public class BaseFragment extends Fragment {
         super.onResume();
 
         registerConnectionHandler();
-
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
     }
 
     protected String getConnectionHandlerId() {
@@ -51,14 +41,6 @@ public class BaseFragment extends Fragment {
         super.onPause();
 
         SendBird.removeConnectionHandler(getConnectionHandlerId());
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
-        }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(ConnectionEvent event) {
-        if (!event.isConnected() && PreferenceUtils.getConnected()) {
-        }
-    }
 }
