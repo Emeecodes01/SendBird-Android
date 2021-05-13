@@ -69,7 +69,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
             // If started from notification
-            Fragment fragment = GroupChatFragment.newInstance(channelUrl);
+            Fragment fragment = GroupChatFragment.newInstance(channelUrl, false);
             FragmentManager manager = getSupportFragmentManager();
             manager.beginTransaction()
                     .replace(R.id.container_group_channel, fragment)

@@ -266,7 +266,7 @@ public class GroupChannelListFragment extends Fragment {
      * @param channelUrl The URL of the channel to enter.
      */
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false);
         if (getActivity() !=null && !fragment.isAdded()){
             getActivity().getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, fragment)

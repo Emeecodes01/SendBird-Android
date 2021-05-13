@@ -15,6 +15,8 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_NOTIFICATIONS_DO_NOT_DISTURB_FROM = "notificationsDoNotDisturbFrom";
     private static final String PREFERENCE_KEY_NOTIFICATIONS_DO_NOT_DISTURB_TO = "notificationsDoNotDisturbTo";
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_DISTINCT = "channelDistinct";
+    private static final String SENDBIRD_APP_ID = "sendbird-app-id";
+    private static final String SENDBIRD_API_TOKEN = "sendbird-api-token";
 
     private static Context mAppContext;
 
@@ -33,6 +35,24 @@ public class PreferenceUtils {
     public static void setUserId(String userId) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(PREFERENCE_KEY_USER_ID, userId).apply();
+    }
+
+    public static void saveSendBirdId(String appId) {
+        SharedPreferences.Editor spe = getSharedPreferences().edit();
+        spe.putString(SENDBIRD_APP_ID, appId).apply();
+    }
+
+    public static String getSendbirdAppId() {
+        return getSharedPreferences().getString(SENDBIRD_APP_ID, "");
+    }
+
+    public static void saveSendbirdAPIToken(String token) {
+        SharedPreferences.Editor spe = getSharedPreferences().edit();
+        spe.putString(SENDBIRD_API_TOKEN, token).apply();
+    }
+
+    public static String getSendbirdApiToken() {
+        return getSharedPreferences().getString(SENDBIRD_API_TOKEN, "");
     }
 
     public static String getUserId() {

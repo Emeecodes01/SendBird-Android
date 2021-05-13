@@ -22,7 +22,7 @@ class Connect {
             return
         }
 
-        ConnectionManager.login(userData.id, userData.accessToken, ConnectHandler { user, e ->
+        ConnectionManager.login(userData.id, userData.accessToken, ConnectHandler { user, e: SendBirdException? ->
 
             if (e != null) {
                 Log.d("okh", e.message + "")

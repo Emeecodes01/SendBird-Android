@@ -25,9 +25,9 @@ class PagerFragment : Fragment() {
         val chatPager = view.chatViewPager
         val tabLayout = view.tabLayout
 
-        view.toolbar_group_channel.setNavigationOnClickListener {
-            activity?.supportFragmentManager?.popBackStack()
-        }
+//        view.toolbar_group_channel.setNavigationOnClickListener {
+//            activity?.supportFragmentManager?.popBackStack()
+//        }
 
         chatPagerAdapter = ChatPagerAdapter(this)
         chatPager.adapter = chatPagerAdapter

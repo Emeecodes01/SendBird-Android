@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/all_chats_nav"
+    app:startDestination="@id/pagerFragment">
+
+
+    <fragment
+        android:id="@+id/pagerFragment"
+        android:name="com.sendbird.android.sample.main.allChat.PagerFragment"
+        android:label="PagerFragment"
+        tools:layout="@layout/fragment_chat_pager">
+
+        <action
+            android:id="@+id/action_pagerFragment_to_chat_nav"
+            app:destination="@id/chat_nav">
+
+            <argument
+                android:name="channelUrl"
+                app:argType="string" />
+
+            <argument
+                android:name="sessionStart"
+                app:argType="string"
+                app:nullable="true" />
+
+        </action>
+    </fragment>
+
+    <include app:graph="@navigation/chat_nav" />
+
+</navigation>

@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,18 +23,24 @@ import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
+import com.sendbird.android.sample.main.sendBird.ChatMetaData;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.PreferenceUtils;
+import com.sendbird.android.sample.utils.SubjectImageUtils;
 import com.sendbird.android.sample.utils.TextUtils;
 import com.sendbird.android.sample.utils.TypingIndicator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -49,6 +56,8 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private final ConcurrentHashMap<String, Integer> mChannelImageNumMap;
     private final ConcurrentHashMap<String, ImageView> mChannelImageViewMap;
     private final ConcurrentHashMap<String, SparseArray<Bitmap>> mChannelBitmapMap;
+    private static final int VIEW_TYPE_EMPTY = 1;
+    private static final int VIEW_TYPE_CHANNEL= 0;
 
     private OnItemClickListener mItemClickListener;
     private OnItemLongClickListener mItemLongClickListener;
@@ -152,6 +161,12 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_EMPTY) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.layout_empty_chat_list, parent, false);
+            return new EmptyChatViewHolder(view);
+        }
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_all_chat_channel, parent, false);
         return new ChannelHolder(view);
@@ -159,12 +174,21 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ((ChannelHolder) holder).bind(mContext, position, mChannelList.get(position), mItemClickListener, mItemLongClickListener);
+        if (holder.getItemViewType() == VIEW_TYPE_CHANNEL) {
+            ((ChannelHolder) holder).bind(mContext, position, mChannelList.get(position), mItemClickListener, mItemLongClickListener);
+        }else  {
+            ((EmptyChatViewHolder) holder).bind();
+        }
+
     }
 
     @Override
     public int getItemCount() {
-        return mChannelList.size();
+        if (mChannelList.size() > 0)
+            return mChannelList.size();
+        else {
+            return 1;
+        }
     }
 
     void setGroupChannelList(List<GroupChannel> channelList) {
@@ -220,8 +244,9 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private class ChannelHolder extends RecyclerView.ViewHolder {
 
 //        memberCountText, topicText
-        TextView lastMessageText, unreadCountText, dateText;
+        TextView lastMessageText, unreadCountText, dateText, subjectTv, gradeTv, channelNameTv;
         LinearLayout typingIndicatorContainer;
+        ImageView subjectIcon;
 
         ChannelHolder(View itemView) {
             super(itemView);
@@ -230,6 +255,12 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             lastMessageText = (TextView) itemView.findViewById(R.id.text_group_channel_list_message);
             unreadCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_unread_count);
             dateText = (TextView) itemView.findViewById(R.id.text_group_channel_list_date);
+
+            subjectTv = (TextView) itemView.findViewById(R.id.text_group_channel_list_subject);
+            gradeTv = (TextView) itemView.findViewById(R.id.grade_tv);
+            channelNameTv = (TextView) itemView.findViewById(R.id.channel_name_tv);
+            subjectIcon = (ImageView) itemView.findViewById(R.id.subjectIcon);
+
 //            memberCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_member_count);
 
             typingIndicatorContainer = (LinearLayout) itemView.findViewById(R.id.container_group_channel_list_typing_indicator);
@@ -293,6 +324,26 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
             indicator.animate();
 
+            Set<String> keys = new HashSet();
+            keys.add(ChatMetaData.SUBJECT);
+            keys.add(ChatMetaData.GRADE);
+            keys.add(ChatMetaData.CHANNELNAME);
+            keys.add(ChatMetaData.STATE);
+
+
+            channel.getMetaData(keys, new BaseChannel.MetaDataHandler() {
+                @Override
+                public void onResult(Map<String, String> map, SendBirdException e) {
+                    String subject = map.get(ChatMetaData.SUBJECT);
+                    boolean isActive = map.get(ChatMetaData.STATE).equalsIgnoreCase("active");
+                    int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
+                    subjectIcon.setImageResource(subjectImgRes);
+                    subjectTv.setText(map.get(ChatMetaData.SUBJECT));
+                    gradeTv.setText(map.get(ChatMetaData.GRADE));
+                    channelNameTv.setText(map.get(ChatMetaData.CHANNELNAME));
+                }
+            });
+
             // debug
 //            typingIndicatorContainer.setVisibility(View.VISIBLE);
 //            lastMessageText.setText(("Someone is typing"));
@@ -321,7 +372,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 itemView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        longClickListener.onItemLongClick(channel);
+                        //longClickListener.onItemLongClick(channel);
 
                         // return true if the callback consumed the long click
                         return true;
@@ -330,5 +381,27 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
         }
 
+    }
+
+
+    private class EmptyChatViewHolder extends RecyclerView.ViewHolder {
+
+        public EmptyChatViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+
+        void bind() {
+            //do nothing
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        int count = mChannelList.size();
+        if (count > 0) {
+            return VIEW_TYPE_CHANNEL;
+        }else {
+            return VIEW_TYPE_EMPTY;
+        }
     }
 }

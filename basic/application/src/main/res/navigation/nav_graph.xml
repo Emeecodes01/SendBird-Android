@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragmentDecision">
+
+
+
+    <fragment
+        android:id="@+id/fragmentDecision"
+        android:name="com.ulesson.application.FragmentDecision"
+        android:label="FragmentDecision"
+        tools:layout="@layout/fragment_decision">
+
+        <action
+            android:id="@+id/action_fragmentDecision_to_chat_nav"
+            app:destination="@id/chat_nav">
+            <argument
+                android:name="channelUrl"
+                app:argType="string" />
+            <argument
+                android:name="sessionStart"
+                app:argType="string"
+                app:nullable="true" />
+        </action>
+        <action
+            android:id="@+id/action_fragmentDecision_to_all_chats_nav"
+            app:destination="@id/all_chats_nav" />
+
+    </fragment>
+
+
+    <include app:graph="@navigation/chat_nav" />
+
+    <action
+        android:id="@+id/action_nav_graph_pop"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+    <include app:graph="@navigation/all_chats_nav" />
+
+
+</navigation>

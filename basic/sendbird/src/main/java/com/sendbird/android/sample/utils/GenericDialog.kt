@@ -87,7 +87,7 @@ class GenericDialog : BaseBottomSheetDialog() {
 
     fun setPositiveButton(
             stringResId: Int,
-            backgroundResId: Int,
+            backgroundResId: Int?,
             callback: () -> Unit
     ): GenericDialog {
         this.positiveTextResId = stringResId

@@ -85,5 +85,14 @@
     <string name="connection_error">Connection Error</string>
     <string name="error_connecting">There was an error connecting you to a tutor</string>
     <string name="see_all"><u>See all</u></string>
+    <string name="you_have_no_session">You have no session</string>
+    <string name="accept_a_question_to_start_a_session">Accept a question to start a session</string>
+
+    <string name="end_chat_positive_btn_txt">RESUME</string>
+    <string name="quit">QUIT</string>
+    <string name="session_over">Session Over</string>
+    <string name="back_to_timeline">back to timeline</string>
+
+    <string name="close">CLOSE</string>
 
 </resources>

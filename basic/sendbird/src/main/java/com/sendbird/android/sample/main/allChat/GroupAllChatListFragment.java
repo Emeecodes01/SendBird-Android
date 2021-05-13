@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -27,11 +28,18 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.groupchannel.CreateGroupChannelActivity;
 import com.sendbird.android.sample.groupchannel.GroupChatFragment;
 import com.sendbird.android.sample.main.ConnectionManager;
+import com.sendbird.android.sample.main.sendBird.ChatMetaData;
+import com.sendbird.android.sample.utils.GenericDialog;
+import com.sendbird.android.sample.utils.TextUtils;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.Timer;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -55,6 +63,7 @@ public class GroupAllChatListFragment extends Fragment {
     public static GroupAllChatListFragment newInstance(@NonNull Boolean isActive) {
         GroupAllChatListFragment fragment = new GroupAllChatListFragment();
 
+
         Bundle args = new Bundle();
         args.putBoolean(GroupAllChatListFragment.IS_ACTIVE, isActive);
         fragment.setArguments(args);
@@ -65,7 +74,6 @@ public class GroupAllChatListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.fragment_all_chat_channel_list, container, false);
 
         setRetainInstance(true);
@@ -146,6 +154,7 @@ public class GroupAllChatListFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mChannelListAdapter);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), mLayoutManager.getOrientation()));
 
         // If user scrolls to bottom of the list, loads more channels.
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -156,6 +165,8 @@ public class GroupAllChatListFragment extends Fragment {
                 }
             }
         });
+
+
     }
 
     // Sets up channel list adapter
@@ -247,7 +258,8 @@ public class GroupAllChatListFragment extends Fragment {
      * @param channelUrl The URL of the channel to enter.
      */
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
+        Log.i("TAG", "Channel Url" + channelUrl + "\nIs Active" + isActive);
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, !isActive);
         requireActivity().getSupportFragmentManager().beginTransaction()
                 .add(android.R.id.content, fragment)
                 .addToBackStack(fragment.getTag())
@@ -286,17 +298,30 @@ public class GroupAllChatListFragment extends Fragment {
 
                 for (int i = 0; i < list.size(); i++) {
 
-                    if (list.get(i).getData().equalsIgnoreCase("active")) {
-                        isActiveChannel.add(list.get(i));
-                    } else {
-                        isPastChannel.add(list.get(i));
-                    }
+                    Set<String> keys = new HashSet();
+                    keys.add(ChatMetaData.STATE);
 
-                    if (isActive) {
-                        mChannelListAdapter.setGroupChannelList(isActiveChannel);
-                    } else {
-                        mChannelListAdapter.setGroupChannelList(isPastChannel);
-                    }
+                    GroupChannel channel = list.get(i);
+                    channel.getData();
+
+                    channel.getMetaData(keys, new BaseChannel.MetaDataHandler() {
+                        @Override
+                        public void onResult(Map<String, String> map, SendBirdException e) {
+                            String state = map.get(ChatMetaData.STATE);
+
+                            if (state.equalsIgnoreCase("active")) {
+                                isActiveChannel.add(channel);
+                            } else {
+                                isPastChannel.add(channel);
+                            }
+
+                            if (isActive) {
+                                mChannelListAdapter.setGroupChannelList(isActiveChannel);
+                            } else {
+                                mChannelListAdapter.setGroupChannelList(isPastChannel);
+                            }
+                        }
+                    });
 
                 }
 

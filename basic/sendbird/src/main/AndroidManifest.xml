@@ -14,23 +14,23 @@
 <!--    <uses-sdk tools:overrideLibrary="com.stfalcon.multiimageview" /> &lt;!&ndash; min 16 &ndash;&gt;-->
 
     <application
-        android:name=".main.BaseApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
+        android:windowSoftInputMode="adjustResize"
         tools:replace="android:allowBackup">
 
-        <activity
-            android:name=".groupchannel.GroupChannelActivity"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name=".groupchannel.GroupChannelActivity"-->
+<!--            android:label="@string/app_name">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
         <activity
             android:name=".main.LoginActivity"

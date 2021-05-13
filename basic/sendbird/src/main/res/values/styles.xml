@@ -58,4 +58,9 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <style name="TextAppearance.Tabs" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">@font/muli_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>

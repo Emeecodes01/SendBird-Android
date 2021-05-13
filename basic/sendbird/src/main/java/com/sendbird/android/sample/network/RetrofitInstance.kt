@@ -1,5 +1,6 @@
 package com.sendbird.android.sample.network
 
+import com.sendbird.android.sample.utils.PreferenceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -10,7 +11,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitInstance {
 
-    val appId = "58BB27E6-E4EA-4448-83F5-8E03A873AD6A"
+    val appId: String by lazy {
+        PreferenceUtils.getSendbirdAppId()
+    }
+
+    val apiToken: String by lazy {
+        PreferenceUtils.getSendbirdApiToken()
+    }
+
     val baseUrl = "https://api-${appId}.sendbird.com"
 
     fun getClient(): Retrofit {
@@ -26,7 +34,7 @@ class RetrofitInstance {
 
                         val request = original.newBuilder()
                                 .header("Content-Type", "application/json; charset=utf8")
-                                .header("Api-Token", "523ebc6218ee5284fd4743b2ef5a4f96dbd2f924")
+                                .header("Api-Token", apiToken)
                                 .method(original.method, original.body)
                                 .build()
 

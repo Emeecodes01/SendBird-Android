@@ -52,6 +52,7 @@
                     android:layout_marginLeft="10dp"
                     android:textColor="#313848"
                     android:textStyle="bold"
+                    app:fontFamily="@font/muli_regular"
                     app:layout_constraintBottom_toBottomOf="@id/profile_image"
                     app:layout_constraintStart_toEndOf="@id/profile_image"
                     app:layout_constraintTop_toTopOf="@id/profile_image"
@@ -68,23 +69,23 @@
                     app:layout_constraintTop_toBottomOf="@id/userName" />
 
                 <TextView
-                    android:id="@+id/countdownTxt"
+                    android:id="@+id/endChatTv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="19dp"
                     android:layout_marginRight="19dp"
                     android:background="@drawable/ic_countdown"
-                    android:drawableStart="@drawable/ic_clock"
-                    android:drawableLeft="@drawable/ic_clock"
+                    android:textAllCaps="true"
+                    app:fontFamily="@font/muli_regular"
                     android:drawablePadding="4dp"
                     android:letterSpacing="0.1"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="5dp"
-                    android:text="05:32"
+                    android:text="end session"
                     android:textColor="@color/color_white"
                     android:textFontWeight="700"
                     android:textSize="12sp"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     app:layout_constraintBottom_toBottomOf="@id/profile_image"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/profile_image" />
@@ -108,10 +109,35 @@
         android:paddingRight="12dp"
         android:paddingBottom="4dp"
         android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@id/layout_group_chat_chatbox"
+        app:layout_constraintBottom_toTopOf="@+id/end_timer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
+        tools:itemCount="3"
         tools:listitem="@layout/list_item_group_chat_file_me" />
+
+    <FrameLayout
+        android:id="@+id/end_timer"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="#E7C2B9"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/layout_group_chat_chatbox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <TextView
+            android:id="@+id/end_timer_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableStart="@drawable/ic_timer"
+            android:drawableLeft="@drawable/ic_timer"
+            android:drawablePadding="10dp"
+            android:text="05:47"
+            android:textColor="#313848"
+            app:fontFamily="@font/muli_bold" />
+    </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_group_chat_chatbox"
@@ -120,12 +146,14 @@
         android:layout_alignParentBottom="true"
         android:background="#FCFBF9"
         android:minHeight="80dp"
-        android:paddingStart="18dp"
+        android:paddingStart="16dp"
         android:paddingLeft="18dp"
-        android:paddingEnd="27dp"
+        android:paddingEnd="16dp"
         android:paddingRight="27dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/chat_body"
@@ -151,6 +179,8 @@
                 android:imeOptions="actionSend"
                 android:inputType="text"
                 android:maxLines="6"
+                app:fontFamily="@font/muli_regular"
+                android:textColor="@color/color_black"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="10dp"
                 android:textColorHint="#4D434958"
@@ -190,7 +220,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
+        <ImageView
             android:id="@+id/button_record_voice"
             android:layout_width="40dp"
             android:layout_height="40dp"

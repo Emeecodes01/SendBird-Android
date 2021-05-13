@@ -21,6 +21,7 @@
         android:paddingRight="8dp"
         android:paddingBottom="4dp"
         android:text="February 22"
+        android:fontFamily="@font/muli_regular"
         android:textColor="@color/groupChatDateText"
         android:textSize="14sp" />
 
@@ -66,6 +67,7 @@
             android:paddingLeft="12dp"
             android:paddingTop="8dp"
             android:paddingRight="12dp"
+            android:fontFamily="@font/muli_regular"
             android:text="Hi, how are you today?"
             android:textColor="@color/groupChatTextOther"
             android:textSize="16sp" />
@@ -111,6 +113,7 @@
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp"
                 android:text="\@Reddit"
+                android:fontFamily="@font/muli_regular"
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="12sp" />
 
@@ -124,6 +127,7 @@
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp"
                 android:text="Title will be here."
+                android:fontFamily="@font/muli_regular"
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="16sp" />
 
@@ -137,6 +141,7 @@
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp"
                 android:paddingBottom="4dp"
+                android:fontFamily="@font/muli_regular"
                 android:text="Description will be here. Blah Blah WWW Blah Wl Blah W WW WW ABCD EFG WW WW WW W Third Line. WWW Z XCVB QWER"
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="12sp" />
