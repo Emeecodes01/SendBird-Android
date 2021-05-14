@@ -4,24 +4,44 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import com.sendbird.android.*
+import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
+import com.sendbird.android.GroupChannelParams
 import com.sendbird.groupchannel.GroupChannelListFragment
 import com.sendbird.groupchannel.GroupChatFragment
 import com.sendbird.main.allChat.PagerFragment
-import com.sendbird.utils.PreferenceUtils
-import java.util.*
+import com.sendbird.network.createUser.ConnectUserRequest
 
 class Chat {
-
 
     /**
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
-    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData) {
+    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, channelUrl: (String) -> Unit, channelError: (String) -> Unit) {
 
-        PreferenceUtils.init(activity.baseContext)
+        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, error ->
+
+            groupChannel?.url?.let {
+                channelUrl(it)
+                val fragment = GroupChatFragment.newInstance(groupChannel.url)
+                activity.supportFragmentManager.beginTransaction()
+                        .add(android.R.id.content, fragment)
+                        .addToBackStack(fragment.tag)
+                        .commitAllowingStateLoss()
+            }
+            error?.message?.let {
+                channelError(it)
+                Connect().refreshChannel {
+                    createChat(activity, hostUserData, otherUserData, channelUrl, channelError)
+                }
+            }
+
+        }
+
+    }
+
+    fun createChatWithQuestion(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData) {
 
         createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
             val fragment = GroupChatFragment.newInstance(groupChannel.url)
@@ -36,11 +56,6 @@ class Chat {
     private fun createGroupChat(hostId: String, otherId: String, groupChannelCreateHandler: GroupChannelCreateHandler) {
         val userIdList = listOf(hostId, otherId)
         GroupChannel.createChannelWithUserIds(userIdList, true, "$hostId and $otherId Chat", "", "active", "", GroupChannelCreateHandler { groupChannel, e ->
-            if (e != null) {
-                // Error!
-                return@GroupChannelCreateHandler
-            }
-
             groupChannelCreateHandler.onResult(groupChannel, e)
         })
     }

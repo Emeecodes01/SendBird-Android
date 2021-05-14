@@ -1,6 +1,7 @@
 package com.sendbird.main.sendBird
 
 import android.text.TextUtils
+import android.util.Log
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectHandler
 import com.sendbird.android.SendBird.UserInfoUpdateHandler
@@ -30,6 +31,14 @@ class Connect {
                 SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.id) { SendBirdSyncManager.getInstance().resumeSync() }
             }
             handler.onConnected(user, e)
+        }
+    }
+
+    fun refreshChannel(connected : () -> Unit){
+        ConnectionManager.addConnectionManagementHandler("CHANNEL_HANDLER_GROUP_CHANNEL_LIST") { reconnect: Boolean ->
+           if (reconnect){
+               connected()
+           }
         }
     }
 

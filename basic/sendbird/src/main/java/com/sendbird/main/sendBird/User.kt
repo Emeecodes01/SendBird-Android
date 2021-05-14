@@ -1,6 +1,5 @@
 package com.sendbird.main.sendBird
 
-import android.content.Context
 import com.sendbird.main.ConnectionManager
 import com.sendbird.main.SyncManagerUtils
 import com.sendbird.network.NetworkRequest

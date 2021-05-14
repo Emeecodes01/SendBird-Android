@@ -86,18 +86,17 @@ public class GroupChannelListFragment extends BaseFragment {
         seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData));
 
         mChannelListAdapter = new GroupChannelListAdapter(getActivity());
-        mChannelListAdapter.load();
 
         setUpRecyclerView();
         setUpChannelListAdapter();
+
+        refresh();
 
         return rootView;
     }
 
     @Override
     public void onResume() {
-
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, reconnect -> refresh());
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
@@ -121,9 +120,6 @@ public class GroupChannelListFragment extends BaseFragment {
 
     @Override
     public void onPause() {
-        mChannelListAdapter.save();
-
-        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
         SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }
@@ -202,17 +198,25 @@ public class GroupChannelListFragment extends BaseFragment {
     }
 
     private void loadNextChannelList() {
-        mChannelListQuery.next((list, e) -> {
-            if (e != null) {
-                // Error!
-                e.printStackTrace();
-                return;
-            }
 
-            for (GroupChannel channel : list) {
-                mChannelListAdapter.addLast(channel);
+        try{
+            if (mChannelListQuery != null){
+                mChannelListQuery.next((list, e) -> {
+                    if (e != null) {
+                        // Error!
+                        e.printStackTrace();
+                        return;
+                    }
+
+                    for (GroupChannel channel : list) {
+                        mChannelListAdapter.addLast(channel);
+                    }
+                });
             }
-        });
+        }catch (Exception e){
+
+        }
+
     }
 
 }

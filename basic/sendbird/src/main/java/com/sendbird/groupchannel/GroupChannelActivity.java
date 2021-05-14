@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.sendbird.R;
+import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.Chat;
 import com.sendbird.main.sendBird.User;
 import com.sendbird.main.sendBird.UserData;
@@ -27,17 +28,30 @@ public class GroupChannelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-//        ConnectUserRequest connectUserData = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
-        ConnectUserRequest connectUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
-                true);
+        ConnectUserRequest connectUserRequest = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",true);
+//        ConnectUserRequest tutorUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+//                true);
 
-        new User().connectUser( connectUserData, "b1a2a46618d338605ef5589fc17a9b2042fd06df", (userResponse) -> {
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "b49ed82a4484c57b298384361aac759dbb67595b");
+        UserData tutorUserData = new UserData("09095549305", "Wapnen Gowok", "");
 
-            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
+
+
+        new User().connectUser(connectUserRequest, "b49ed82a4484c57b298384361aac759dbb67595b", (userResponse) -> {
+
+//            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
+            new Chat().createChat(this, hostUserData, tutorUserData, (channelUrl) -> {
+                Log.d("okh", channelUrl + "channelUrl");
+                return Unit.INSTANCE;
+            }, (errorData) -> {
+                Log.d("okh", errorData + "channel error");
+               return Unit.INSTANCE;
+            });
 
             return Unit.INSTANCE;
         }, (errorData) -> {
             Log.d("okh", errorData.getMessage() + "message");
+
             return Unit.INSTANCE;
         }, (updateAccessToken) -> {
             Log.d("okh", updateAccessToken + "update token");

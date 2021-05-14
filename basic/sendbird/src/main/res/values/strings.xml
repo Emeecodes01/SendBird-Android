@@ -76,16 +76,7 @@
     <string name="on_boarding_fragment_first_main">Get smarter\nmuch faster</string>
     <string name="on_boarding_fragment_third_sub">uLesson learning is personalised\nand customized to fit your needs</string>
     <string name="empty" />
-    <string name="tutor_is_ready">Your tutor is ready!</string>
-    <string name="join_chat">Join the chat session</string>
     <string name="sample_question">Use logarithms to solve the equation 25r = 32 x1, given the answer correct to 3 significant figures.</string>
-    <string name="join">JOIN</string>
-    <string name="no_tutor">No tutor available</string>
-    <string name="retry_for_tutor">Retry to get connected to another tutor</string>
-    <string name="retry">RETRY</string>
-    <string name="back">BACK</string>
-    <string name="connection_error">Connection Error</string>
-    <string name="error_connecting">There was an error connecting you to a tutor</string>
     <string name="see_all"><u>See all</u></string>
 
 </resources>
