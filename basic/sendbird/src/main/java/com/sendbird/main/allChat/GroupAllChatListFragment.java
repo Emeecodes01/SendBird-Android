@@ -70,7 +70,6 @@ public class GroupAllChatListFragment extends Fragment {
         }
 
         mChannelListAdapter = new GroupAllChatListAdapter(getActivity());
-        mChannelListAdapter.load();
 
         setUpRecyclerView();
         setUpChannelListAdapter();
@@ -105,9 +104,6 @@ public class GroupAllChatListFragment extends Fragment {
 
     @Override
     public void onPause() {
-        mChannelListAdapter.save();
-
-        ConnectionManager.removeConnectionManagementHandler(CONNECTION_HANDLER_ID);
         SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
         super.onPause();
     }

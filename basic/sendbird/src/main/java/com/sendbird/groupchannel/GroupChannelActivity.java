@@ -33,20 +33,18 @@ public class GroupChannelActivity extends AppCompatActivity {
 //                true);
 
         UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "b49ed82a4484c57b298384361aac759dbb67595b");
-        UserData tutorUserData = new UserData("09095549305", "Wapnen Gowok", "");
-
-
+        UserData tutorUserData = new UserData("7", "Wapnen Gowok", "");
 
         new User().connectUser(connectUserRequest, "b49ed82a4484c57b298384361aac759dbb67595b", (userResponse) -> {
 
-//            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
-            new Chat().createChat(this, hostUserData, tutorUserData, (channelUrl) -> {
-                Log.d("okh", channelUrl + "channelUrl");
-                return Unit.INSTANCE;
-            }, (errorData) -> {
-                Log.d("okh", errorData + "channel error");
-               return Unit.INSTANCE;
-            });
+            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
+//            new Chat().createChat(this, hostUserData, tutorUserData, (channelUrl) -> {
+//                Log.d("okh", channelUrl + "channelUrl");
+//                return Unit.INSTANCE;
+//            }, (errorData) -> {
+//                Log.d("okh", errorData + "channel error");
+//               return Unit.INSTANCE;
+//            });
 
             return Unit.INSTANCE;
         }, (errorData) -> {
