@@ -11,14 +11,14 @@ class ChatPagerAdapter(val fragment: Fragment) : FragmentStateAdapter(fragment) 
 
         return when (position) {
             0 -> {
-                GroupAllChatListFragment2.newInstance(true)
+                GroupAllActiveChatListFragment.newInstance(true)
             }
 
             1 -> {
-                GroupAllChatListFragment2.newInstance(false)
+                GroupAllInActiveChatListFragment.newInstance(false)
             }
 
-            else -> GroupAllChatListFragment2.newInstance(true)
+            else -> GroupAllActiveChatListFragment.newInstance(true)
         }
 
     }

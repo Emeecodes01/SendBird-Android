@@ -16,25 +16,24 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
+import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.groupchannel.CreateGroupChannelActivity
-import com.sendbird.android.sample.groupchannel.GroupChatFragment
-import com.sendbird.android.sample.groupchannel.GroupChatFragment.Companion.newInstance
 import com.sendbird.android.sample.main.ConnectionManager
-import com.sendbird.android.sample.main.ConnectionManager.ConnectionManagementHandler
 import com.sendbird.android.sample.main.sendBird.ChatMetaData
 import java.util.ArrayList
 import java.util.HashSet
 
 import com.sendbird.android.sample.R
+import com.sendbird.android.sample.main.sendBird.Question
 
-class GroupAllChatListFragment2 : Fragment() {
+class GroupAllActiveChatListFragment : Fragment() {
     private var mRecyclerView: RecyclerView? = null
     private var mLayoutManager: LinearLayoutManager? = null
     private var mChannelListAdapter: GroupAllChatListAdapter? = null
     private var mChannelListQuery: GroupChannelListQuery? = null
     private var mSwipeRefresh: SwipeRefreshLayout? = null
-    private var isActive: Boolean? = null
+    private var isActive: Boolean = true
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,7 +52,7 @@ class GroupAllChatListFragment2 : Fragment() {
             isActive = requireArguments().getBoolean(IS_ACTIVE, true)
         }
         mChannelListAdapter = GroupAllChatListAdapter(activity)
-        mChannelListAdapter!!.load()
+        //mChannelListAdapter!!.load()
         setUpRecyclerView()
         setUpChannelListAdapter()
         return rootView
@@ -213,7 +212,10 @@ class GroupAllChatListFragment2 : Fragment() {
             .addToBackStack(fragment.tag)
             .commit() */
 
-        val directions = PagerFragmentDirections.actionPagerFragmentToChatNav(channelUrl, "cdfs")
+        val directions = PagerFragmentDirections.actionPagerFragmentToChatNav(
+            channelUrl,
+            "cdfs", true
+        )
         findNavController().navigate(directions)
     }
 
@@ -229,7 +231,8 @@ class GroupAllChatListFragment2 : Fragment() {
      */
     private fun refreshChannelList(numChannels: Int) {
         mChannelListQuery = GroupChannel.createMyGroupChannelListQuery()
-        mChannelListQuery?.setLimit(numChannels)
+        mChannelListQuery?.limit = numChannels
+        mChannelListQuery?.customTypesFilter
         mChannelListQuery?.next(GroupChannelListQuery.GroupChannelListQueryResultHandler { list, e ->
             if (e != null) {
                 // Error!
@@ -238,29 +241,32 @@ class GroupAllChatListFragment2 : Fragment() {
             }
             mChannelListAdapter!!.clearMap()
             mChannelListAdapter!!.setAllGroupChannelList(list)
-            val isActiveChannel: MutableList<GroupChannel> = ArrayList()
-            val isPastChannel: MutableList<GroupChannel> = ArrayList()
-            for (i in list.indices) {
-                val keys: MutableSet<String> = HashSet<String>()
-                keys.add(ChatMetaData.STATE)
-                val channel = list[i]
-                channel.data
-                channel.getMetaData(
-                    keys
-                ) { map, e ->
-                    val state = map[ChatMetaData.STATE]
-                    if (state.equals("active", ignoreCase = true)) {
-                        isActiveChannel.add(channel)
-                    } else {
-                        isPastChannel.add(channel)
-                    }
-                    if (isActive!!) {
-                        mChannelListAdapter!!.setGroupChannelList(isActiveChannel)
-                    } else {
-                        mChannelListAdapter!!.setGroupChannelList(isPastChannel)
-                    }
-                }
+
+            val activeChannelList: List<GroupChannel> = list.filter { ch ->
+                val question = Gson().fromJson(ch.data, Question::class.java)
+                question.status == "active"
             }
+
+            mChannelListAdapter?.setGroupChannelList(activeChannelList)
+
+            //val isPastChannel: MutableList<GroupChannel> = ArrayList()
+//            for (i in list.indices) {
+//                val keys: MutableSet<String> = HashSet<String>()
+//                keys.add(ChatMetaData.STATE)
+//                val channel = list[i]
+//                channel.data
+//                channel.getMetaData(
+//                    keys
+//                ) { map, e ->
+//                    val state = map[ChatMetaData.STATE]
+//                    if (state.equals("active", ignoreCase = true)) {
+//                        activeChannelList.add(channel)
+//                    }
+//
+//                    mChannelListAdapter?.setGroupChannelList(activeChannelList)
+//
+//                }
+//            }
             if (list.isEmpty()) {
                 mRecyclerView!!.visibility = View.GONE
             } else {
@@ -282,19 +288,36 @@ class GroupAllChatListFragment2 : Fragment() {
                 e.printStackTrace()
                 return@GroupChannelListQueryResultHandler
             }
-            val isActiveChannel: MutableList<GroupChannel> = ArrayList()
-            val isPastChannel: MutableList<GroupChannel> = ArrayList()
+
+            val activeChannelList: MutableList<GroupChannel> = ArrayList()
+            //val isPastChannel: MutableList<GroupChannel> = ArrayList()
             for (i in list.indices) {
-                if (list[i].data.equals("active", ignoreCase = true)) {
-                    isActiveChannel.add(list[i])
-                } else {
-                    isPastChannel.add(list[i])
-                }
-                if (isActive!!) {
-                    mChannelListAdapter!!.addLast(isActiveChannel)
-                } else {
-                    mChannelListAdapter!!.addLast(isPastChannel)
-                }
+
+//                val keys: MutableSet<String> = HashSet<String>()
+//                keys.add(ChatMetaData.STATE)
+//                val channel = list[i]
+//                channel.data
+//                channel.getMetaData(
+//                    keys
+//                ) { map, e ->
+//                    val state = map[ChatMetaData.STATE]
+//                    if (state.equals("active", ignoreCase = true)) {
+//                        activeChannelList.add(channel)
+//                    }
+//                    mChannelListAdapter?.setGroupChannelList(activeChannelList)
+//                }
+
+
+//                if (list[i].data.equals("active", ignoreCase = true)) {
+//                    activeChannelList.add(list[i])
+//                }
+//
+//                mChannelListAdapter!!.addLast(activeChannelList)
+//
+//                if (isActive!!) {
+//                } else {
+//                    mChannelListAdapter!!.addLast(isPastChannel)
+//                }
             }
         })
     }
@@ -323,8 +346,8 @@ class GroupAllChatListFragment2 : Fragment() {
         private const val CHANNEL_LIST_LIMIT = 15
         private const val CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST"
         private const val CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST"
-        fun newInstance(isActive: Boolean): GroupAllChatListFragment {
-            val fragment = GroupAllChatListFragment()
+        fun newInstance(isActive: Boolean): GroupAllActiveChatListFragment {
+            val fragment = GroupAllActiveChatListFragment()
             val args = Bundle()
             args.putBoolean(IS_ACTIVE, isActive)
             fragment.arguments = args

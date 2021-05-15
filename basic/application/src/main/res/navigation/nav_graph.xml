@@ -16,14 +16,22 @@
         <action
             android:id="@+id/action_fragmentDecision_to_chat_nav"
             app:destination="@id/chat_nav">
+
             <argument
                 android:name="channelUrl"
                 app:argType="string" />
+
             <argument
                 android:name="sessionStart"
                 app:argType="string"
                 app:nullable="true" />
+
+            <argument
+                android:name="isActive"
+                app:argType="boolean"
+                android:defaultValue="true" />
         </action>
+
         <action
             android:id="@+id/action_fragmentDecision_to_all_chats_nav"
             app:destination="@id/all_chats_nav" />
@@ -35,8 +43,9 @@
 
     <action
         android:id="@+id/action_nav_graph_pop"
-        app:popUpTo="@id/nav_graph"
+        app:popUpTo="@id/fragmentDecision"
         app:popUpToInclusive="true" />
+
     <include app:graph="@navigation/all_chats_nav" />
 
 

@@ -14,6 +14,11 @@
         app:argType="string"
         app:nullable="true" />
 
+    <argument
+        android:name="isActive"
+        app:argType="boolean"
+        android:defaultValue="true" />
+
     <fragment
         android:id="@+id/groupChatFragment"
         android:name="com.sendbird.android.sample.groupchannel.GroupChatFragment"
@@ -29,6 +34,9 @@
             android:name="sessionStart"
             app:argType="string"
             app:nullable="true" />
+        <argument
+            android:name="isActive"
+            app:argType="boolean"/>
     </fragment>
 
 
@@ -36,7 +44,9 @@
         android:id="@+id/chatEndSessionFragment"
         android:name="com.sendbird.android.sample.groupchannel.endsession.ChatEndSessionFragment"
         android:label="ChatEndSessionFragment"
-        tools:layout="@layout/fragment_chat_session_ended"/>
+        tools:layout="@layout/fragment_chat_session_ended">
+
+    </fragment>
 
 
 </navigation>

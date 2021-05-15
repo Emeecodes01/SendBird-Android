@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.google.gson.Gson;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
@@ -27,6 +28,7 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.sendBird.ChatMetaData;
+import com.sendbird.android.sample.main.sendBird.Question;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.PreferenceUtils;
@@ -179,7 +181,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }else  {
             ((EmptyChatViewHolder) holder).bind();
         }
-
     }
 
     @Override
@@ -325,24 +326,29 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             indicator.animate();
 
             Set<String> keys = new HashSet();
-            keys.add(ChatMetaData.SUBJECT);
-            keys.add(ChatMetaData.GRADE);
-            keys.add(ChatMetaData.CHANNELNAME);
-            keys.add(ChatMetaData.STATE);
+            keys.add("hgvjhgkn");
+//            keys.add(ChatMetaData.GRADE);
+//            keys.add(ChatMetaData.CHANNELNAME);
+//            keys.add(ChatMetaData.STATE);
 
 
-            channel.getMetaData(keys, new BaseChannel.MetaDataHandler() {
-                @Override
-                public void onResult(Map<String, String> map, SendBirdException e) {
-                    String subject = map.get(ChatMetaData.SUBJECT);
-                    boolean isActive = map.get(ChatMetaData.STATE).equalsIgnoreCase("active");
-                    int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
-                    subjectIcon.setImageResource(subjectImgRes);
-                    subjectTv.setText(map.get(ChatMetaData.SUBJECT));
-                    gradeTv.setText(map.get(ChatMetaData.GRADE));
-                    channelNameTv.setText(map.get(ChatMetaData.CHANNELNAME));
-                }
-            });
+            String data = channel.getData();
+            Question question = new Gson().fromJson(data, Question.class);
+            boolean isActive = question.getStatus().equalsIgnoreCase("active");
+            int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(question.getSubject(), isActive);
+
+            subjectIcon.setImageResource(subjectImgRes);
+            subjectTv.setText(question.getSubject());
+            gradeTv.setText(question.getGrade());
+            channelNameTv.setText(question.getLearner_name());
+
+//            channel.getMetaData(keys, new BaseChannel.MetaDataHandler() {
+//                @Override
+//                public void onResult(Map<String, String> map, SendBirdException e) {
+//                    String subject = map.get("hgvjhgkn");
+//
+//                }
+//            });
 
             // debug
 //            typingIndicatorContainer.setVisibility(View.VISIBLE);

@@ -14,13 +14,13 @@ import com.sendbird.android.sample.groupchannel.endsession.EndChatSessionViewMod
 import com.sendbird.android.sample.main.sendBird.Chat
 import com.sendbird.android.sample.main.sendBird.UserData
 
-class FragmentDecision: Fragment(R.layout.fragment_decision) {
+class FragmentDecision : Fragment(R.layout.fragment_decision) {
 
     val endChatVM: EndChatSessionViewModel by activityViewModels()
 
     private val userData = UserData(
         "Tutor-6", "Emmanuel Ozibo",
-        "d34c6af89c6bbd4f218af2afb8b63460e4482afa"
+        "78ad2da2b4f8cdcc84c31aaacf86b4a58c279dd3"
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,11 +44,14 @@ class FragmentDecision: Fragment(R.layout.fragment_decision) {
                 .connectUserToSendBird(userData,
                     onConnected = {
                         val direct = FragmentDecisionDirections.actionFragmentDecisionToChatNav(
-                            "sendbird_group_channel_90806412_788f636bc06ce4d387ba32b414ee6f2f162c8537", "sfddfs")
+                            "sendbird_group_channel_90777780_7ddc25dc3c0a432d688c884db01aa5639043230e",
+                            "sfddfs"
+                        )
                         findNavController().navigate(direct)
                     },
                     connectionFailed = { err ->
-                        Toast.makeText(requireContext(), "${err.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "${err.message}", Toast.LENGTH_SHORT)
+                            .show()
                     })
         }
 
@@ -57,11 +60,13 @@ class FragmentDecision: Fragment(R.layout.fragment_decision) {
             Chat()
                 .connectUserToSendBird(userData,
                     onConnected = {
-                        val action = FragmentDecisionDirections.actionFragmentDecisionToAllChatsNav()
+                        val action =
+                            FragmentDecisionDirections.actionFragmentDecisionToAllChatsNav()
                         findNavController().navigate(action)
                     },
                     connectionFailed = { err ->
-                        Toast.makeText(requireContext(), "${err.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "${err.message}", Toast.LENGTH_SHORT)
+                            .show()
                     })
 
         }

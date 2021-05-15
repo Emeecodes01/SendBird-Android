@@ -36,13 +36,16 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.groupchannel.endsession.ChatEndSessionFragment
 import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.main.sendBird.ChatMetaData
+import com.sendbird.android.sample.main.sendBird.Question
 import com.sendbird.android.sample.utils.*
 import com.sendbird.android.sample.utils.WebUtils.UrlPreviewAsyncTask
+import kotlinx.android.synthetic.main.fragment_group_chat.*
 import org.json.JSONException
 import java.io.File
 import java.lang.Exception
@@ -72,7 +75,7 @@ class GroupChatFragment : Fragment() {
     private var mCurrentState = STATE_NORMAL
     private var mEditingMessage: BaseMessage? = null
     private var mChatBox: ConstraintLayout? = null
-    private var viewOnly: Boolean = false
+    private val viewOnly: Boolean by lazy { !groupChatFragmentArgs.isActive }
     var groupChatEventListener: GroupChatClickListener? = null
 
     private val uploadFileDialog = GenericDialog().newInstance(TextUtils.THEME_MATH)
@@ -112,7 +115,6 @@ class GroupChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_group_chat, container, false)
-        viewOnly = requireArguments().getBoolean(IS_VIEW_ONLY)
 
         retainInstance = true
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root)
@@ -127,8 +129,9 @@ class GroupChatFragment : Fragment() {
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload)
         timerFrame = rootView.findViewById(R.id.end_timer)
         timerTv = rootView.findViewById(R.id.end_timer_tv)
+
         toolbar_group_channel?.setNavigationOnClickListener(View.OnClickListener { view: View? ->
-            requireActivity().supportFragmentManager.popBackStack()
+            //requireActivity().onBackPressed()
         })
 
         if (viewOnly) {
@@ -136,7 +139,6 @@ class GroupChatFragment : Fragment() {
             timerFrame?.visibility = View.GONE
             endChatTv?.visibility = View.GONE
         }
-
 
         // val minute: Long = 5
         //countTime(minute)
@@ -146,6 +148,7 @@ class GroupChatFragment : Fragment() {
             }
             false
         })
+
         mUploadFileButton?.setOnClickListener(View.OnClickListener { v: View? -> pickMedia() })
         mIsTyping = false
         mMessageEditText?.addTextChangedListener(object : TextWatcher {
@@ -167,6 +170,10 @@ class GroupChatFragment : Fragment() {
         setUpRecyclerView()
         setHasOptionsMenu(true)
 
+        mChannel?.let { channel ->
+            mUserName?.text = channel.name
+        }
+
         return rootView
     }
 
@@ -186,32 +193,27 @@ class GroupChatFragment : Fragment() {
 
 
     private fun endChat() {
+
         mChannel?.let { channel ->
-            channel.updateMetaData(
-                mapOf(
-                    ChatMetaData.STATE to "inactive"
-                )
-            ) { _, e ->
+            val question = Gson().fromJson(channel.data, Question::class.java)
+            val strData = Gson().toJson(question.copy(status = "inactive"))
+
+
+            channel.updateChannel(channel.name, channel.coverUrl, strData) { data, e ->
                 if (e != null) {
-                    return@updateMetaData
+                    e.printStackTrace()
+                    return@updateChannel
                 }
 
                 showSessionEndFragment()
             }
         }
+
     }
 
 
+
     private fun showSessionEndFragment() {
-        val fragment = ChatEndSessionFragment().apply {
-            listener = object: ChatEndSessionFragment.ChatEndListener {
-                override fun onBackToTLClicked() {
-                    groupChatEventListener?.onBackToTimelineClicked()
-                }
-
-            }
-        }
-
         countDownTimer?.cancel()
 
         val direction = GroupChatFragmentDirections.actionNavGraphToChatEndSessionFragment()

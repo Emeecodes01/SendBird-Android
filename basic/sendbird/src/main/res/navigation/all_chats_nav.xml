@@ -25,6 +25,10 @@
                 app:argType="string"
                 app:nullable="true" />
 
+            <argument
+                android:name="isActive"
+                app:argType="boolean"/>
+
         </action>
     </fragment>
 

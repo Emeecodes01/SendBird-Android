@@ -54,13 +54,15 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    //implementation(files("libs/sendbird-debug.aar"))
-    implementation(project(":sendbird"))
+    implementation(files("libs/sendbird-debug.aar"))
+    //implementation(project(":sendbird"))
 
     def nav_version = "2.3.5"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation("com.sendbird.sdk:sendbird-android-sdk:3.0.163")
     implementation("androidx.multidex:multidex:2.0.1")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }
