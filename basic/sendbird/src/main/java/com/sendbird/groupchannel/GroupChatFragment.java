@@ -266,11 +266,14 @@ public class GroupChatFragment extends Fragment {
 
         setUpRecyclerView();
 
-        createMessageCollection(mChannelUrl);
+        createMessageCollection(mChannelUrl, new GroupChannel.GroupChannelGetHandler() {
+            @Override
+            public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                handleTimer(groupChannel);
+            }
+        });
 
         onBack();
-
-        handleTimer();
 
         sendMessage();
 
@@ -340,25 +343,35 @@ public class GroupChatFragment extends Fragment {
         });
     }
 
-    private void handleTimer() {
-        new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
+    private void handleTimer(GroupChannel groupChannel) {
 
-            int countDownMinutes = countDownTime / 60;
-            int countDownSeconds = countDownTime - (60 * countDownMinutes);
+        if (groupChannel.getData().equals("active")) {
+            new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
 
-            countTime(countDownMinutes, countDownSeconds);
+                int countDownMinutes = countDownTime / 60;
+                int countDownSeconds = countDownTime - (60 * countDownMinutes);
 
-            return Unit.INSTANCE;
-        }, () -> {
+                countTime(countDownMinutes, countDownSeconds);
 
-            countdownTxt.setVisibility(View.GONE);
+                return Unit.INSTANCE;
+            }, () -> {
 
-            mMessageEditText.setEnabled(false);
-            mUploadFileButton.setEnabled(false);
-            button_voice.setEnabled(false);
+                disableChat();
 
-            return Unit.INSTANCE;
-        });
+                return Unit.INSTANCE;
+            });
+        } else {
+            disableChat();
+        }
+
+    }
+
+    private void disableChat() {
+        countdownTxt.setVisibility(View.GONE);
+
+        mMessageEditText.setEnabled(false);
+        mUploadFileButton.setEnabled(false);
+        button_voice.setEnabled(false);
     }
 
     @SuppressLint("SetTextI18n")
@@ -628,7 +641,7 @@ public class GroupChatFragment extends Fragment {
         mChatAdapter.setItemLongClickListener(new GroupChatAdapter.OnItemLongClickListener() {
             @Override
             public void onUserMessageItemLongClick(UserMessage message, int position) {
-                if (message.getSender().getUserId() != null){
+                if (message.getSender().getUserId() != null) {
                     if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                         showMessageOptionsDialog(message, position);
                     }
@@ -723,7 +736,7 @@ public class GroupChatFragment extends Fragment {
 
     }
 
-    private void createMessageCollection(final String channelUrl) {
+    private void createMessageCollection(final String channelUrl, GroupChannel.GroupChannelGetHandler handler) {
         GroupChannel.getChannel(channelUrl, (groupChannel, e) -> {
             if (e != null) {
                 MessageCollection.create(channelUrl, mMessageFilter, mLastRead, (messageCollection, e1) -> {
@@ -767,6 +780,8 @@ public class GroupChatFragment extends Fragment {
 
                 fetchInitialMessages();
             }
+
+            handler.onResult(groupChannel, e);
         });
     }
 

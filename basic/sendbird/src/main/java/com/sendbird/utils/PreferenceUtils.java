@@ -90,17 +90,14 @@ public class PreferenceUtils {
 
     public static void setEndTime(HashMap<String, Integer> endTimeMap) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
-        editor.putString(PREFERENCE_COUNTDOWN_TIME, gson.toJson(endTimeMap)).apply();
+        HashMap<String, Integer> endTime = getEndTime();
+        if (endTime != null) {
+            endTime.putAll(endTimeMap);
+        }else{
+            endTime = endTimeMap;
+        }
+        editor.putString(PREFERENCE_COUNTDOWN_TIME, gson.toJson(endTime)).apply();
     }
-
-//    public static void setCountDown(String time) {
-//        SharedPreferences.Editor editor = getSharedPreferences().edit();
-//        editor.putString(PREFERENCE_KEY_NICKNAME, nickname).apply();
-//    }
-//
-//    public static String getCountDown() {
-//        return getSharedPreferences().getString(PREFERENCE_KEY_NICKNAME, "");
-//    }
 
     public static boolean getConnected() {
         return getSharedPreferences().getBoolean(PREFERENCE_KEY_CONNECTED, false);
