@@ -10,10 +10,11 @@ import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.SendBird.ConnectHandler
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
-import com.sendbird.android.sample.groupchannel.GroupChatFragment
-import com.sendbird.android.sample.groupchannel.GroupChatFragment.Companion.CONNECTION_HANDLER_ID
+
 import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.main.allChat.PagerFragment
+import com.sendbird.android.sample.main.chat.GroupChatFragment
+import com.sendbird.android.sample.main.chat.GroupChatFragment.Companion.CONNECTION_HANDLER_ID
 import com.sendbird.android.sample.utils.PreferenceUtils
 
 class Chat : GroupChatFragment.GroupChatClickListener {

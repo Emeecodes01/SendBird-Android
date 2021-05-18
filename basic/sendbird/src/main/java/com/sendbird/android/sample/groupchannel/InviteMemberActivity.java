@@ -18,6 +18,7 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.UserListQuery;
 import com.sendbird.android.sample.R;
+import com.sendbird.android.sample.main.chat.GroupChatFragment;
 
 import java.util.ArrayList;
 import java.util.List;

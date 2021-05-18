@@ -7,10 +7,9 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.FragmentNavigatorDestinationBuilder
 import androidx.navigation.fragment.findNavController
-import com.sendbird.android.sample.groupchannel.endsession.EndChatSessionViewModel
+import com.sendbird.android.sample.main.chat.GroupChatFragment
+import com.sendbird.android.sample.main.chat.endsession.EndChatSessionViewModel
 import com.sendbird.android.sample.main.sendBird.Chat
 import com.sendbird.android.sample.main.sendBird.UserData
 
@@ -20,7 +19,7 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
 
     private val userData = UserData(
         "Tutor-6", "Emmanuel Ozibo",
-        "78ad2da2b4f8cdcc84c31aaacf86b4a58c279dd3"
+        "4d19b65f2c27265e6409bcf26f276b21f999a3e6"
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,8 +43,8 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
                 .connectUserToSendBird(userData,
                     onConnected = {
                         val direct = FragmentDecisionDirections.actionFragmentDecisionToChatNav(
-                            "sendbird_group_channel_90777780_7ddc25dc3c0a432d688c884db01aa5639043230e",
-                            "sfddfs"
+                            "sendbird_group_channel_90777780_5251c7abb2b9d2e36b2b5f2242c763dbb87e8dcc",
+                            GroupChatFragment.DASHBOARD, "fragdecsion://fragment_start"
                         )
                         findNavController().navigate(direct)
                     },
@@ -61,7 +60,8 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
                 .connectUserToSendBird(userData,
                     onConnected = {
                         val action =
-                            FragmentDecisionDirections.actionFragmentDecisionToAllChatsNav()
+                            FragmentDecisionDirections.actionFragmentDecisionToAllChatsNav("fragdecsion://fragment_start",
+                            "chat_list")
                         findNavController().navigate(action)
                     },
                     connectionFailed = { err ->

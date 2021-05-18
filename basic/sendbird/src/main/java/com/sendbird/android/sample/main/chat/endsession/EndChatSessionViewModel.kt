@@ -1,4 +1,4 @@
-package com.sendbird.android.sample.groupchannel.endsession
+package com.sendbird.android.sample.main.chat.endsession
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

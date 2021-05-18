@@ -1,4 +1,4 @@
-package com.sendbird.android.sample.groupchannel
+package com.sendbird.android.sample.main.chat
 
 import android.Manifest
 import android.app.Activity
@@ -36,10 +36,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
-import com.sendbird.android.sample.groupchannel.endsession.ChatEndSessionFragment
+import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
+import com.sendbird.android.sample.groupchannel.GroupChatAdapter
 import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.main.sendBird.ChatMetaData
 import com.sendbird.android.sample.main.sendBird.Question
@@ -50,6 +52,7 @@ import org.json.JSONException
 import java.io.File
 import java.lang.Exception
 import java.util.ArrayList
+import java.util.concurrent.TimeUnit
 
 class GroupChatFragment : Fragment() {
     private var countDownTimer: CountDownTimer? = null
@@ -61,6 +64,7 @@ class GroupChatFragment : Fragment() {
     private var mLayoutManager: LinearLayoutManager? = null
     private var mMessageEditText: EditText? = null
     private var mRecordVoiceButton: ImageView? = null
+    private var mProfileImage: ImageView? = null
     private var mUploadFileButton: ImageButton? = null
     private var toolbar_group_channel: Toolbar? = null
     private var timerFrame: FrameLayout? = null
@@ -77,6 +81,8 @@ class GroupChatFragment : Fragment() {
     private var mChatBox: ConstraintLayout? = null
     private val viewOnly: Boolean by lazy { !groupChatFragmentArgs.isActive }
     var groupChatEventListener: GroupChatClickListener? = null
+    private var recordVoice: Boolean = true
+    private val FORMAT = "%02d:%02d"
 
     private val uploadFileDialog = GenericDialog().newInstance(TextUtils.THEME_MATH)
         .setTitle("Upload a file")
@@ -93,16 +99,11 @@ class GroupChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mIMM = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//        mChannelUrl = if (savedInstanceState != null) {
-//            // Get channel URL from saved state.
-//            savedInstanceState.getString(STATE_CHANNEL_URL)
-//        } else {
-//            // Get channel URL from GroupChannelListFragment.
-//            arguments!!.getString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL)
-//        }
+        mIMM =
+            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
         Log.d(LOG_TAG, mChannelUrl)
-        mChatAdapter = GroupChatAdapter(activity!!)
+        mChatAdapter = GroupChatAdapter(requireContext())
         setUpChatListAdapter()
 
         // Load messages from cache.
@@ -129,10 +130,18 @@ class GroupChatFragment : Fragment() {
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload)
         timerFrame = rootView.findViewById(R.id.end_timer)
         timerTv = rootView.findViewById(R.id.end_timer_tv)
+        mProfileImage = rootView.findViewById(R.id.profile_image)
 
         toolbar_group_channel?.setNavigationOnClickListener(View.OnClickListener { view: View? ->
-            //requireActivity().onBackPressed()
+            goBack()
         })
+
+        requireActivity().onBackPressedDispatcher
+            .addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true){
+                override fun handleOnBackPressed() {
+                    goBack()
+                }
+            })
 
         if (viewOnly) {
             mChatBox?.visibility = View.GONE
@@ -160,21 +169,50 @@ class GroupChatFragment : Fragment() {
                 if (s.length == 0) {
                     setTypingStatus(false)
                 }
+
+                val buttonIcon = if (s.isNotEmpty()) {
+                    recordVoice = false
+                    R.drawable.ic_send_btn
+                } else {
+                    recordVoice = true
+                    R.drawable.ic_voice
+                }
+                mRecordVoiceButton?.setImageResource(buttonIcon)
             }
 
             override fun afterTextChanged(s: Editable) {}
         })
+
+        mRecordVoiceButton?.setOnClickListener {
+            if (recordVoice) {
+                Toast.makeText(
+                    requireContext(),
+                    "Record Voice Feature on the way...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                sendTextMessage()
+            }
+        }
+
         endChatTv?.setOnClickListener {
             setUpEndChatClickListeners()
         }
         setUpRecyclerView()
         setHasOptionsMenu(true)
-
-        mChannel?.let { channel ->
-            mUserName?.text = channel.name
-        }
-
         return rootView
+    }
+
+    private fun goBack() {
+        when (groupChatFragmentArgs.entryPoint) {
+            DASHBOARD -> {
+                //show navigate to dashboard
+                findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+            }
+            else -> {
+                findNavController().popBackStack()
+            }
+        }
     }
 
     private fun setUpEndChatClickListeners() {
@@ -193,13 +231,12 @@ class GroupChatFragment : Fragment() {
 
 
     private fun endChat() {
-
         mChannel?.let { channel ->
             val question = Gson().fromJson(channel.data, Question::class.java)
-            val strData = Gson().toJson(question.copy(status = "inactive"))
+            val strData = Gson().toJson(question.copy(status = "past", startTime = "", state = "past"))
 
 
-            channel.updateChannel(channel.name, channel.coverUrl, strData) { data, e ->
+            channel.updateChannel(channel.name, channel.coverUrl, strData) { _, e ->
                 if (e != null) {
                     e.printStackTrace()
                     return@updateChannel
@@ -208,22 +245,15 @@ class GroupChatFragment : Fragment() {
                 showSessionEndFragment()
             }
         }
-
     }
-
 
 
     private fun showSessionEndFragment() {
         countDownTimer?.cancel()
 
-        val direction = GroupChatFragmentDirections.actionNavGraphToChatEndSessionFragment()
+        val direction =
+            GroupChatFragmentDirections.actionNavGraphToChatEndSessionFragment(groupChatFragmentArgs.deeplinkUrl)
         findNavController().navigate(direction)
-
-//        requireFragmentManager().beginTransaction()
-//            .replace(android.R.id.content, fragment)
-//            .addToBackStack(ChatEndSessionFragment::class.simpleName)
-//            .commit()
-
     }
 
     private fun countTime(minute: Long) {
@@ -238,10 +268,27 @@ class GroupChatFragment : Fragment() {
     }
 
     private fun timer(minute: Long) {
-        countDownTimer = object : CountDownTimer(59000, 1000) {
-            override fun onTick(l: Long) {
-                timerTv!!.text =
-                    String.format("%02d", minute - 1) + ":" + String.format("%02d", l / 1000)
+        countDownTimer = object : CountDownTimer(minute * 60 * 1000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+
+                val mins = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
+                if (mins <= 4 && !viewOnly) {
+                    timerFrame!!.visibility = View.VISIBLE
+                }
+
+                val timeStr = "" + String.format(
+                    FORMAT,
+                    TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) - TimeUnit.HOURS.toMinutes(
+                        TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+                    ),
+                    TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) - TimeUnit.MINUTES.toSeconds(
+                        TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
+                    )
+                )
+
+                Log.i("TIME: ", timeStr)
+
+                timerTv!!.text = timeStr
             }
 
             override fun onFinish() {
@@ -260,14 +307,14 @@ class GroupChatFragment : Fragment() {
     private fun sendTextMessage() {
         val userInput = mMessageEditText!!.text.toString()
         if (mCurrentState == STATE_EDIT) {
-            if (userInput.length > 0) {
+            if (userInput.isNotEmpty()) {
                 if (mEditingMessage != null) {
                     editMessage(mEditingMessage!!, userInput)
                 }
             }
             setState(STATE_NORMAL, null, -1)
         } else {
-            if (userInput.length > 0) {
+            if (userInput.isNotEmpty()) {
                 sendUserMessage(userInput)
                 mMessageEditText!!.setText("")
             }
@@ -285,6 +332,7 @@ class GroupChatFragment : Fragment() {
                         return@GroupChannelGetHandler
                     }
                     mChannel = groupChannel
+                    setUpUIChannelElements()
                     mChatAdapter!!.setChannel(mChannel)
                     mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
                     updateActionBarTitle()
@@ -304,6 +352,19 @@ class GroupChatFragment : Fragment() {
         }
     }
 
+    private fun setUpUIChannelElements() {
+        mChannel?.let { channel ->
+            val question = Gson().fromJson(channel.data, Question::class.java)
+            mUserName?.text = question.learner_name
+
+            Glide.with(this).load(question.learner_avatar)
+                .error(R.drawable.profile_thumbnail)
+                .placeholder(R.drawable.profile_thumbnail)
+                .into(mProfileImage!!)
+
+        }
+    }
+
     private fun retriveSessionTimeCounter(groupChannel: GroupChannel?) {
         val keys = setOf(ChatMetaData.SESSION_START_TIME)
         groupChannel?.let { channel ->
@@ -313,8 +374,15 @@ class GroupChatFragment : Fragment() {
                 }
 
                 val startTimeStr = metaData[ChatMetaData.SESSION_START_TIME]
-                countTime(5)
+
+                startChatTimer(startTimeStr)
             }
+        }
+    }
+
+    private fun startChatTimer(timeStr: String?) {
+        if (!viewOnly) {
+            countTime(6)
         }
     }
 
@@ -483,7 +551,7 @@ class GroupChatFragment : Fragment() {
     private fun showMessageOptionsDialog(message: BaseMessage, position: Int) {
         val options = arrayOf("Edit message", "Delete message")
         val builder = AlertDialog.Builder(
-            activity!!
+            requireContext()
         )
         builder.setItems(options) { dialog, which ->
             if (which == 0) {
@@ -512,7 +580,7 @@ class GroupChatFragment : Fragment() {
                     messageString = ""
                 }
                 mMessageEditText!!.setText(messageString)
-                if (messageString.length > 0) {
+                if (messageString.isNotEmpty()) {
                     mMessageEditText!!.setSelection(0, messageString.length)
                 }
                 mMessageEditText!!.requestFocus()
@@ -539,7 +607,7 @@ class GroupChatFragment : Fragment() {
     }
 
     private fun retryFailedMessage(message: BaseMessage) {
-        AlertDialog.Builder(activity!!)
+        AlertDialog.Builder(requireContext())
             .setMessage("Retry?")
             .setPositiveButton(R.string.resend_message) { dialog, which ->
                 if (which == DialogInterface.BUTTON_POSITIVE) {
@@ -606,7 +674,7 @@ class GroupChatFragment : Fragment() {
 
     private fun requestStoragePermissions() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(
-                activity!!,
+                requireActivity(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
         ) {
@@ -651,7 +719,7 @@ class GroupChatFragment : Fragment() {
 
     private fun showDownloadConfirmDialog(message: FileMessage) {
         if (ContextCompat.checkSelfPermission(
-                activity!!,
+                requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
             != PackageManager.PERMISSION_GRANTED
@@ -660,7 +728,7 @@ class GroupChatFragment : Fragment() {
             // as per < API 23 guidelines.
             requestStoragePermissions()
         } else {
-            AlertDialog.Builder(activity!!)
+            AlertDialog.Builder(requireContext())
                 .setMessage("Download file?")
                 .setPositiveButton(R.string.download) { dialog, which ->
                     if (which == DialogInterface.BUTTON_POSITIVE) {
@@ -672,11 +740,11 @@ class GroupChatFragment : Fragment() {
     }
 
     private fun updateActionBarTitle() {
-        var title: String? = ""
-        if (mChannel != null) {
-            title = TextUtils.getGroupChannelTitle(mChannel)
-        }
-        mUserName!!.text = title
+//        var title: String? = ""
+//        if (mChannel != null) {
+//            title = TextUtils.getGroupChannelTitle(mChannel)
+//        }
+//        mUserName!!.text = title
     }
 
     private fun sendUserMessageWithUrl(text: String, url: String) {
@@ -905,6 +973,7 @@ class GroupChatFragment : Fragment() {
         private const val PERMISSION_WRITE_EXTERNAL_STORAGE = 13
         const val EXTRA_CHANNEL_URL = "EXTRA_CHANNEL_URL"
         const val IS_VIEW_ONLY = "view_only"
+        const val DASHBOARD = "dashboard"
 
         /**
          * To create an instance of this fragment, a Channel URL should be required.

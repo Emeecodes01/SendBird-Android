@@ -34,6 +34,7 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.ConnectionManager;
+import com.sendbird.android.sample.main.chat.GroupChatFragment;
 import com.sendbird.android.sample.main.sendBird.Chat;
 import com.sendbird.android.sample.main.sendBird.UserData;
 

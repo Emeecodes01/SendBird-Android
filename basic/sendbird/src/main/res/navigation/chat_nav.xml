@@ -10,42 +10,55 @@
         app:argType="string" />
 
     <argument
-        android:name="sessionStart"
-        app:argType="string"
-        app:nullable="true" />
-
-    <argument
         android:name="isActive"
         app:argType="boolean"
         android:defaultValue="true" />
 
+    <argument
+        android:name="deeplinkUrl"
+        app:argType="string"/>
+
+    <argument
+        android:name="entryPoint"
+        app:argType="string" />
+
     <fragment
         android:id="@+id/groupChatFragment"
-        android:name="com.sendbird.android.sample.groupchannel.GroupChatFragment"
+        android:name="com.sendbird.android.sample.main.chat.GroupChatFragment"
         tools:layout="@layout/fragment_group_chat"
         android:label="GroupChatFragment">
+
         <action
             android:id="@+id/action_nav_graph_to_chatEndSessionFragment"
             app:destination="@id/chatEndSessionFragment" />
+
         <argument
             android:name="channelUrl"
             app:argType="string" />
+
         <argument
-            android:name="sessionStart"
-            app:argType="string"
-            app:nullable="true" />
+            android:name="deeplinkUrl"
+            app:argType="string"/>
+
         <argument
             android:name="isActive"
             app:argType="boolean"/>
+
+        <argument
+            android:name="entryPoint"
+            app:argType="string" />
+
     </fragment>
 
 
     <fragment
         android:id="@+id/chatEndSessionFragment"
-        android:name="com.sendbird.android.sample.groupchannel.endsession.ChatEndSessionFragment"
+        android:name="com.sendbird.android.sample.main.chat.endsession.ChatEndSessionFragment"
         android:label="ChatEndSessionFragment"
         tools:layout="@layout/fragment_chat_session_ended">
-
+        <argument
+            android:name="deeplinkUrl"
+            app:argType="string" />
     </fragment>
 
 

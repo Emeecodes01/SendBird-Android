@@ -8,7 +8,6 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavDestination
 import androidx.navigation.Navigator
 import androidx.navigation.fragment.NavHostFragment
-import com.sendbird.android.sample.groupchannel.GroupChatFragment
 import com.sendbird.android.sample.main.sendBird.Chat
 import com.sendbird.android.sample.main.sendBird.UserData
 

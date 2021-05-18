@@ -5,12 +5,25 @@
     android:id="@+id/all_chats_nav"
     app:startDestination="@id/pagerFragment">
 
+<!--    <argument-->
+<!--        android:name="deeplinkUrl"-->
+<!--        app:argType="string"/>-->
 
     <fragment
         android:id="@+id/pagerFragment"
         android:name="com.sendbird.android.sample.main.allChat.PagerFragment"
         android:label="PagerFragment"
         tools:layout="@layout/fragment_chat_pager">
+
+        <argument
+            android:name="deeplinkUrl"
+            app:argType="string"
+            android:defaultValue="fragdecsion://fragment_start"/>
+
+        <argument
+            android:name="entryPoint"
+            app:argType="string"
+            android:defaultValue="all_chat"/>
 
         <action
             android:id="@+id/action_pagerFragment_to_chat_nav"
@@ -21,13 +34,16 @@
                 app:argType="string" />
 
             <argument
-                android:name="sessionStart"
-                app:argType="string"
-                app:nullable="true" />
-
-            <argument
                 android:name="isActive"
                 app:argType="boolean"/>
+
+            <argument
+                android:name="deeplinkUrl"
+                app:argType="string"/>
+
+            <argument
+                android:name="entryPoint"
+                app:argType="string" />
 
         </action>
     </fragment>

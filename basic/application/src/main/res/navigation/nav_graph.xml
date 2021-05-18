@@ -6,7 +6,6 @@
     app:startDestination="@id/fragmentDecision">
 
 
-
     <fragment
         android:id="@+id/fragmentDecision"
         android:name="com.ulesson.application.FragmentDecision"
@@ -22,19 +21,34 @@
                 app:argType="string" />
 
             <argument
-                android:name="sessionStart"
-                app:argType="string"
-                app:nullable="true" />
+                android:name="isActive"
+                android:defaultValue="true"
+                app:argType="boolean" />
 
             <argument
-                android:name="isActive"
-                app:argType="boolean"
-                android:defaultValue="true" />
+                android:name="entryPoint"
+                app:argType="string" />
+
+            <argument
+                android:name="deeplinkUrl"
+                app:argType="string"/>
         </action>
 
         <action
             android:id="@+id/action_fragmentDecision_to_all_chats_nav"
-            app:destination="@id/all_chats_nav" />
+            app:destination="@id/all_chats_nav">
+            <argument
+                android:name="deeplinkUrl"
+                app:argType="string"/>
+
+            <argument
+                android:name="entryPoint"
+                app:argType="string" />
+        </action>
+
+
+        <deepLink
+            app:uri="fragdecsion://fragment_start"/>
 
     </fragment>
 

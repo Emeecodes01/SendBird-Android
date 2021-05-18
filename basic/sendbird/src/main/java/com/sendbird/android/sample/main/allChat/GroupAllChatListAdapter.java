@@ -325,16 +325,10 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
             indicator.animate();
 
-            Set<String> keys = new HashSet();
-            keys.add("hgvjhgkn");
-//            keys.add(ChatMetaData.GRADE);
-//            keys.add(ChatMetaData.CHANNELNAME);
-//            keys.add(ChatMetaData.STATE);
-
 
             String data = channel.getData();
             Question question = new Gson().fromJson(data, Question.class);
-            boolean isActive = question.getStatus().equalsIgnoreCase("active");
+            boolean isActive = question.getState().equalsIgnoreCase("active");
             int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(question.getSubject(), isActive);
 
             subjectIcon.setImageResource(subjectImgRes);
@@ -342,17 +336,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             gradeTv.setText(question.getGrade());
             channelNameTv.setText(question.getLearner_name());
 
-//            channel.getMetaData(keys, new BaseChannel.MetaDataHandler() {
-//                @Override
-//                public void onResult(Map<String, String> map, SendBirdException e) {
-//                    String subject = map.get("hgvjhgkn");
-//
-//                }
-//            });
-
-            // debug
-//            typingIndicatorContainer.setVisibility(View.VISIBLE);
-//            lastMessageText.setText(("Someone is typing"));
 
             // If someone in the channel is typing, display the typing indicator.
             if (channel.isTyping()) {
