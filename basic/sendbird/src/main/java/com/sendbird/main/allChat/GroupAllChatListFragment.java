@@ -17,10 +17,12 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
+import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.groupchannel.GroupChatFragment;
 import com.sendbird.main.ConnectionManager;
+import com.sendbird.main.sendBird.TutorActions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +137,16 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
+            @Override
+            public void showTutorRating() {
+            }
+
+            @Override
+            public void showTutorProfile(List<? extends Member> members) {
+
+            }
+        });
 
         if (getActivity() != null) {
             requireActivity().getSupportFragmentManager().beginTransaction()

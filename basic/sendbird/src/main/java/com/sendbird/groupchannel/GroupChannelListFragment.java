@@ -18,11 +18,15 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
+import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.main.BaseFragment;
 import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.Chat;
+import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.main.sendBird.UserData;
+
+import java.util.List;
 
 public class GroupChannelListFragment extends BaseFragment {
 
@@ -43,15 +47,15 @@ public class GroupChannelListFragment extends BaseFragment {
     private SwipeRefreshLayout mSwipeRefresh;
     private Boolean isActive;
     private UserData hostUserData;
+    public static TutorActions tutorActionsChannel;
 
-    public static GroupChannelListFragment newInstance(@NonNull Boolean isActive, UserData hostUserData) {
+    public static GroupChannelListFragment newInstance(@NonNull Boolean isActive, UserData hostUserData, TutorActions dothis) {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
-
         Bundle args = new Bundle();
+        tutorActionsChannel = dothis;
         args.putBoolean(GroupChannelListFragment.IS_ACTIVE, isActive);
         args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -153,7 +157,20 @@ public class GroupChannelListFragment extends BaseFragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl);
+
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
+
+            @Override
+            public void showTutorRating() {
+                tutorActionsChannel.showTutorRating();
+            }
+
+            @Override
+            public void showTutorProfile(List<? extends Member> members) {
+                tutorActionsChannel.showTutorProfile(members);
+            }
+        });
+
         if (getActivity() != null && !fragment.isAdded()) {
             getActivity().getSupportFragmentManager().beginTransaction()
                     .add(android.R.id.content, fragment)
@@ -201,8 +218,8 @@ public class GroupChannelListFragment extends BaseFragment {
 
     private void loadNextChannelList() {
 
-        try{
-            if (mChannelListQuery != null){
+        try {
+            if (mChannelListQuery != null) {
                 mChannelListQuery.next((list, e) -> {
                     if (e != null) {
                         // Error!
@@ -215,10 +232,9 @@ public class GroupChannelListFragment extends BaseFragment {
                     }
                 });
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
     }
-
 }

@@ -10,11 +10,16 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.sendbird.R;
-import com.sendbird.main.ConnectionManager;
+import com.sendbird.android.Member;
 import com.sendbird.main.sendBird.Chat;
+import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.main.sendBird.User;
 import com.sendbird.main.sendBird.UserData;
 import com.sendbird.network.createUser.ConnectUserRequest;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 import kotlin.Unit;
 
@@ -28,7 +33,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_channel);
 
-        ConnectUserRequest connectUserRequest = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",true);
+        ConnectUserRequest connectUserRequest = new ConnectUserRequest("1827", "Taiwo Adebayo", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png", true);
 //        ConnectUserRequest tutorUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
 //                true);
 
@@ -37,7 +42,18 @@ public class GroupChannelActivity extends AppCompatActivity {
 
         new User().connectUser(connectUserRequest, "b49ed82a4484c57b298384361aac759dbb67595b", (userResponse) -> {
 
-            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()));
+            new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()), new TutorActions() {
+                @Override
+                public void showTutorRating() {
+                    Log.d("okh", "show rating");
+                }
+
+                @Override
+                public void showTutorProfile(List<? extends Member> member) {
+                    Log.d("okh", "show profile");
+                    Log.d("okh", member.toString() +" aaa");
+                }
+            });
 //            new Chat().createChat(this, hostUserData, tutorUserData, (channelUrl) -> {
 //                Log.d("okh", channelUrl + "channelUrl");
 //                return Unit.INSTANCE;
@@ -59,7 +75,18 @@ public class GroupChannelActivity extends AppCompatActivity {
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
             // If started from notification
-            Fragment fragment = GroupChatFragment.newInstance(channelUrl);
+            Fragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
+                @Override
+                public void showTutorProfile(@NotNull List<? extends Member> members) {
+
+                }
+
+                @Override
+                public void showTutorRating() {
+                }
+
+            });
+
             FragmentManager manager = getSupportFragmentManager();
             manager.beginTransaction()
                     .replace(R.id.container_group_channel, fragment)

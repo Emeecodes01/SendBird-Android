@@ -7,10 +7,10 @@ import androidx.fragment.app.FragmentManager
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
+import com.sendbird.android.Member
 import com.sendbird.groupchannel.GroupChannelListFragment
 import com.sendbird.groupchannel.GroupChatFragment
 import com.sendbird.main.allChat.PagerFragment
-import com.sendbird.network.createUser.ConnectUserRequest
 
 class Chat {
 
@@ -24,7 +24,7 @@ class Chat {
 
             groupChannel?.url?.let {
                 channelUrl(it)
-                val fragment = GroupChatFragment.newInstance(groupChannel.url)
+                val fragment = GroupChatFragment.newInstance(groupChannel.url, null)
                 activity.supportFragmentManager.beginTransaction()
                         .add(android.R.id.content, fragment)
                         .addToBackStack(fragment.tag)
@@ -44,7 +44,7 @@ class Chat {
     fun createChatWithQuestion(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData) {
 
         createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-            val fragment = GroupChatFragment.newInstance(groupChannel.url)
+            val fragment = GroupChatFragment.newInstance(groupChannel.url, null)
             activity.supportFragmentManager.beginTransaction()
                     .add(android.R.id.content, fragment)
                     .addToBackStack(fragment.tag)
@@ -92,9 +92,17 @@ class Chat {
 
     }
 
-    fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData) {
+    fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData, tutorActions: TutorActions) {
 
-        val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData)
+        val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData, object : TutorActions {
+            override fun showTutorProfile(members : List<Member>) {
+                tutorActions.showTutorProfile(members)
+            }
+
+            override fun showTutorRating() {
+                tutorActions.showTutorRating()
+            }
+        })
 
         if (activity != null && !fragment.isAdded) {
 

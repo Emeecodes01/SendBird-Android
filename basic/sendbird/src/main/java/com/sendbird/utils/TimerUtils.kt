@@ -22,7 +22,7 @@ class TimerUtils {
 
     fun getTime(channelUrl: String, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
 
-        val countTime = 10
+        val countTime = 1
 
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)

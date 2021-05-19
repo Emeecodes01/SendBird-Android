@@ -16,7 +16,7 @@ public class TextUtils {
         List<Member> members = channel.getMembers();
 
         if (members.size() < 2 || PreferenceUtils.getUserId().isEmpty()) {
-            return "No Members";
+            return "You";
         } else if (members.size() == 2) {
             StringBuffer names = new StringBuffer();
             for (Member member : members) {

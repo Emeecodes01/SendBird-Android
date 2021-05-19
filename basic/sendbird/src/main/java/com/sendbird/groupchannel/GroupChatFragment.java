@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +49,7 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.main.sendBird.Chat;
+import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.syncmanager.FailedMessageEventActionReason;
 import com.sendbird.syncmanager.MessageCollection;
 import com.sendbird.syncmanager.MessageEventAction;
@@ -98,6 +100,7 @@ public class GroupChatFragment extends Fragment {
                     .setMessage(R.string.empty);
     private InputMethodManager mIMM;
     private ConstraintLayout mRootLayout;
+    private ImageView mprofileImage;
     private RecyclerView mRecyclerView;
     private GroupChatAdapter mChatAdapter;
     private LinearLayoutManager mLayoutManager;
@@ -117,6 +120,8 @@ public class GroupChatFragment extends Fragment {
     private MessageCollection mMessageCollection;
     private RecyclerView.SmoothScroller smoothScroller;
     private long mLastRead;
+    private static TutorActions tutorActionsChat;
+
     private final MessageCollectionHandler mMessageCollectionHandler = new MessageCollectionHandler() {
         @Override
         public void onMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action) {
@@ -213,9 +218,9 @@ public class GroupChatFragment extends Fragment {
         }
     };
 
-    public static GroupChatFragment newInstance(@NonNull String channelUrl) {
+    public static GroupChatFragment newInstance(@NonNull String channelUrl, TutorActions tutorActions) {
         GroupChatFragment fragment = new GroupChatFragment();
-
+        tutorActionsChat = tutorActions;
         Bundle args = new Bundle();
         args.putString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL, channelUrl);
         fragment.setArguments(args);
@@ -266,18 +271,14 @@ public class GroupChatFragment extends Fragment {
 
         setUpRecyclerView();
 
-        createMessageCollection(mChannelUrl, new GroupChannel.GroupChannelGetHandler() {
-            @Override
-            public void onResult(GroupChannel groupChannel, SendBirdException e) {
-                handleTimer(groupChannel);
-            }
-        });
+        createMessageCollection(mChannelUrl, (groupChannel, e) -> handleTimer(groupChannel));
 
         onBack();
 
         sendMessage();
 
         mUploadFileButton.setOnClickListener(v -> pickMedia());
+
         mIsTyping = false;
 
         onTyping();
@@ -321,6 +322,7 @@ public class GroupChatFragment extends Fragment {
 
     private void initializeViews(View rootView) {
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        mprofileImage = rootView.findViewById(R.id.profile_image);
         mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
         mUserName = rootView.findViewById(R.id.userName);
         countdownTxt = rootView.findViewById(R.id.countdownTxt);
@@ -367,8 +369,8 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void disableChat() {
+        tutorActionsChat.showTutorRating();
         countdownTxt.setVisibility(View.GONE);
-
         mMessageEditText.setEnabled(false);
         mUploadFileButton.setEnabled(false);
         button_voice.setEnabled(false);
@@ -376,7 +378,6 @@ public class GroupChatFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void countTime(long minute, long seconds) {
-
         if (minute >= 0) {
 
             new TimerUtils().timer(seconds, (l) -> {
@@ -394,12 +395,14 @@ public class GroupChatFragment extends Fragment {
             if (getActivity() != null) {
                 new Chat().updateGroupChat(mChannelUrl, (groupChannel, e) -> {
                 });
-                getActivity().getSupportFragmentManager().popBackStack();
+                tutorActionsChat.showTutorProfile(mChannel.getMembers());
             }
 
         }
 
     }
+
+
 
     private void sendTextMessage() {
         String userInput = mMessageEditText.getText().toString();
@@ -777,6 +780,8 @@ public class GroupChatFragment extends Fragment {
                 mChatAdapter.setChannel(mChannel);
                 mChatAdapter.clear();
                 updateActionBarTitle();
+
+                mprofileImage.setOnClickListener(v -> tutorActionsChat.showTutorProfile(mChannel.getMembers()));
 
                 fetchInitialMessages();
             }
