@@ -100,7 +100,7 @@ public class GroupChatFragment extends Fragment {
                     .setTitle("Upload a file")
                     .setMessage(R.string.empty);
     private InputMethodManager mIMM;
-    private ConstraintLayout mRootLayout;
+    private ConstraintLayout mRootLayout, mchatBoxLayout;
     private ImageView mprofileImage;
     private RecyclerView mRecyclerView;
     private GroupChatAdapter mChatAdapter;
@@ -322,6 +322,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void initializeViews(View rootView) {
+        mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
         mprofileImage = rootView.findViewById(R.id.profile_image);
         mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
@@ -369,6 +370,7 @@ public class GroupChatFragment extends Fragment {
         tutorActionsChat.showTutorRating();
         mMessageEditText.setEnabled(false);
         mUploadFileButton.setEnabled(false);
+        mchatBoxLayout.setAlpha(0.5F);
         button_voice.setEnabled(false);
     }
 
@@ -639,7 +641,7 @@ public class GroupChatFragment extends Fragment {
         mChatAdapter.setItemLongClickListener(new GroupChatAdapter.OnItemLongClickListener() {
             @Override
             public void onUserMessageItemLongClick(UserMessage message, int position) {
-                if (message.getSender().getUserId() != null) {
+                if (message.getSender().getUserId() != null && new StringUtils().isActive(mChannel.getData())) {
                     if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                         showMessageOptionsDialog(message, position);
                     }

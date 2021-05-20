@@ -2,6 +2,7 @@ package com.sendbird.main.allChat;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
@@ -13,8 +14,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sendbird.R;
 import com.sendbird.android.AdminMessage;
@@ -27,6 +30,7 @@ import com.sendbird.android.UserMessage;
 import com.sendbird.utils.DateUtils;
 import com.sendbird.utils.FileUtils;
 import com.sendbird.utils.PreferenceUtils;
+import com.sendbird.utils.StringUtils;
 import com.sendbird.utils.TextUtils;
 import com.sendbird.utils.TypingIndicator;
 
@@ -34,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -218,15 +223,18 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private class ChannelHolder extends RecyclerView.ViewHolder {
 
         //        memberCountText, topicText
-        TextView lastMessageText, unreadCountText, dateText;
+        TextView subjectText, lastMessageText, unreadCountText, dateText;
         LinearLayout typingIndicatorContainer;
+        ImageView subjectIcon;
 
         ChannelHolder(View itemView) {
             super(itemView);
 
+            subjectText = (TextView) itemView.findViewById(R.id.text_group_channel_list_subject);
             lastMessageText = (TextView) itemView.findViewById(R.id.text_group_channel_list_message);
             unreadCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_unread_count);
             dateText = (TextView) itemView.findViewById(R.id.text_group_channel_list_date);
+            subjectIcon = (ImageView) itemView.findViewById(R.id.subjectIcon);
 
             typingIndicatorContainer = (LinearLayout) itemView.findViewById(R.id.container_group_channel_list_typing_indicator);
         }
@@ -242,6 +250,14 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             } else {
                 unreadCountText.setVisibility(View.VISIBLE);
                 unreadCountText.setText(String.valueOf(channel.getUnreadMessageCount()));
+            }
+
+            Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
+            subjectText.setText(questionMap.get("subjectName").toString());
+            Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
+
+            if (!new StringUtils().isActive(channel.getData())) {
+                subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
             }
 
             BaseMessage lastMessage = channel.getLastMessage();
@@ -307,14 +323,9 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // Set an OnLongClickListener to this item.
             if (longClickListener != null) {
-                itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        longClickListener.onItemLongClick(channel);
-
-                        // return true if the callback consumed the long click
-                        return true;
-                    }
+                itemView.setOnLongClickListener(v -> {
+                    longClickListener.onItemLongClick(channel);
+                    return true;
                 });
             }
         }

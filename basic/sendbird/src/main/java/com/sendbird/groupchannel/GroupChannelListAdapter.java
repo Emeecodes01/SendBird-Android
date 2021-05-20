@@ -2,7 +2,7 @@ package com.sendbird.groupchannel;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Base64;
+import android.graphics.PorterDuff;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -185,6 +186,10 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
             subjectText.setText(questionMap.get("subjectName").toString());
             Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
+
+            if (!new StringUtils().isActive(channel.getData())) {
+                subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
+            }
 
             BaseMessage lastMessage = channel.getLastMessage();
             if (lastMessage != null) {

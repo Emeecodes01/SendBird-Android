@@ -45,7 +45,6 @@ public class GroupChannelListFragment extends BaseFragment {
     private GroupChannelListAdapter mChannelListAdapter;
     private GroupChannelListQuery mChannelListQuery;
     private SwipeRefreshLayout mSwipeRefresh;
-    private Boolean isActive;
     private UserData hostUserData;
     public static TutorActions tutorActionsChannel;
 
@@ -53,7 +52,6 @@ public class GroupChannelListFragment extends BaseFragment {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
         Bundle args = new Bundle();
         tutorActionsChannel = dothis;
-        args.putBoolean(GroupChannelListFragment.IS_ACTIVE, isActive);
         args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
         fragment.setArguments(args);
         return fragment;
@@ -62,7 +60,6 @@ public class GroupChannelListFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            isActive = getArguments().getBoolean(GroupChannelListFragment.IS_ACTIVE, true);
             hostUserData = getArguments().getParcelable(GroupChannelListFragment.HOST_USER_DATA);
         }
 

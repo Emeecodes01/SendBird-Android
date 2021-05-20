@@ -23,6 +23,7 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.groupchannel.GroupChatFragment;
 import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.TutorActions;
+import com.sendbird.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -188,7 +189,7 @@ public class GroupAllChatListFragment extends Fragment {
 
                 for (int i = 0; i < allChannelList.size(); i++) {
 
-                    if (allChannelList.get(i).getData().equalsIgnoreCase("active")) {
+                    if (new StringUtils().isActive(allChannelList.get(i).getData())) {
                         isActiveChannel.add(allChannelList.get(i));
                     } else {
                         isPastChannel.add(allChannelList.get(i));
@@ -217,33 +218,30 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     private void loadNextChannelList() {
-        mChannelListQuery.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
-            @Override
-            public void onResult(List<GroupChannel> list, SendBirdException e) {
-                if (e != null) {
-                    // Error!
-                    e.printStackTrace();
-                    return;
+        mChannelListQuery.next((list, e) -> {
+            if (e != null) {
+                // Error!
+                e.printStackTrace();
+                return;
+            }
+
+            List<GroupChannel> isActiveChannel = new ArrayList<>();
+            List<GroupChannel> isPastChannel = new ArrayList<>();
+
+            for (int i = 0; i < list.size(); i++) {
+
+                if (new StringUtils().isActive(list.get(i).getData())) {
+                    isActiveChannel.add(list.get(i));
+                } else {
+                    isPastChannel.add(list.get(i));
                 }
 
-                List<GroupChannel> isActiveChannel = new ArrayList<>();
-                List<GroupChannel> isPastChannel = new ArrayList<>();
-
-                for (int i = 0; i < list.size(); i++) {
-
-                    if (list.get(i).getData().equalsIgnoreCase("active")) {
-                        isActiveChannel.add(list.get(i));
-                    } else {
-                        isPastChannel.add(list.get(i));
-                    }
-
-                    if (isActive) {
-                        mChannelListAdapter.addLast(isActiveChannel);
-                    } else {
-                        mChannelListAdapter.addLast(isPastChannel);
-                    }
-
+                if (isActive) {
+                    mChannelListAdapter.addLast(isActiveChannel);
+                } else {
+                    mChannelListAdapter.addLast(isPastChannel);
                 }
+
             }
         });
     }

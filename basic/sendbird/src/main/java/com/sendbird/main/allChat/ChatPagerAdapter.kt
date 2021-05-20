@@ -3,7 +3,7 @@ package com.sendbird.main.allChat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class ChatPagerAdapter(val fragment: Fragment) : FragmentStateAdapter(fragment) {
+class ChatPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
 
     override fun getItemCount() = 2
 
