@@ -14,11 +14,12 @@ import com.sendbird.android.Member;
 import com.sendbird.main.sendBird.Chat;
 import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.main.sendBird.User;
-import com.sendbird.main.sendBird.UserData;
-import com.sendbird.network.createUser.ConnectUserRequest;
+import com.sendbird.main.model.UserData;
+import com.sendbird.network.userModel.ConnectUserRequest;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
 
 import kotlin.Unit;
@@ -41,6 +42,21 @@ public class GroupChannelActivity extends AppCompatActivity {
         UserData tutorUserData = new UserData("7", "Wapnen Gowok", "");
 
         new User().connectUser(connectUserRequest, "b49ed82a4484c57b298384361aac759dbb67595b", (userResponse) -> {
+
+//            HashMap<String, Object> questionMap =  new HashMap<String, Object>();
+//            questionMap.put("questionId", "123");
+//            questionMap.put("subject", "11");
+//            questionMap.put("tutorId", "12");
+//            questionMap.put("subjectName", "Maths");
+//            questionMap.put("subjectAvatar", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
+
+//            new Chat().createChat(this, hostUserData, tutorUserData, questionMap, (channelUrl) -> {
+//                Log.d("okh", channelUrl + "channelUrl");
+//                return Unit.INSTANCE;
+//            }, (errorData) -> {
+//                Log.d("okh", errorData + "channel error");
+//               return Unit.INSTANCE;
+//            });
 
             new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()), new TutorActions() {
                 @Override

@@ -1,8 +1,8 @@
 package com.sendbird.network
 
-import com.sendbird.network.createUser.ConnectUserRequest
-import com.sendbird.network.createUser.UpdateUserRequest
-import com.sendbird.network.createUser.UserResponse
+import com.sendbird.network.userModel.ConnectUserRequest
+import com.sendbird.network.userModel.UpdateUserRequest
+import com.sendbird.network.userModel.UserResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST

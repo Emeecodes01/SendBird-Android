@@ -1,4 +1,4 @@
-package com.sendbird.main.sendBird
+package com.sendbird.main.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

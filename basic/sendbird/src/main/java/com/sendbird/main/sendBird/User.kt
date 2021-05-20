@@ -2,10 +2,12 @@ package com.sendbird.main.sendBird
 
 import com.sendbird.main.ConnectionManager
 import com.sendbird.main.SyncManagerUtils
+import com.sendbird.main.model.ErrorData
+import com.sendbird.main.model.UserData
 import com.sendbird.network.NetworkRequest
-import com.sendbird.network.createUser.ConnectUserRequest
-import com.sendbird.network.createUser.UpdateUserRequest
-import com.sendbird.network.createUser.UserResponse
+import com.sendbird.network.userModel.ConnectUserRequest
+import com.sendbird.network.userModel.UpdateUserRequest
+import com.sendbird.network.userModel.UserResponse
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.sendbird.utils.PreferenceUtils
 

@@ -62,6 +62,7 @@ import com.sendbird.utils.MediaPlayerActivity;
 import com.sendbird.utils.MediaUtils;
 import com.sendbird.utils.PhotoViewerActivity;
 import com.sendbird.utils.PreferenceUtils;
+import com.sendbird.utils.StringUtils;
 import com.sendbird.utils.TextUtils;
 import com.sendbird.utils.TimerUtils;
 import com.sendbird.utils.UrlPreviewInfo;
@@ -105,7 +106,7 @@ public class GroupChatFragment extends Fragment {
     private GroupChatAdapter mChatAdapter;
     private LinearLayoutManager mLayoutManager;
     private EditText mMessageEditText;
-    private Button mRecordVoiceButton;
+    private Button mSendMessage;
     private Button button_voice;
     private ImageButton mUploadFileButton;
     private Toolbar toolbar_group_channel;
@@ -218,7 +219,7 @@ public class GroupChatFragment extends Fragment {
         }
     };
 
-    public static GroupChatFragment newInstance(@NonNull String channelUrl, TutorActions tutorActions) {
+    public static GroupChatFragment newInstance(@NonNull String channelUrl, @NonNull TutorActions tutorActions) {
         GroupChatFragment fragment = new GroupChatFragment();
         tutorActionsChat = tutorActions;
         Bundle args = new Bundle();
@@ -329,25 +330,21 @@ public class GroupChatFragment extends Fragment {
         toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
         mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
         mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
-        mRecordVoiceButton = rootView.findViewById(R.id.button_record_voice);
+        mSendMessage = rootView.findViewById(R.id.send_message_btn);
         button_voice = rootView.findViewById(R.id.button_voice);
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
     }
 
     private void sendMessage() {
-        mMessageEditText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
-
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                sendTextMessage();
-            }
-
-            return false;
-        });
+        mSendMessage.setOnClickListener(view -> sendTextMessage());
     }
 
     private void handleTimer(GroupChannel groupChannel) {
 
-        if (groupChannel.getData().equals("active")) {
+        if (new StringUtils().isActive(groupChannel.getData())) {
+
+            countdownTxt.setVisibility(View.VISIBLE);
+
             new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
 
                 int countDownMinutes = countDownTime / 60;
@@ -370,7 +367,6 @@ public class GroupChatFragment extends Fragment {
 
     private void disableChat() {
         tutorActionsChat.showTutorRating();
-        countdownTxt.setVisibility(View.GONE);
         mMessageEditText.setEnabled(false);
         mUploadFileButton.setEnabled(false);
         button_voice.setEnabled(false);
@@ -393,7 +389,7 @@ public class GroupChatFragment extends Fragment {
 
         } else {
             if (getActivity() != null) {
-                new Chat().updateGroupChat(mChannelUrl, (groupChannel, e) -> {
+                new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), (groupChannel, e) -> {
                 });
                 tutorActionsChat.showTutorProfile(mChannel.getMembers());
             }
@@ -401,7 +397,6 @@ public class GroupChatFragment extends Fragment {
         }
 
     }
-
 
 
     private void sendTextMessage() {

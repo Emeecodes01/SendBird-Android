@@ -24,7 +24,7 @@ import com.sendbird.main.BaseFragment;
 import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.Chat;
 import com.sendbird.main.sendBird.TutorActions;
-import com.sendbird.main.sendBird.UserData;
+import com.sendbird.main.model.UserData;
 
 import java.util.List;
 

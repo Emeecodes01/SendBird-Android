@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sendbird.R;
 import com.sendbird.android.AdminMessage;
@@ -27,13 +28,16 @@ import com.sendbird.android.UserMessage;
 import com.sendbird.utils.DateUtils;
 import com.sendbird.utils.FileUtils;
 import com.sendbird.utils.PreferenceUtils;
+import com.sendbird.utils.StringUtils;
 import com.sendbird.utils.TextUtils;
 import com.sendbird.utils.TypingIndicator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -140,16 +144,18 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private class ChannelHolder extends RecyclerView.ViewHolder {
 
         //        memberCountText, topicText
-        TextView lastMessageText, unreadCountText, dateText;
+        TextView subjectText, lastMessageText, unreadCountText, dateText;
         LinearLayout typingIndicatorContainer;
+        ImageView subjectIcon;
 
         ChannelHolder(View itemView) {
             super(itemView);
 
-//            topicText = (TextView) itemView.findViewById(R.id.text_group_channel_list_topic);
+            subjectText = (TextView) itemView.findViewById(R.id.text_group_channel_list_subject);
             lastMessageText = (TextView) itemView.findViewById(R.id.text_group_channel_list_message);
             unreadCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_unread_count);
             dateText = (TextView) itemView.findViewById(R.id.text_group_channel_list_date);
+            subjectIcon = (ImageView) itemView.findViewById(R.id.subjectIcon);
 //            memberCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_member_count);
 
             typingIndicatorContainer = (LinearLayout) itemView.findViewById(R.id.container_group_channel_list_typing_indicator);
@@ -175,6 +181,10 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 unreadCountText.setVisibility(View.VISIBLE);
                 unreadCountText.setText(String.valueOf(channel.getUnreadMessageCount()));
             }
+
+            Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
+            subjectText.setText(questionMap.get("subjectName").toString());
+            Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
 
             BaseMessage lastMessage = channel.getLastMessage();
             if (lastMessage != null) {

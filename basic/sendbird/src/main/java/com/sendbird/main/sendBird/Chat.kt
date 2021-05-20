@@ -11,6 +11,8 @@ import com.sendbird.android.Member
 import com.sendbird.groupchannel.GroupChannelListFragment
 import com.sendbird.groupchannel.GroupChatFragment
 import com.sendbird.main.allChat.PagerFragment
+import com.sendbird.main.model.UserData
+import com.sendbird.utils.StringUtils.Companion.toMutableMap
 
 class Chat {
 
@@ -18,13 +20,17 @@ class Chat {
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
-    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, channelUrl: (String) -> Unit, channelError: (String) -> Unit) {
 
-        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, error ->
+    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, questionMap: MutableMap<String, Any?>?, channelUrl: (String) -> Unit, channelError: (String) -> Unit) {
+
+        createGroupChat(hostUserData.id, otherUserData.id, questionMap) { groupChannel, error ->
 
             groupChannel?.url?.let {
                 channelUrl(it)
-                val fragment = GroupChatFragment.newInstance(groupChannel.url, null)
+                val fragment = GroupChatFragment.newInstance(groupChannel.url, object : TutorActions {
+                    override fun showTutorProfile(members: List<Member>) {}
+                    override fun showTutorRating() {}
+                })
                 activity.supportFragmentManager.beginTransaction()
                         .add(android.R.id.content, fragment)
                         .addToBackStack(fragment.tag)
@@ -33,7 +39,7 @@ class Chat {
             error?.message?.let {
                 channelError(it)
                 Connect().refreshChannel {
-                    createChat(activity, hostUserData, otherUserData, channelUrl, channelError)
+                    createChat(activity, hostUserData, otherUserData, questionMap, channelUrl, channelError)
                 }
             }
 
@@ -41,32 +47,23 @@ class Chat {
 
     }
 
-    fun createChatWithQuestion(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData) {
-
-        createGroupChat(hostUserData.id, otherUserData.id) { groupChannel, p1 ->
-            val fragment = GroupChatFragment.newInstance(groupChannel.url, null)
-            activity.supportFragmentManager.beginTransaction()
-                    .add(android.R.id.content, fragment)
-                    .addToBackStack(fragment.tag)
-                    .commitAllowingStateLoss()
-        }
-
-    }
-
-    private fun createGroupChat(hostId: String, otherId: String, groupChannelCreateHandler: GroupChannelCreateHandler) {
+    private fun createGroupChat(hostId: String, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler) {
         val userIdList = listOf(hostId, otherId)
-        GroupChannel.createChannelWithUserIds(userIdList, true, "$hostId and $otherId Chat", "", "active", "", GroupChannelCreateHandler { groupChannel, e ->
+        questionMap?.set("active", true)
+        GroupChannel.createChannelWithUserIds(userIdList, true, "$hostId and $otherId Chat", "", questionMap.toString(), "", GroupChannelCreateHandler { groupChannel, e ->
             groupChannelCreateHandler.onResult(groupChannel, e)
         })
     }
 
 
-    fun updateGroupChat(channelUrl: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
+    fun updateGroupChat(channelUrl: String, channelData: String, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
 
         GroupChannel.getChannel(channelUrl) { groupChannel, e ->
 
             val groupChannelParams = GroupChannelParams()
-            groupChannelParams.setData("past")
+            val map = channelData.toMutableMap()
+            map["active"] = false
+            groupChannelParams.setData(map.toString())
             groupChannel.updateChannel(groupChannelParams, groupChannelUpdateHandler)
 
             groupChannelUpdateHandler.onResult(groupChannel, e)
@@ -95,7 +92,7 @@ class Chat {
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData, tutorActions: TutorActions) {
 
         val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData, object : TutorActions {
-            override fun showTutorProfile(members : List<Member>) {
+            override fun showTutorProfile(members: List<Member>) {
                 tutorActions.showTutorProfile(members)
             }
 

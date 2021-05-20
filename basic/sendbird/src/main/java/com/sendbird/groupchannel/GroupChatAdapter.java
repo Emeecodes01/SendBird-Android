@@ -720,12 +720,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (clickListener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        clickListener.onUserMessageItemClick(message);
-                    }
-                });
+                itemView.setOnClickListener(v -> clickListener.onUserMessageItemClick(message));
             }
 
             if (longClickListener != null) {
@@ -857,12 +852,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (listener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFileMessageItemClick(message);
-                    }
-                });
+                itemView.setOnClickListener(v -> listener.onFileMessageItemClick(message));
             }
 
             messageStatusView.drawMessageStatus(channel, message);
@@ -973,12 +963,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (listener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFileMessageItemClick(message);
-                    }
-                });
+                itemView.setOnClickListener(v -> listener.onFileMessageItemClick(message));
             }
 
             messageStatusView.drawMessageStatus(channel, message);

@@ -1,7 +1,6 @@
 package com.sendbird.main.sendBird
 
 import android.text.TextUtils
-import android.util.Log
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectHandler
 import com.sendbird.android.SendBird.UserInfoUpdateHandler
@@ -9,6 +8,7 @@ import com.sendbird.android.SendBirdException
 import com.sendbird.fcm.MyFirebaseMessagingService
 import com.sendbird.main.ConnectionManager
 import com.sendbird.main.SyncManagerUtils
+import com.sendbird.main.model.UserData
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.sendbird.utils.PreferenceUtils
 import com.sendbird.utils.PushUtils

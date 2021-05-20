@@ -1,4 +1,4 @@
-package com.sendbird.network.createUser
+package com.sendbird.network.userModel
 
 import com.sendbird.android.shadow.com.google.gson.annotations.SerializedName
 
