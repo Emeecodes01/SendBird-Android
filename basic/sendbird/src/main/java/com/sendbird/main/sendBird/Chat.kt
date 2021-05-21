@@ -29,7 +29,7 @@ class Chat {
                 channelUrl(it)
                 val fragment = GroupChatFragment.newInstance(groupChannel.url, object : TutorActions {
                     override fun showTutorProfile(members: List<Member>) {}
-                    override fun showTutorRating() {}
+                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {}
                 })
                 activity.supportFragmentManager.beginTransaction()
                         .add(android.R.id.content, fragment)
@@ -91,13 +91,13 @@ class Chat {
 
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData, tutorActions: TutorActions) {
 
-        val fragment: Fragment = GroupChannelListFragment.newInstance(true, hostUserData, object : TutorActions {
+        val fragment: Fragment = GroupChannelListFragment.newInstance(hostUserData, object : TutorActions {
             override fun showTutorProfile(members: List<Member>) {
                 tutorActions.showTutorProfile(members)
             }
 
-            override fun showTutorRating() {
-                tutorActions.showTutorRating()
+            override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                tutorActions.showTutorRating(questionMap)
             }
         })
 

@@ -3,7 +3,6 @@ package com.sendbird.main.allChat;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -25,17 +24,13 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
 import com.sendbird.android.GroupChannel;
-import com.sendbird.android.SendBird;
+import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.UserMessage;
+import com.sendbird.main.SyncManagerUtils;
 import com.sendbird.utils.DateUtils;
-import com.sendbird.utils.FileUtils;
-import com.sendbird.utils.PreferenceUtils;
 import com.sendbird.utils.StringUtils;
-import com.sendbird.utils.TextUtils;
 import com.sendbird.utils.TypingIndicator;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,83 +62,17 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mAllChannelList = new ArrayList<>();
     }
 
+    void clearChannelList() {
+        mChannelList.clear();
+        notifyDataSetChanged();
+    }
+
     void clearMap() {
         mSimpleTargetIndexMap.clear();
         mSimpleTargetGroupChannelMap.clear();
         mChannelImageNumMap.clear();
         mChannelImageViewMap.clear();
         mChannelBitmapMap.clear();
-    }
-
-    public List<GroupChannel> load() {
-
-        try {
-            File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
-            appDir.mkdirs();
-
-            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
-
-            String content = FileUtils.loadFromFile(dataFile);
-            String[] dataArray = content.split("\n");
-
-            // Reset channel list, then add cached data.
-            mAllChannelList.clear();
-            for (String s : dataArray) {
-                mAllChannelList.add((GroupChannel) BaseChannel.buildFromSerializedData(Base64.decode(s, Base64.DEFAULT | Base64.NO_WRAP)));
-            }
-
-            notifyDataSetChanged();
-        } catch (Exception e) {
-            // Nothing to load.
-        }
-
-        return mAllChannelList;
-    }
-
-    public void save() {
-        try {
-            StringBuilder sb = new StringBuilder();
-
-            // Save the data into file.
-            File appDir = new File(mContext.getCacheDir(), SendBird.getApplicationId());
-            appDir.mkdirs();
-
-            File hashFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".hash");
-            File dataFile = new File(appDir, TextUtils.generateMD5(PreferenceUtils.getUserId() + "channel_list") + ".data");
-
-            if (mAllChannelList != null && mAllChannelList.size() > 0) {
-                // Convert current data into string.
-                GroupChannel channel = null;
-                for (int i = 0; i < Math.min(mAllChannelList.size(), 100); i++) {
-                    channel = mAllChannelList.get(i);
-                    sb.append("\n");
-                    sb.append(Base64.encodeToString(channel.serialize(), Base64.DEFAULT | Base64.NO_WRAP));
-                }
-                // Remove first newline.
-                sb.delete(0, 1);
-
-                String data = sb.toString();
-                String md5 = TextUtils.generateMD5(data);
-
-                try {
-                    String content = FileUtils.loadFromFile(hashFile);
-                    // If data has not been changed, do not save.
-                    if (md5.equals(content)) {
-                        return;
-                    }
-                } catch (IOException e) {
-                    // File not found. Save the data.
-                }
-
-                FileUtils.saveToFile(dataFile, data);
-                FileUtils.saveToFile(hashFile, md5);
-            } else {
-                FileUtils.deleteFile(dataFile);
-                FileUtils.deleteFile(hashFile);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -163,13 +92,62 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         return mChannelList.size();
     }
 
-    void setGroupChannelList(List<GroupChannel> channelList) {
-        mChannelList = channelList;
+    void insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order, Boolean isActive) {
+
+        List<GroupChannel> isActiveChannel = new ArrayList<>();
+        List<GroupChannel> isPastChannel = new ArrayList<>();
+
+        for (GroupChannel newChannel : channels) {
+            int index = SyncManagerUtils.findIndexOfChannel(mChannelList, newChannel, order);
+
+            if (new StringUtils().isActive(newChannel.getData())) {
+                isActiveChannel.add(index, newChannel);
+            } else {
+                isPastChannel.add(index, newChannel);
+            }
+
+        }
+
+        if (isActive) {
+            mChannelList.addAll(isActiveChannel);
+        } else {
+            mChannelList.addAll(isPastChannel);
+        }
+
         notifyDataSetChanged();
     }
 
-    void setAllGroupChannelList(List<GroupChannel> channelList) {
-        mAllChannelList = channelList;
+    void updateChannels(List<GroupChannel> channels) {
+        for (GroupChannel updatedChannel : channels) {
+            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, updatedChannel);
+            if (index != -1) {
+                mChannelList.set(index, updatedChannel);
+                notifyItemChanged(index);
+            }
+        }
+    }
+
+    void moveChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
+        for (GroupChannel movedChannel : channels) {
+            int fromIndex = SyncManagerUtils.getIndexOfChannel(mChannelList, movedChannel);
+            int toIndex = SyncManagerUtils.findIndexOfChannel(mChannelList, movedChannel, order);
+            if (fromIndex != -1) {
+                mChannelList.remove(fromIndex);
+                mChannelList.add(toIndex, movedChannel);
+                notifyItemMoved(fromIndex, toIndex);
+                notifyItemChanged(toIndex);
+            }
+        }
+    }
+
+    void removeChannels(List<GroupChannel> channels) {
+        for (GroupChannel removedChannel : channels) {
+            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, removedChannel);
+            if (index != -1) {
+                mChannelList.remove(index);
+                notifyItemRemoved(index);
+            }
+        }
     }
 
     void addLast(List<GroupChannel> channel) {
@@ -177,9 +155,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         notifyItemInserted(mChannelList.size() - 1);
     }
 
-    // If the channel is not in the list yet, adds it.
-    // If it is, finds the channel in current list, and replaces it.
-    // Moves the updated channel to the front of the list.
     void updateOrInsert(BaseChannel channel) {
         if (!(channel instanceof GroupChannel)) {
             return;

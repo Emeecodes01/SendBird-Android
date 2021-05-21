@@ -23,10 +23,17 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.groupchannel.GroupChatFragment;
 import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.TutorActions;
+import com.sendbird.syncmanager.ChannelCollection;
+import com.sendbird.syncmanager.ChannelEventAction;
+import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
+import com.sendbird.syncmanager.handler.CompletionHandler;
 import com.sendbird.utils.StringUtils;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GroupAllChatListFragment extends Fragment {
 
@@ -38,9 +45,8 @@ public class GroupAllChatListFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private GroupAllChatListAdapter mChannelListAdapter;
-    private GroupChannelListQuery mChannelListQuery;
     private SwipeRefreshLayout mSwipeRefresh;
-    private Boolean isActive;
+    private ChannelCollection mChannelCollection;
 
     public static GroupAllChatListFragment newInstance(@NonNull Boolean isActive) {
         GroupAllChatListFragment fragment = new GroupAllChatListFragment();
@@ -61,6 +67,7 @@ public class GroupAllChatListFragment extends Fragment {
         setRetainInstance(true);
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_all_chat_list);
+
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
         mSwipeRefresh.setOnRefreshListener(() -> {
@@ -68,13 +75,10 @@ public class GroupAllChatListFragment extends Fragment {
             refresh();
         });
 
-        if (getArguments() != null) {
-            isActive = getArguments().getBoolean(GroupAllChatListFragment.IS_ACTIVE, true);
-        }
-
         mChannelListAdapter = new GroupAllChatListAdapter(getActivity());
 
         setUpRecyclerView();
+
         setUpChannelListAdapter();
 
         return rootView;
@@ -111,24 +115,40 @@ public class GroupAllChatListFragment extends Fragment {
         super.onPause();
     }
 
+    @Override
+    public void onDestroy() {
+        if (mChannelCollection != null) {
+            mChannelCollection.setCollectionHandler(null);
+            mChannelCollection.remove();
+        }
+        super.onDestroy();
+    }
+
     private void setUpRecyclerView() {
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mChannelListAdapter);
 
-        // If user scrolls to bottom of the list, loads more channels.
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (mLayoutManager.findLastVisibleItemPosition() == mChannelListAdapter.getItemCount() - 1) {
-                    loadNextChannelList();
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    if (mLayoutManager.findLastVisibleItemPosition() == mChannelListAdapter.getItemCount() - 1) {
+                        if (mChannelCollection != null) {
+                            mChannelCollection.fetch(e -> {
+                                if (mSwipeRefresh.isRefreshing()) {
+                                    mSwipeRefresh.setRefreshing(false);
+                                }
+                            });
+                        }
+                    }
                 }
             }
         });
     }
 
     private void setUpChannelListAdapter() {
-        mChannelListAdapter.setOnItemClickListener(channel -> enterGroupChannel(channel));
+        mChannelListAdapter.setOnItemClickListener(this::enterGroupChannel);
     }
 
     void enterGroupChannel(GroupChannel channel) {
@@ -140,11 +160,11 @@ public class GroupAllChatListFragment extends Fragment {
     void enterGroupChannel(String channelUrl) {
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
             @Override
-            public void showTutorRating() {
+            public void showTutorRating(@NotNull Map<String, Object> questionMap) {
             }
 
             @Override
-            public void showTutorProfile(List<? extends Member> members) {
+            public void showTutorProfile(@NotNull List<? extends Member> members) {
 
             }
         });
@@ -159,91 +179,64 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     private void refresh() {
-        refreshChannelList();
-    }
+        if (mChannelCollection != null) {
+            mChannelCollection.remove();
+        }
 
-    private void refreshChannelList() {
-        mChannelListQuery = GroupChannel.createMyGroupChannelListQuery();
-        mChannelListQuery.setLimit(GroupAllChatListFragment.CHANNEL_LIST_LIMIT);
-
-        mChannelListQuery.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
-            @Override
-            public void onResult(List<GroupChannel> list, SendBirdException e) {
-
-                List<GroupChannel> allChannelList = list;
-
-                if (e != null) {
-                    // Error!
-                    e.printStackTrace();
-                    allChannelList = mChannelListAdapter.load();
-//                    return;
-                } else {
-                    allChannelList = list;
-                }
-
-                mChannelListAdapter.clearMap();
-                mChannelListAdapter.setAllGroupChannelList(allChannelList);
-
-                List<GroupChannel> isActiveChannel = new ArrayList<>();
-                List<GroupChannel> isPastChannel = new ArrayList<>();
-
-                for (int i = 0; i < allChannelList.size(); i++) {
-
-                    if (new StringUtils().isActive(allChannelList.get(i).getData())) {
-                        isActiveChannel.add(allChannelList.get(i));
-                    } else {
-                        isPastChannel.add(allChannelList.get(i));
-                    }
-
-                    if (isActive) {
-                        mChannelListAdapter.setGroupChannelList(isActiveChannel);
-                    } else {
-                        mChannelListAdapter.setGroupChannelList(isPastChannel);
-                    }
-
-                }
-
-                if (allChannelList.isEmpty()) {
-                    mRecyclerView.setVisibility(View.GONE);
-                } else {
-                    mRecyclerView.setVisibility(View.VISIBLE);
-
-                }
+        mChannelListAdapter.clearMap();
+        mChannelListAdapter.clearChannelList();
+        GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
+        query.setLimit(CHANNEL_LIST_LIMIT);
+        mChannelCollection = new ChannelCollection(query);
+        mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
+        mChannelCollection.fetch(e -> {
+            if (mSwipeRefresh.isRefreshing()) {
+                mSwipeRefresh.setRefreshing(false);
             }
         });
-
-        if (mSwipeRefresh.isRefreshing()) {
-            mSwipeRefresh.setRefreshing(false);
-        }
     }
 
-    private void loadNextChannelList() {
-        mChannelListQuery.next((list, e) -> {
-            if (e != null) {
-                // Error!
-                e.printStackTrace();
+    ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {
+        @Override
+        public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
+            if (getActivity() == null) {
                 return;
             }
 
-            List<GroupChannel> isActiveChannel = new ArrayList<>();
-            List<GroupChannel> isPastChannel = new ArrayList<>();
-
-            for (int i = 0; i < list.size(); i++) {
-
-                if (new StringUtils().isActive(list.get(i).getData())) {
-                    isActiveChannel.add(list.get(i));
-                } else {
-                    isPastChannel.add(list.get(i));
+            getActivity().runOnUiThread(() -> {
+                if (mSwipeRefresh.isRefreshing()) {
+                    mSwipeRefresh.setRefreshing(false);
                 }
 
-                if (isActive) {
-                    mChannelListAdapter.addLast(isActiveChannel);
-                } else {
-                    mChannelListAdapter.addLast(isPastChannel);
-                }
+                switch (channelEventAction) {
+                    case INSERT:
+                        mChannelListAdapter.clearMap();
+                        Boolean isActive = getArguments().getBoolean(GroupAllChatListFragment.IS_ACTIVE, false);
+                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), isActive);
+                        break;
 
-            }
-        });
-    }
+                    case UPDATE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.updateChannels(list);
+                        break;
+
+                    case MOVE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.moveChannels(list, channelCollection.getQuery().getOrder());
+                        break;
+
+                    case REMOVE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.removeChannels(list);
+                        break;
+
+                    case CLEAR:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.clearChannelList();
+                        break;
+                }
+            });
+        }
+    };
 
 }

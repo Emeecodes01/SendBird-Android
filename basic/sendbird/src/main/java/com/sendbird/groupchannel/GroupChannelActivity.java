@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kotlin.Unit;
 
@@ -60,14 +61,13 @@ public class GroupChannelActivity extends AppCompatActivity {
 
             new Chat().showChatList(this, R.id.container_group_channel, new UserData(userResponse.getUser_id(), userResponse.getNickname(), userResponse.getAccess_token()), new TutorActions() {
                 @Override
-                public void showTutorRating() {
-                    Log.d("okh", "show rating");
+                public void showTutorRating(Map<String, Object> questionMap) {
+                    Log.d("okh", "show rating" + questionMap.toString());
                 }
 
                 @Override
                 public void showTutorProfile(List<? extends Member> member) {
                     Log.d("okh", "show profile");
-                    Log.d("okh", member.toString() +" aaa");
                 }
             });
 //            new Chat().createChat(this, hostUserData, tutorUserData, (channelUrl) -> {
@@ -98,7 +98,7 @@ public class GroupChannelActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void showTutorRating() {
+                public void showTutorRating(Map<String, Object> questionMap) {
                 }
 
             });

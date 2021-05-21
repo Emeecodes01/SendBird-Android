@@ -24,8 +24,10 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
 import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.UserMessage;
+import com.sendbird.main.SyncManagerUtils;
 import com.sendbird.utils.DateUtils;
 import com.sendbird.utils.FileUtils;
 import com.sendbird.utils.PreferenceUtils;
@@ -64,6 +66,11 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         mChannelList = new ArrayList<>();
     }
 
+    void clearChannelList() {
+        mChannelList.clear();
+        notifyDataSetChanged();
+    }
+
     void clearMap() {
         mSimpleTargetIndexMap.clear();
         mSimpleTargetGroupChannelMap.clear();
@@ -87,6 +94,48 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public int getItemCount() {
         return mChannelList.size();
+    }
+
+    void insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
+        for (GroupChannel newChannel : channels) {
+            int index = SyncManagerUtils.findIndexOfChannel(mChannelList, newChannel, order);
+            mChannelList.add(index, newChannel);
+        }
+
+        notifyDataSetChanged();
+    }
+
+    void updateChannels(List<GroupChannel> channels) {
+        for (GroupChannel updatedChannel : channels) {
+            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, updatedChannel);
+            if (index != -1) {
+                mChannelList.set(index, updatedChannel);
+                notifyItemChanged(index);
+            }
+        }
+    }
+
+    void moveChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
+        for (GroupChannel movedChannel: channels) {
+            int fromIndex = SyncManagerUtils.getIndexOfChannel(mChannelList, movedChannel);
+            int toIndex = SyncManagerUtils.findIndexOfChannel(mChannelList, movedChannel, order);
+            if (fromIndex != -1) {
+                mChannelList.remove(fromIndex);
+                mChannelList.add(toIndex, movedChannel);
+                notifyItemMoved(fromIndex, toIndex);
+                notifyItemChanged(toIndex);
+            }
+        }
+    }
+
+    void removeChannels(List<GroupChannel> channels) {
+        for (GroupChannel removedChannel : channels) {
+            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, removedChannel);
+            if (index != -1) {
+                mChannelList.remove(index);
+                notifyItemRemoved(index);
+            }
+        }
     }
 
     void setGroupChannelList(List<GroupChannel> channelList) {
@@ -125,10 +174,6 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     void setOnItemClickListener(OnItemClickListener listener) {
         mItemClickListener = listener;
-    }
-
-    void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        mItemLongClickListener = listener;
     }
 
     interface OnItemClickListener {

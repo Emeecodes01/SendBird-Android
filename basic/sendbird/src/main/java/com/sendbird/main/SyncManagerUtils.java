@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
+import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.UserMessage;
 import com.sendbird.syncmanager.SendBirdSyncManager;
 import com.sendbird.syncmanager.handler.CompletionHandler;
@@ -61,6 +63,41 @@ public class SyncManagerUtils {
 
         return -1;
     }
+
+    public static int findIndexOfChannel(@NonNull List<GroupChannel> channels, @NonNull GroupChannel targetChannel, @NonNull GroupChannelListQuery.Order order) {
+        if (channels.size() == 0) {
+            return 0;
+        }
+
+        int index = channels.size();
+        for (int i = 0; i < channels.size(); i++) {
+            GroupChannel c = channels.get(i);
+            if (c.getUrl().equals(targetChannel.getUrl())) {
+                return i;
+            }
+
+            if (GroupChannel.compareTo(targetChannel, c, order) < 0) {
+                return i;
+            }
+        }
+
+        return index;
+    }
+
+    /**
+     *  It returns the index of targetChannel in the given channel list.
+     *  If not exists, it will return -1.
+     */
+    public static int getIndexOfChannel(@NonNull List<GroupChannel> channels,@NonNull GroupChannel targetChannel) {
+        for (int i = 0; i < channels.size(); i++) {
+            if (channels.get(i).getUrl().equals(targetChannel.getUrl())) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
 
     private static String getRequestId(BaseMessage message) {
         if (message instanceof AdminMessage) {

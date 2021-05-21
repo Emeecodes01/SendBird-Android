@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -100,8 +99,7 @@ public class GroupChatFragment extends Fragment {
                     .setTitle("Upload a file")
                     .setMessage(R.string.empty);
     private InputMethodManager mIMM;
-    private ConstraintLayout mRootLayout, mchatBoxLayout;
-    private ImageView mprofileImage;
+    private ConstraintLayout mRootLayout, mchatBoxLayout, mProfileLayout;
     private RecyclerView mRecyclerView;
     private GroupChatAdapter mChatAdapter;
     private LinearLayoutManager mLayoutManager;
@@ -272,7 +270,10 @@ public class GroupChatFragment extends Fragment {
 
         setUpRecyclerView();
 
-        createMessageCollection(mChannelUrl, (groupChannel, e) -> handleTimer(groupChannel));
+        createMessageCollection(mChannelUrl, (groupChannel, e) -> {
+            handleTimer(groupChannel);
+            showTutorProfile(groupChannel);
+        });
 
         onBack();
 
@@ -322,9 +323,9 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void initializeViews(View rootView) {
+        mProfileLayout = rootView.findViewById(R.id.profile_layout);
         mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
-        mprofileImage = rootView.findViewById(R.id.profile_image);
         mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
         mUserName = rootView.findViewById(R.id.userName);
         countdownTxt = rootView.findViewById(R.id.countdownTxt);
@@ -338,6 +339,10 @@ public class GroupChatFragment extends Fragment {
 
     private void sendMessage() {
         mSendMessage.setOnClickListener(view -> sendTextMessage());
+    }
+
+    private void showTutorProfile(GroupChannel groupChannel) {
+        mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
 
     private void handleTimer(GroupChannel groupChannel) {
@@ -367,7 +372,6 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void disableChat() {
-        tutorActionsChat.showTutorRating();
         mMessageEditText.setEnabled(false);
         mUploadFileButton.setEnabled(false);
         mchatBoxLayout.setAlpha(0.5F);
@@ -391,9 +395,9 @@ public class GroupChatFragment extends Fragment {
 
         } else {
             if (getActivity() != null) {
+                tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
                 new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), (groupChannel, e) -> {
                 });
-                tutorActionsChat.showTutorProfile(mChannel.getMembers());
             }
 
         }
@@ -777,8 +781,6 @@ public class GroupChatFragment extends Fragment {
                 mChatAdapter.setChannel(mChannel);
                 mChatAdapter.clear();
                 updateActionBarTitle();
-
-                mprofileImage.setOnClickListener(v -> tutorActionsChat.showTutorProfile(mChannel.getMembers()));
 
                 fetchInitialMessages();
             }

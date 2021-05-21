@@ -4,7 +4,7 @@ import com.sendbird.android.Member
 
 interface TutorActions {
     fun showTutorProfile(members: List<Member>)
-    fun showTutorRating()
+    fun showTutorRating(questionMap : MutableMap<String, Any?>)
 }
 
 

@@ -51,7 +51,7 @@
             android:maxWidth="260dp"
             android:text="Hi, how are you today?"
             android:textColor="@color/groupChatTextMe"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/text_group_chat_edited"
@@ -109,7 +109,7 @@
                 android:maxLines="1"
                 android:text="Title will be here."
                 android:textColor="@color/groupChatTextMe"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/text_url_preview_description"
