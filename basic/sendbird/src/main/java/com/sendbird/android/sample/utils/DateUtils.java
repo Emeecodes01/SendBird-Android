@@ -19,7 +19,7 @@ public class DateUtils {
      * Gets timestamp in millis and converts it to HH:mm (e.g. 16:44).
      */
     public static String formatTime(long timeInMillis) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
         return dateFormat.format(timeInMillis);
     }
 
@@ -56,7 +56,7 @@ public class DateUtils {
      * Formats timestamp to 'date month' format (e.g. 'February 3').
      */
     public static String formatDate(long timeInMillis) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         return dateFormat.format(timeInMillis);
     }
 

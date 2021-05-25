@@ -4,6 +4,7 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.sample.utils.PreferenceUtils;
+import com.sendbird.syncmanager.SendBirdSyncManager;
 
 public class ConnectionManager {
     public static boolean isLogin() {
@@ -25,6 +26,9 @@ public class ConnectionManager {
         SendBird.disconnect(new SendBird.DisconnectHandler() {
             @Override
             public void onDisconnected() {
+
+                SendBirdSyncManager.getInstance().pauseSync();
+
                 if (handler != null) {
                     handler.onDisconnected();
                 }

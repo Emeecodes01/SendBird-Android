@@ -94,5 +94,7 @@
     <string name="back_to_timeline">back to timeline</string>
 
     <string name="close">CLOSE</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
 
 </resources>

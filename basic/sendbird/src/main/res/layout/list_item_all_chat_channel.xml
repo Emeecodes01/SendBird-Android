@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="5dp"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:background="#FCFBF9">
 
     <TextView
         android:id="@+id/text_group_channel_list_message"
@@ -18,7 +18,7 @@
         android:layout_marginBottom="16dp"
         android:alpha="0.5"
         android:ellipsize="end"
-        android:fontFamily="@font/muli_regular"
+        app:fontFamily="@font/muli_regular"
         android:maxLines="1"
         android:textColor="#313848"
         android:textSize="14sp"

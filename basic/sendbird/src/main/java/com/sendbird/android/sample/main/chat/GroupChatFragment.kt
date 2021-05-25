@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -37,14 +38,11 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
-import com.sendbird.android.sample.groupchannel.GroupChatAdapter
 import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.main.sendBird.ChatMetaData
-import com.sendbird.android.sample.main.sendBird.Question
 import com.sendbird.android.sample.utils.*
 import com.sendbird.android.sample.utils.WebUtils.UrlPreviewAsyncTask
 import kotlinx.android.synthetic.main.fragment_group_chat.*
@@ -53,6 +51,19 @@ import java.io.File
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
+import com.sendbird.syncmanager.MessageCollection
+import com.sendbird.syncmanager.handler.MessageCollectionCreateHandler
+import com.sendbird.syncmanager.MessageFilter
+import com.sendbird.android.sample.utils.PreferenceUtils
+
+import com.sendbird.syncmanager.FailedMessageEventActionReason
+
+import com.sendbird.syncmanager.MessageEventAction
+import com.sendbird.syncmanager.handler.CompletionHandler
+
+import com.sendbird.syncmanager.handler.MessageCollectionHandler
+import com.sendbird.syncmanager.handler.FetchCompletionHandler
+
 
 class GroupChatFragment : Fragment() {
     private var countDownTimer: CountDownTimer? = null
@@ -83,6 +94,10 @@ class GroupChatFragment : Fragment() {
     var groupChatEventListener: GroupChatClickListener? = null
     private var recordVoice: Boolean = true
     private val FORMAT = "%02d:%02d"
+    private var mLastRead: Long = 0
+    private var mMessageCollection: MessageCollection? = null
+
+    val mMessageFilter = MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null)
 
     private val uploadFileDialog = GenericDialog().newInstance(TextUtils.THEME_MATH)
         .setTitle("Upload a file")
@@ -103,11 +118,12 @@ class GroupChatFragment : Fragment() {
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         Log.d(LOG_TAG, mChannelUrl)
+        mLastRead = PreferenceUtils.getLastRead(mChannelUrl);
         mChatAdapter = GroupChatAdapter(requireContext())
         setUpChatListAdapter()
 
         // Load messages from cache.
-        mChatAdapter!!.load(mChannelUrl!!)
+        //mChatAdapter!!.load(mChannelUrl!!)
     }
 
     override fun onCreateView(
@@ -137,7 +153,7 @@ class GroupChatFragment : Fragment() {
         })
 
         requireActivity().onBackPressedDispatcher
-            .addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true){
+            .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     goBack()
                 }
@@ -192,6 +208,7 @@ class GroupChatFragment : Fragment() {
                 ).show()
             } else {
                 sendTextMessage()
+                mRecyclerView?.scrollToPosition(0)
             }
         }
 
@@ -200,6 +217,10 @@ class GroupChatFragment : Fragment() {
         }
         setUpRecyclerView()
         setHasOptionsMenu(true)
+
+        createMessageCollection(mChannelUrl);
+
+
         return rootView
     }
 
@@ -209,6 +230,11 @@ class GroupChatFragment : Fragment() {
                 //show navigate to dashboard
                 findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
             }
+
+            CHAT_LIST -> {
+                findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+            }
+
             else -> {
                 findNavController().popBackStack()
             }
@@ -217,23 +243,30 @@ class GroupChatFragment : Fragment() {
 
     private fun setUpEndChatClickListeners() {
         endChatSession.setPositiveButton(
-            R.string.end_chat_positive_btn_txt,
+            R.string.yes,
             R.drawable.bg_chat_btn
         ) {
             endChatSession.dismiss()
+            endChat()
         }.show(requireFragmentManager(), "")
 
-        endChatSession.setNegativeButton(R.string.quit, null) {
+        endChatSession.setNegativeButton(R.string.no, null) {
             endChatSession.dismiss()
-            endChat()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        countDownTimer?.cancel()
     }
 
 
     private fun endChat() {
         mChannel?.let { channel ->
-            val question = Gson().fromJson(channel.data, Question::class.java)
-            val strData = Gson().toJson(question.copy(status = "past", startTime = "", state = "past"))
+            val questionDetailsMap = channel.data.toMutableMap()
+
+            questionDetailsMap["active"] = false
+            val strData = questionDetailsMap.toString()
 
 
             channel.updateChannel(channel.name, channel.coverUrl, strData) { _, e ->
@@ -241,7 +274,7 @@ class GroupChatFragment : Fragment() {
                     e.printStackTrace()
                     return@updateChannel
                 }
-
+                //todo: call tutor api to end chat
                 showSessionEndFragment()
             }
         }
@@ -321,46 +354,51 @@ class GroupChatFragment : Fragment() {
         }
     }
 
-    private fun refresh() {
-        if (mChannel == null) {
-            GroupChannel.getChannel(
-                mChannelUrl,
-                GroupChannel.GroupChannelGetHandler { groupChannel, e ->
-                    if (e != null) {
-                        // Error!
-                        e.printStackTrace()
-                        return@GroupChannelGetHandler
-                    }
-                    mChannel = groupChannel
-                    setUpUIChannelElements()
-                    mChatAdapter!!.setChannel(mChannel)
-                    mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
-                    updateActionBarTitle()
-
-                    retriveSessionTimeCounter(groupChannel)
-                })
-        } else {
-            mChannel!!.refresh(GroupChannel.GroupChannelRefreshHandler { e ->
-                if (e != null) {
-                    // Error!
-                    e.printStackTrace()
-                    return@GroupChannelRefreshHandler
-                }
-                mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
-                updateActionBarTitle()
-            })
-        }
-    }
+//    private fun refresh() {
+//        if (mChannel == null) {
+//            GroupChannel.getChannel(
+//                mChannelUrl,
+//                GroupChannel.GroupChannelGetHandler { groupChannel, e ->
+//                    if (e != null) {
+//                        // Error!
+//                        e.printStackTrace()
+//                        return@GroupChannelGetHandler
+//                    }
+//                    mChannel = groupChannel
+//                    setUpUIChannelElements()
+//                    mChatAdapter!!.setChannel(mChannel)
+//                    mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
+//                    updateActionBarTitle()
+//
+//                    retriveSessionTimeCounter(groupChannel)
+//                })
+//        } else {
+//            mChannel!!.refresh(GroupChannel.GroupChannelRefreshHandler { e ->
+//                if (e != null) {
+//                    // Error!
+//                    e.printStackTrace()
+//                    return@GroupChannelRefreshHandler
+//                }
+//                mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
+//                updateActionBarTitle()
+//            })
+//        }
+//    }
 
     private fun setUpUIChannelElements() {
         mChannel?.let { channel ->
-            val question = Gson().fromJson(channel.data, Question::class.java)
-            mUserName?.text = question.learner_name
+            val questionDetailsMap = channel.data.toMutableMap()
 
-            Glide.with(this).load(question.learner_avatar)
-                .error(R.drawable.profile_thumbnail)
-                .placeholder(R.drawable.profile_thumbnail)
-                .into(mProfileImage!!)
+            try {
+                mUserName?.text = questionDetailsMap["studentName"] as String
+
+                Glide.with(this).load(questionDetailsMap["studentAvatar"])
+                    .error(R.drawable.profile_thumbnail)
+                    .placeholder(R.drawable.profile_thumbnail)
+                    .into(mProfileImage!!)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
         }
     }
@@ -389,33 +427,53 @@ class GroupChatFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) { refresh() }
+        //ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) { refresh() }
         mChatAdapter!!.setContext(requireContext()) // Glide bug fix (java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity)
 
         // Gets channel from URL user requested
         Log.d(LOG_TAG, mChannelUrl)
+
+
+        SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, object : SendBird.ConnectionHandler {
+            override fun onReconnectStarted() {}
+            override fun onReconnectSucceeded() {
+                if (mMessageCollection != null) {
+                    if (mLayoutManager!!.findFirstVisibleItemPosition() <= 0) {
+                        mMessageCollection!!.fetchAllNextMessages { hasMore, e -> }
+                    }
+                    if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
+                        mMessageCollection!!.fetchSucceededMessages(
+                            MessageCollection.Direction.PREVIOUS
+                        ) { hasMore, e -> }
+                    }
+                }
+            }
+
+            override fun onReconnectFailed() {}
+        })
+
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, object : SendBird.ChannelHandler() {
             override fun onMessageReceived(baseChannel: BaseChannel, baseMessage: BaseMessage) {
-                if (baseChannel.url == mChannelUrl) {
-                    mChatAdapter!!.markAllMessagesAsRead()
-                    // Add new message to view
-                    mChatAdapter!!.addFirst(baseMessage)
-                }
+//                if (baseChannel.url == mChannelUrl) {
+//                    mChatAdapter!!.markAllMessagesAsRead()
+//                    // Add new message to view
+//                    mChatAdapter!!.addFirst(baseMessage)
+//                }
             }
 
             override fun onMessageDeleted(baseChannel: BaseChannel, msgId: Long) {
                 super.onMessageDeleted(baseChannel, msgId)
-                if (baseChannel.url == mChannelUrl) {
-                    mChatAdapter!!.delete(msgId)
-                }
+//                if (baseChannel.url == mChannelUrl) {
+//                    mChatAdapter!!.delete(msgId)
+//                }
             }
 
-            override fun onMessageUpdated(channel: BaseChannel, message: BaseMessage) {
-                super.onMessageUpdated(channel, message)
-                if (channel.url == mChannelUrl) {
-                    mChatAdapter!!.update(message)
-                }
-            }
+            /* override fun onMessageUpdated(channel: BaseChannel, message: BaseMessage) {
+                 super.onMessageUpdated(channel, message)
+                 if (channel.url == mChannelUrl) {
+                     mChatAdapter!!.update(message)
+                 }
+             }*/
 
             override fun onReadReceiptUpdated(channel: GroupChannel) {
                 if (channel.url == mChannelUrl) {
@@ -447,7 +505,10 @@ class GroupChatFragment : Fragment() {
 
     override fun onDestroy() {
         // Save messages to cache.
-        mChatAdapter!!.save()
+        if (mMessageCollection != null) {
+            mMessageCollection?.setCollectionHandler(null);
+            mMessageCollection?.remove();
+        }
         super.onDestroy()
     }
 
@@ -480,15 +541,36 @@ class GroupChatFragment : Fragment() {
             mLayoutManager = LinearLayoutManager(activity)
             mLayoutManager!!.reverseLayout = true
             mRecyclerView!!.layoutManager = mLayoutManager
-            mRecyclerView!!.setItemViewCacheSize(50)
+            //mRecyclerView!!.setItemViewCacheSize(50)
             mRecyclerView!!.adapter = mChatAdapter
+//            mRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+//                    if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
+//                        mChatAdapter!!.loadPreviousMessages(CHANNEL_LIST_LIMIT, null)
+//                    }
+//                }
+//            })
+
             mRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
-                        mChatAdapter!!.loadPreviousMessages(CHANNEL_LIST_LIMIT, null)
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        if (mLayoutManager!!.findFirstVisibleItemPosition() == 0) {
+                            mMessageCollection?.fetchSucceededMessages(
+                                MessageCollection.Direction.NEXT,
+                                null
+                            )
+                        }
+                        if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
+                            mMessageCollection?.fetchSucceededMessages(
+                                MessageCollection.Direction.PREVIOUS,
+                                null
+                            )
+                        }
                     }
                 }
             })
+
+
         }
     }
 
@@ -591,6 +673,203 @@ class GroupChatFragment : Fragment() {
             }
         }
     }
+
+    private fun fetchInitialMessages() {
+        if (mMessageCollection == null) {
+            return
+        }
+        mMessageCollection!!.fetchSucceededMessages(
+            MessageCollection.Direction.PREVIOUS
+        ) { hasMore, e ->
+            mMessageCollection!!.fetchSucceededMessages(
+                MessageCollection.Direction.NEXT
+            ) { hasMore, e ->
+                mMessageCollection!!.fetchFailedMessages(object : CompletionHandler {
+                    override fun onCompleted(e: SendBirdException?) {
+                        if (activity == null) {
+                            return
+                        }
+                        activity!!.runOnUiThread {
+                            mChatAdapter!!.markAllMessagesAsRead()
+                            mLayoutManager!!.scrollToPositionWithOffset(
+                                mChatAdapter!!.getLastReadPosition(
+                                    mLastRead
+                                ), mRecyclerView!!.height / 2
+                            )
+                        }
+                    }
+                })
+            }
+        }
+    }
+
+    private fun createMessageCollection(channelUrl: String) {
+        GroupChannel.getChannel(channelUrl, object : GroupChannel.GroupChannelGetHandler {
+            override fun onResult(groupChannel: GroupChannel, e: SendBirdException?) {
+                if (e != null) {
+                    MessageCollection.create(channelUrl, mMessageFilter, mLastRead,
+                        MessageCollectionCreateHandler { messageCollection, e ->
+                            if (e == null) {
+                                if (mMessageCollection != null) {
+                                    mMessageCollection?.remove()
+                                }
+                                mMessageCollection = messageCollection
+                                mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
+                                mChannel = mMessageCollection?.channel
+                                mChatAdapter!!.setChannel(mChannel)
+                                if (activity == null) {
+                                    return@MessageCollectionCreateHandler
+                                }
+                                activity!!.runOnUiThread {
+                                    mChatAdapter?.clear()
+                                    updateActionBarTitle()
+                                }
+                                fetchInitialMessages()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Failed to get channel",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                Handler().postDelayed(Runnable { goBack() }, 1000)
+                            }
+                        })
+                } else {
+                    if (mMessageCollection != null) {
+                        mMessageCollection?.remove()
+                    }
+                    mMessageCollection = MessageCollection(groupChannel, mMessageFilter, mLastRead)
+                    mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
+                    mChannel = groupChannel
+                    mChatAdapter!!.setChannel(mChannel)
+                    mChatAdapter?.clear()
+                    updateActionBarTitle()
+                    fetchInitialMessages()
+                }
+            }
+        })
+    }
+
+    private fun updateLastSeenTimestamp(messages: List<BaseMessage?>) {
+        var lastSeenTimestamp = if (mLastRead == Long.MAX_VALUE) 0 else mLastRead
+        for (message in messages) {
+            if (lastSeenTimestamp < message?.createdAt ?: 0) {
+                lastSeenTimestamp = message?.createdAt ?: 0
+            }
+        }
+        if (lastSeenTimestamp > mLastRead) {
+            PreferenceUtils.setLastRead(mChannelUrl, lastSeenTimestamp)
+            mLastRead = lastSeenTimestamp
+        }
+    }
+
+
+    private val mMessageCollectionHandler: MessageCollectionHandler =
+        object : MessageCollectionHandler() {
+            override fun onMessageEvent(
+                collection: MessageCollection?,
+                messages: List<BaseMessage?>?,
+                action: MessageEventAction?
+            ) {
+            }
+
+            override fun onSucceededMessageEvent(
+                collection: MessageCollection?,
+                messages: List<BaseMessage?>,
+                action: MessageEventAction
+            ) {
+                Log.d(
+                    "SyncManager",
+                    "onSucceededMessageEvent: size = " + messages.size + ", action = " + action
+                )
+                if (activity == null) {
+                    return
+                }
+                activity!!.runOnUiThread {
+                    when (action) {
+                        MessageEventAction.INSERT -> {
+                            mChatAdapter?.insertSucceededMessages(messages)
+                            mChatAdapter!!.markAllMessagesAsRead()
+                        }
+                        MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
+                        MessageEventAction.UPDATE -> mChatAdapter?.updateSucceededMessages(messages)
+                        MessageEventAction.CLEAR -> mChatAdapter?.clear()
+                    }
+                }
+                updateLastSeenTimestamp(messages)
+            }
+
+            override fun onPendingMessageEvent(
+                collection: MessageCollection?,
+                messages: List<BaseMessage>,
+                action: MessageEventAction
+            ) {
+                Log.d(
+                    "SyncManager",
+                    "onPendingMessageEvent: size = " + messages.size + ", action = " + action
+                )
+                if (activity == null) {
+                    return
+                }
+                activity!!.runOnUiThread {
+                    when (action) {
+                        MessageEventAction.INSERT -> {
+                            val pendingMessages: MutableList<BaseMessage> =
+                                ArrayList()
+                            for (message in messages) {
+                                if (!mChatAdapter!!.failedMessageListContains(message)) {
+                                    pendingMessages.add(message)
+                                }
+                            }
+                            mChatAdapter?.insertSucceededMessages(pendingMessages)
+                        }
+                        MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
+                    }
+                }
+            }
+
+            override fun onFailedMessageEvent(
+                collection: MessageCollection?,
+                messages: List<BaseMessage?>,
+                action: MessageEventAction,
+                reason: FailedMessageEventActionReason
+            ) {
+                Log.d(
+                    "SyncManager",
+                    "onFailedMessageEvent: size = " + messages.size + ", action = " + action
+                )
+                if (activity == null) {
+                    return
+                }
+                activity!!.runOnUiThread {
+                    when (action) {
+                        MessageEventAction.INSERT -> mChatAdapter?.insertFailedMessages(messages)
+                        MessageEventAction.REMOVE -> mChatAdapter?.removeFailedMessages(messages)
+                        MessageEventAction.UPDATE -> if (reason == FailedMessageEventActionReason.UPDATE_RESEND_FAILED) {
+                            mChatAdapter?.updateFailedMessages(messages)
+                        }
+                    }
+                }
+            }
+
+            override fun onNewMessage(collection: MessageCollection?, message: BaseMessage) {
+                Log.d("SyncManager", "onNewMessage: message = $message")
+                //show when the scroll position is bottom ONLY.
+                if (mLayoutManager!!.findFirstVisibleItemPosition() != 0) {
+                    if (message is UserMessage) {
+                        if (!message.sender.userId.equals(PreferenceUtils.getUserId())) {
+//                            mNewMessageText.setText("New Message = " + message.sender.nickname.toString() + " : " + message.message)
+//                            mNewMessageText.setVisibility(View.VISIBLE)
+                        }
+                    } else if (message is FileMessage) {
+                        if (!message.sender.userId.equals(PreferenceUtils.getUserId())) {
+//                            mNewMessageText.setText("New Message = " + message.sender.nickname.toString() + "Send a File")
+//                            mNewMessageText.setVisibility(View.VISIBLE)
+                        }
+                    }
+                }
+            }
+        }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -792,7 +1071,7 @@ class GroupChatFragment : Fragment() {
 
 
                 // Display a user message to RecyclerView
-                mChatAdapter!!.addFirst(tempUserMessage!!)
+                // mChatAdapter!!.addFirst(tempUserMessage!!)
             }
         }.execute(url)
     }
@@ -806,29 +1085,33 @@ class GroupChatFragment : Fragment() {
             sendUserMessageWithUrl(text, urls[0])
             return
         }
-        val tempUserMessage =
-            mChannel!!.sendUserMessage(text, BaseChannel.SendUserMessageHandler { userMessage, e ->
-                if (e != null) {
-                    // Error!
-                    Log.e(LOG_TAG, e.toString())
-                    if (activity != null) {
-                        Toast.makeText(
-                            requireContext(),
-                            "Send failed with error " + e.code + ": " + e.message,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                    mChatAdapter!!.markMessageFailed(userMessage)
-                    return@SendUserMessageHandler
-                }
 
-                // Update a sent message to RecyclerView
-                mChatAdapter!!.markMessageSent(userMessage)
+        val pendingMessage: UserMessage =
+            mChannel!!.sendUserMessage(text, object : BaseChannel.SendUserMessageHandler {
+                override fun onSent(userMessage: UserMessage?, e: SendBirdException?) {
+                    if (mMessageCollection != null) {
+                        mMessageCollection!!.handleSendMessageResponse(userMessage, e)
+                        mMessageCollection!!.fetchAllNextMessages(null)
+                    }
+                    if (e != null) {
+                        // Error!
+                        Log.e(LOG_TAG, e.toString())
+                        Toast.makeText(
+                            activity,
+                            e.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return
+                    }
+                }
             })
 
+        if (mMessageCollection != null) {
+            mMessageCollection!!.appendMessage(pendingMessage)
+        }
+
         // Display a user message to RecyclerView
-        mChatAdapter!!.addFirst(tempUserMessage)
+//        mChatAdapter!!.addFirst(tempUserMessage)
     }
 
     /**
@@ -908,7 +1191,7 @@ class GroupChatFragment : Fragment() {
                 fileMessageHandler
             )
             mChatAdapter!!.addTempFileMessageInfo(tempFileMessage, uri)
-            mChatAdapter!!.addFirst(tempFileMessage)
+            //mChatAdapter!!.addFirst(tempFileMessage)
         }
     }
 
@@ -931,7 +1214,7 @@ class GroupChatFragment : Fragment() {
                     ).show()
                     return@UpdateUserMessageHandler
                 }
-                mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
+                //mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
             })
     }
 
@@ -952,7 +1235,7 @@ class GroupChatFragment : Fragment() {
                     .show()
                 return@DeleteMessageHandler
             }
-            mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
+            // mChatAdapter!!.loadLatestMessages(CHANNEL_LIST_LIMIT) { list, e -> mChatAdapter!!.markAllMessagesAsRead() }
         })
     }
 
@@ -974,6 +1257,7 @@ class GroupChatFragment : Fragment() {
         const val EXTRA_CHANNEL_URL = "EXTRA_CHANNEL_URL"
         const val IS_VIEW_ONLY = "view_only"
         const val DASHBOARD = "dashboard"
+        const val CHAT_LIST = "chatList"
 
         /**
          * To create an instance of this fragment, a Channel URL should be required.

@@ -1,13 +1,15 @@
-package com.sendbird.android.sample.groupchannel
+package com.sendbird.android.sample.main.chat
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
@@ -21,14 +23,21 @@ import java.io.IOException
 import java.lang.Exception
 import java.lang.StringBuilder
 import java.util.*
+import kotlin.collections.HashSet
+import com.sendbird.android.sample.utils.SyncManagerUtils
+import com.sendbird.android.sample.utils.SyncManagerUtils.findIndexOfMessage
+import com.sendbird.android.sample.utils.SyncManagerUtils.getIndexOfMessage
+
 
 internal class GroupChatAdapter(private var mContext: Context) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var mChannel: GroupChannel? = null
-    private val mMessageList: MutableList<BaseMessage>
+    private var mMessageList: MutableList<BaseMessage> = mutableListOf()
     private var mItemClickListener: OnItemClickListener? = null
     private var mItemLongClickListener: OnItemLongClickListener? = null
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
+    private var mFailedMessageList: MutableList<BaseMessage> = mutableListOf()
+    private var mResendingMessageSet: MutableSet<String> = mutableSetOf()
 
     @get:Synchronized
     @set:Synchronized
@@ -49,93 +58,93 @@ internal class GroupChatAdapter(private var mContext: Context) :
         mContext = context
     }
 
-    fun load(channelUrl: String) {
-        try {
-            val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
-            appDir.mkdirs()
-            val dataFile = File(
-                appDir,
-                TextUtils.generateMD5(PreferenceUtils.getUserId() + channelUrl) + ".data"
-            )
-            val content = FileUtils.loadFromFile(dataFile)
-            val dataArray = content.split("\n".toRegex()).toTypedArray()
-            mChannel = GroupChannel.buildFromSerializedData(
-                Base64.decode(
-                    dataArray[0], Base64.DEFAULT or Base64.NO_WRAP
-                )
-            ) as GroupChannel
+//    fun load(channelUrl: String) {
+//        try {
+//            val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
+//            appDir.mkdirs()
+//            val dataFile = File(
+//                appDir,
+//                TextUtils.generateMD5(PreferenceUtils.getUserId() + channelUrl) + ".data"
+//            )
+//            val content = FileUtils.loadFromFile(dataFile)
+//            val dataArray = content.split("\n".toRegex()).toTypedArray()
+//            mChannel = GroupChannel.buildFromSerializedData(
+//                Base64.decode(
+//                    dataArray[0], Base64.DEFAULT or Base64.NO_WRAP
+//                )
+//            ) as GroupChannel
+//
+//            // Reset message list, then add cached messages.
+//            mMessageList.clear()
+//            for (i in 1 until dataArray.size) {
+//                mMessageList.add(
+//                    BaseMessage.buildFromSerializedData(
+//                        Base64.decode(
+//                            dataArray[i], Base64.DEFAULT or Base64.NO_WRAP
+//                        )
+//                    )
+//                )
+//            }
+//            notifyDataSetChanged()
+//        } catch (e: Exception) {
+//            // Nothing to load.
+//        }
+//    }
 
-            // Reset message list, then add cached messages.
-            mMessageList.clear()
-            for (i in 1 until dataArray.size) {
-                mMessageList.add(
-                    BaseMessage.buildFromSerializedData(
-                        Base64.decode(
-                            dataArray[i], Base64.DEFAULT or Base64.NO_WRAP
-                        )
-                    )
-                )
-            }
-            notifyDataSetChanged()
-        } catch (e: Exception) {
-            // Nothing to load.
-        }
-    }
-
-    fun save() {
-        try {
-            val sb = StringBuilder()
-            if (mChannel != null) {
-                // Convert current data into string.
-                sb.append(
-                    Base64.encodeToString(
-                        mChannel!!.serialize(),
-                        Base64.DEFAULT or Base64.NO_WRAP
-                    )
-                )
-                var message: BaseMessage? = null
-                for (i in 0 until Math.min(mMessageList.size, 100)) {
-                    message = mMessageList[i]
-                    if (!isTempMessage(message)) {
-                        sb.append("\n")
-                        sb.append(
-                            Base64.encodeToString(
-                                message.serialize(),
-                                Base64.DEFAULT or Base64.NO_WRAP
-                            )
-                        )
-                    }
-                }
-                val data = sb.toString()
-                val md5 = TextUtils.generateMD5(data)
-
-                // Save the data into file.
-                val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
-                appDir.mkdirs()
-                val hashFile = File(
-                    appDir,
-                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".hash"
-                )
-                val dataFile = File(
-                    appDir,
-                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".data"
-                )
-                try {
-                    val content = FileUtils.loadFromFile(hashFile)
-                    // If data has not been changed, do not save.
-                    if (md5 == content) {
-                        return
-                    }
-                } catch (e: IOException) {
-                    // File not found. Save the data.
-                }
-                FileUtils.saveToFile(dataFile, data)
-                FileUtils.saveToFile(hashFile, md5)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
+//    fun save() {
+//        try {
+//            val sb = StringBuilder()
+//            if (mChannel != null) {
+//                // Convert current data into string.
+//                sb.append(
+//                    Base64.encodeToString(
+//                        mChannel!!.serialize(),
+//                        Base64.DEFAULT or Base64.NO_WRAP
+//                    )
+//                )
+//                var message: BaseMessage? = null
+//                for (i in 0 until Math.min(mMessageList.size, 100)) {
+//                    message = mMessageList[i]
+//                    if (!isTempMessage(message)) {
+//                        sb.append("\n")
+//                        sb.append(
+//                            Base64.encodeToString(
+//                                message.serialize(),
+//                                Base64.DEFAULT or Base64.NO_WRAP
+//                            )
+//                        )
+//                    }
+//                }
+//                val data = sb.toString()
+//                val md5 = TextUtils.generateMD5(data)
+//
+//                // Save the data into file.
+//                val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
+//                appDir.mkdirs()
+//                val hashFile = File(
+//                    appDir,
+//                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".hash"
+//                )
+//                val dataFile = File(
+//                    appDir,
+//                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".data"
+//                )
+//                try {
+//                    val content = FileUtils.loadFromFile(hashFile)
+//                    // If data has not been changed, do not save.
+//                    if (md5 == content) {
+//                        return
+//                    }
+//                } catch (e: IOException) {
+//                    // File not found. Save the data.
+//                }
+//                FileUtils.saveToFile(dataFile, data)
+//                FileUtils.saveToFile(hashFile, md5)
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//    }
 
     /**
      * Inflates the correct layout according to the View Type.
@@ -393,10 +402,27 @@ internal class GroupChatAdapter(private var mContext: Context) :
         return message!!.messageId == 0L
     }
 
-    fun isFailedMessage(message: BaseMessage): Boolean {
-        return if (!isTempMessage(message)) {
+    private fun getRequestId(message: BaseMessage): String? {
+        if (message is UserMessage) {
+            return message.requestId
+        } else if (message is FileMessage) {
+            return message.requestId
+        }
+        return ""
+    }
+
+    fun isFailedMessage(message: BaseMessage?): Boolean {
+        if (message == null) {
+            return false;
+        }
+
+        return mFailedMessageList.contains(message);
+    }
+
+    fun isResendingMessage(message: BaseMessage?): Boolean {
+        return if (message == null) {
             false
-        } else message.sendingStatus == BaseMessage.SendingStatus.FAILED
+        } else mResendingMessageSet.contains(getRequestId(message))
     }
 
     fun getTempFileMessageUri(message: BaseMessage?): Uri? {
@@ -433,14 +459,16 @@ internal class GroupChatAdapter(private var mContext: Context) :
             if (message is UserMessage && msg is UserMessage) {
                 if (msg.requestId == message.requestId) {
                     mMessageList[i] = message
-                    notifyDataSetChanged()
+                    //notifyDataSetChanged()
+                    notifyItemChanged(i)
                     return
                 }
             } else if (message is FileMessage && msg is FileMessage) {
                 if (msg.requestId == message.requestId) {
                     mTempFileMessageUriTable.remove(message.requestId)
                     mMessageList[i] = message
-                    notifyDataSetChanged()
+                    notifyItemChanged(i)
+                    //notifyDataSetChanged()
                     return
                 }
             }
@@ -451,32 +479,113 @@ internal class GroupChatAdapter(private var mContext: Context) :
         mTempFileMessageUriTable[message.requestId] = uri
     }
 
-    fun addFirst(message: BaseMessage) {
-        mMessageList.add(0, message)
+    fun insertSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index = findIndexOfMessage(
+                mMessageList,
+                message!!
+            )
+            mMessageList.add(index, message)
+            notifyItemChanged(index)
+        }
+        //notifyDataSetChanged()
+    }
+
+    fun updateSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index = getIndexOfMessage(
+                mMessageList,
+                message!!
+            )
+            if (index != -1) {
+                mMessageList[index] = message
+                notifyItemChanged(index)
+            }
+        }
+    }
+
+    fun removeSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index = getIndexOfMessage(
+                mMessageList,
+                message!!
+            )
+            if (index != -1) {
+                mMessageList.removeAt(index)
+                notifyItemChanged(index)
+            }
+        }
+        //notifyDataSetChanged()
+    }
+
+
+    fun insertFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                if (requestId!!.isEmpty()) {
+                    continue
+                }
+
+                mResendingMessageSet.add(requestId)
+                mFailedMessageList.add(message)
+            }
+            mFailedMessageList.sortWith(Comparator { m1, m2 ->
+                val x = m1.createdAt
+                val y = m2.createdAt
+                if (x < y) 1 else if (x == y) 0 else -1
+            })
+        }
         notifyDataSetChanged()
     }
 
-    fun delete(msgId: Long) {
-        for (msg in mMessageList) {
-            if (msg.messageId == msgId) {
-                mMessageList.remove(msg)
-                notifyDataSetChanged()
-                break
+    fun updateFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                if (requestId!!.isEmpty()) {
+                    continue
+                }
+                mResendingMessageSet.remove(requestId)
             }
         }
+        notifyDataSetChanged()
     }
 
-    fun update(message: BaseMessage) {
-        var baseMessage: BaseMessage
-        for (index in mMessageList.indices) {
-            baseMessage = mMessageList[index]
-            if (message.messageId == baseMessage.messageId) {
-                mMessageList.removeAt(index)
-                mMessageList.add(index, message)
-                notifyDataSetChanged()
-                break
+    fun removeFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                mResendingMessageSet.remove(requestId)
+                mFailedMessageList.remove(message)
             }
         }
+        notifyDataSetChanged()
+    }
+
+    fun failedMessageListContains(message: BaseMessage?): Boolean {
+        if (mFailedMessageList.isEmpty()) {
+            return false
+        }
+        for (failedMessage in mFailedMessageList) {
+            if (message is UserMessage && failedMessage is UserMessage) {
+                if (message.requestId.equals(failedMessage.requestId)) {
+                    return true
+                }
+            } else if (message is FileMessage && failedMessage is FileMessage) {
+                if (message.requestId.equals(failedMessage.requestId)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+
+    fun clear() {
+        mMessageList.clear()
+        mFailedMessageList.clear()
+        notifyDataSetChanged()
     }
 
     /**
@@ -488,7 +597,16 @@ internal class GroupChatAdapter(private var mContext: Context) :
         if (mChannel != null) {
             mChannel!!.markAsRead()
         }
-        notifyDataSetChanged()
+        //notifyDataSetChanged()
+    }
+
+    fun getLastReadPosition(lastRead: Long): Int {
+        for (i in mMessageList.indices) {
+            if (mMessageList[i].createdAt == lastRead) {
+                return i + mFailedMessageList.size
+            }
+        }
+        return 0
     }
 
     /**
@@ -497,84 +615,84 @@ internal class GroupChatAdapter(private var mContext: Context) :
      * @param limit
      * @param handler
      */
-    fun loadPreviousMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
-        if (mChannel == null) {
-            return
-        }
-        if (isMessageListLoading) {
-            return
-        }
-        var oldestMessageCreatedAt = Long.MAX_VALUE
-        if (mMessageList.size > 0) {
-            oldestMessageCreatedAt = mMessageList[mMessageList.size - 1].createdAt
-        }
-        isMessageListLoading = true
-        mChannel!!.getPreviousMessagesByTimestamp(
-            oldestMessageCreatedAt,
-            false,
-            limit,
-            true,
-            BaseChannel.MessageTypeFilter.ALL,
-            null,
-            object : BaseChannel.GetMessagesHandler {
-                override fun onResult(list: List<BaseMessage>, e: SendBirdException?) {
-                    handler?.onResult(list, e)
-                    isMessageListLoading = false
-                    if (e != null) {
-                        e.printStackTrace()
-                        return
-                    }
-                    for (message in list) {
-                        mMessageList.add(message)
-                    }
-                    notifyDataSetChanged()
-                }
-            })
-    }
-
-    /**
-     * Replaces current message list with new list.
-     * Should be used only on initial load or refresh.
-     */
-    fun loadLatestMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
-        if (mChannel == null) {
-            return
-        }
-        if (isMessageListLoading) {
-            return
-        }
-        isMessageListLoading = true
-        mChannel!!.getPreviousMessagesByTimestamp(
-            Long.MAX_VALUE,
-            true,
-            limit,
-            true,
-            BaseChannel.MessageTypeFilter.ALL,
-            null,
-            object : BaseChannel.GetMessagesHandler {
-                override fun onResult(list: MutableList<BaseMessage>, e: SendBirdException?) {
-                    handler?.onResult(list, e)
-                    isMessageListLoading = false
-                    if (e != null) {
-                        e.printStackTrace()
-                        return
-                    }
-                    if (list.size <= 0) {
-                        return
-                    }
-                    for (message in mMessageList) {
-                        if (isTempMessage(message) || isFailedMessage(message)) {
-                            list.add(0, message)
-                        }
-                    }
-                    mMessageList.clear()
-                    for (message in list) {
-                        mMessageList.add(message)
-                    }
-                    notifyDataSetChanged()
-                }
-            })
-    }
+//    fun loadPreviousMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
+//        if (mChannel == null) {
+//            return
+//        }
+//        if (isMessageListLoading) {
+//            return
+//        }
+//        var oldestMessageCreatedAt = Long.MAX_VALUE
+//        if (mMessageList.size > 0) {
+//            oldestMessageCreatedAt = mMessageList[mMessageList.size - 1].createdAt
+//        }
+//        isMessageListLoading = true
+//        mChannel!!.getPreviousMessagesByTimestamp(
+//            oldestMessageCreatedAt,
+//            false,
+//            limit,
+//            true,
+//            BaseChannel.MessageTypeFilter.ALL,
+//            null,
+//            object : BaseChannel.GetMessagesHandler {
+//                override fun onResult(list: List<BaseMessage>, e: SendBirdException?) {
+//                    handler?.onResult(list, e)
+//                    isMessageListLoading = false
+//                    if (e != null) {
+//                        e.printStackTrace()
+//                        return
+//                    }
+//                    for (message in list) {
+//                        mMessageList.add(message)
+//                    }
+//                    notifyDataSetChanged()
+//                }
+//            })
+//    }
+//
+//    /**
+//     * Replaces current message list with new list.
+//     * Should be used only on initial load or refresh.
+//     */
+//    fun loadLatestMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
+//        if (mChannel == null) {
+//            return
+//        }
+//        if (isMessageListLoading) {
+//            return
+//        }
+//        isMessageListLoading = true
+//        mChannel!!.getPreviousMessagesByTimestamp(
+//            Long.MAX_VALUE,
+//            true,
+//            limit,
+//            true,
+//            BaseChannel.MessageTypeFilter.ALL,
+//            null,
+//            object : BaseChannel.GetMessagesHandler {
+//                override fun onResult(list: MutableList<BaseMessage>, e: SendBirdException?) {
+//                    handler?.onResult(list, e)
+//                    isMessageListLoading = false
+//                    if (e != null) {
+//                        e.printStackTrace()
+//                        return
+//                    }
+//                    if (list.size <= 0) {
+//                        return
+//                    }
+//                    for (message in mMessageList) {
+//                        if (isTempMessage(message) || isFailedMessage(message)) {
+//                            list.add(0, message)
+//                        }
+//                    }
+//                    mMessageList.clear()
+//                    for (message in list) {
+//                        mMessageList.add(message)
+//                    }
+//                    notifyDataSetChanged()
+//                }
+//            })
+//    }
 
     fun setItemLongClickListener(listener: OnItemLongClickListener?) {
         mItemLongClickListener = null
@@ -937,6 +1055,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
      * A ViewHolder for file messages that are images.
      * Displays only the image thumbnail.
      */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private inner class MyImageFileMessageHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
         var timeText: TextView
@@ -1014,6 +1133,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
             timeText = itemView.findViewById<View>(R.id.text_group_chat_time) as TextView
             fileThumbnailImage =
                 itemView.findViewById<View>(R.id.image_group_chat_file_thumbnail) as ImageView
+            fileThumbnailImage.clipToOutline = true
             dateText = itemView.findViewById<View>(R.id.text_group_chat_date) as TextView
             messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
         }

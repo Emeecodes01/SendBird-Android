@@ -1,5 +1,6 @@
 package com.sendbird.android.sample.main.sendBird
 
+import android.content.Context
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -17,23 +18,15 @@ import com.sendbird.android.sample.main.chat.GroupChatFragment
 import com.sendbird.android.sample.main.chat.GroupChatFragment.Companion.CONNECTION_HANDLER_ID
 import com.sendbird.android.sample.utils.PreferenceUtils
 
-class Chat : GroupChatFragment.GroupChatClickListener {
+class Chat {
 
 
     /**
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
-    var chatSessionEnded: () -> Unit = {
-
-    }
-
-    var backToTimeline: () -> Unit = {
-
-    }
-
-
     fun createChat(
+        context: Context,
         activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData,
         metaData: Map<String, String>
     ) {
@@ -53,6 +46,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
             } else {
 
                 login(
+                    context,
                     UserData(
                         hostUserData.id,
                         hostUserData.nickname,
@@ -85,6 +79,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
     }
 
     fun Fragment.createChat(
+        context: Context,
         hostUserData: UserData,
         otherUserData: UserData,
         metaData: Map<String, String>
@@ -107,6 +102,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
             } else {
 
                 login(
+                    context,
                     UserData(
                         hostUserData.id,
                         hostUserData.nickname,
@@ -177,17 +173,16 @@ class Chat : GroupChatFragment.GroupChatClickListener {
     /**
      * @param channelUrl -> When a chat is already created, this fun allows another user to enter into the channel
      */
-    fun enterGroupChat(activity: FragmentActivity, channelUrl: String, userData: UserData) {
+    fun enterGroupChat(context: Context, activity: FragmentActivity, channelUrl: String, userData: UserData) {
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
                 val groupChatFragment = GroupChatFragment.newInstance(channelUrl, false)
-                groupChatFragment.groupChatEventListener = this
                 activity.supportFragmentManager.beginTransaction()
                     .add(android.R.id.content, groupChatFragment)
                     .addToBackStack(groupChatFragment.tag)
                     .commit()
             } else {
-                login(UserData(userData.id, userData.nickname, userData.accessToken)) { user, e ->
+                login(context, UserData(userData.id, userData.nickname, userData.accessToken)) { user, e ->
 
                     if (e != null) {
                         Toast.makeText(
@@ -200,7 +195,6 @@ class Chat : GroupChatFragment.GroupChatClickListener {
 
 
                     val groupChatFragment = GroupChatFragment.newInstance(channelUrl, false)
-                    groupChatFragment.groupChatEventListener = this
                     activity.supportFragmentManager.beginTransaction()
                         .add(android.R.id.content, groupChatFragment)
                         .addToBackStack(groupChatFragment.tag)
@@ -215,6 +209,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
      * Basically reconnects a user to send bird
      */
     fun connectUserToSendBird (
+        context: Context,
         hostUserData: UserData,
         onConnected: () -> Unit,
         connectionFailed: (Exception) -> Unit
@@ -223,6 +218,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
             if (isReconnected) onConnected.invoke()
             else {
                 login(
+                    context,
                     UserData(
                         hostUserData.id,
                         hostUserData.nickname,
@@ -248,7 +244,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
      * Show all the chat list of a user, pass in the data of the user you want to show
      */
 
-    fun showAllChat(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
+    fun showAllChat(context: Context, activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
@@ -264,6 +260,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
 
             } else {
                 login(
+                    context,
                     UserData(
                         hostUserData.id,
                         hostUserData.nickname,
@@ -289,7 +286,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
 
     }
 
-    fun showChatList(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
+    fun showChatList(context: Context, activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
 
         ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) {
             if (it) {
@@ -306,6 +303,7 @@ class Chat : GroupChatFragment.GroupChatClickListener {
             } else {
 
                 login(
+                    context,
                     UserData(
                         hostUserData.id,
                         hostUserData.nickname,
@@ -333,18 +331,10 @@ class Chat : GroupChatFragment.GroupChatClickListener {
 
     }
 
-    private fun login(userData: UserData, connectHandler: ConnectHandler) {
-        Connect().login(userData) { user, e: SendBirdException? ->
+    private fun login(context: Context, userData: UserData, connectHandler: ConnectHandler) {
+        Connect().login(context, userData) { user, e: SendBirdException? ->
             connectHandler.onConnected(user, e)
         }
-    }
-
-    override fun onBackToTimelineClicked() {
-        backToTimeline.invoke()
-    }
-
-    override fun onChatSessionEnd() {
-        chatSessionEnded.invoke()
     }
 
 }

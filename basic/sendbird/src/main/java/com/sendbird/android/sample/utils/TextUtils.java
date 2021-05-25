@@ -7,7 +7,9 @@ import com.sendbird.android.User;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TextUtils {
 
@@ -67,5 +69,22 @@ public class TextUtils {
 
     public static boolean isEmpty(CharSequence text) {
         return text == null || text.length() == 0;
+    }
+
+    public static HashMap<String, Object> toMap(String value) {
+        value = value.substring(1, value.length()-1);           //remove curly brackets
+        String[] keyValuePairs = value.split(",");              //split the string to creat key-value pairs
+        HashMap<String, Object> map = new HashMap<>();
+
+        for(String pair : keyValuePairs) {                   //iterate over the pairs{
+            String[] entry = pair.split("=");//split the pairs to get key and value
+            try {
+                map.put(entry[0].trim(), entry[1].trim());
+            }catch (Exception e) {
+                e.printStackTrace();
+                map.put(entry[0].trim(), "");
+            }
+        }
+        return map;
     }
 }

@@ -29,12 +29,13 @@
         android:layout_width="228dp"
         android:layout_height="148dp"
         android:layout_below="@id/text_group_chat_date"
+        android:layout_marginTop="5dp"
         android:layout_toLeftOf="@id/message_status_group_chat"
         android:adjustViewBounds="true"
-        android:layout_marginTop="5dp"
         android:background="@drawable/me_message_shape"
         android:padding="2dp"
-        android:scaleType="center" />
+        android:scaleType="fitXY"
+        android:src="@drawable/default_image" />
 
     <TextView
         android:id="@+id/text_group_chat_time"

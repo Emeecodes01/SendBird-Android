@@ -10,22 +10,19 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.sendbird.android.*
 import com.sendbird.android.sample.groupchannel.CreateGroupChannelActivity
 import com.sendbird.android.sample.main.ConnectionManager
-import com.sendbird.android.sample.main.sendBird.ChatMetaData
-import java.util.ArrayList
-import java.util.HashSet
 
 import com.sendbird.android.sample.R
-import com.sendbird.android.sample.main.sendBird.Question
+import com.sendbird.android.sample.utils.toMutableMap
 
 class GroupAllActiveChatListFragment : Fragment() {
     private var mRecyclerView: RecyclerView? = null
@@ -118,6 +115,7 @@ class GroupAllActiveChatListFragment : Fragment() {
                 }
             }
         })
+
     }
 
 
@@ -223,28 +221,26 @@ class GroupAllActiveChatListFragment : Fragment() {
         mChannelListQuery = GroupChannel.createMyGroupChannelListQuery()
         mChannelListQuery?.limit = numChannels
         mChannelListQuery?.customTypesFilter
+        mChannelListAdapter?.showLoadingState()
         mChannelListQuery?.next(GroupChannelListQuery.GroupChannelListQueryResultHandler { list, e ->
             if (e != null) {
                 // Error!
                 e.printStackTrace()
+                mChannelListAdapter?.hideLoadingState()
                 return@GroupChannelListQueryResultHandler
             }
+
+            mChannelListAdapter?.hideLoadingState()
             mChannelListAdapter!!.clearMap()
             mChannelListAdapter!!.setAllGroupChannelList(list)
 
             val activeChannelList: List<GroupChannel> = list.filter { ch ->
-                val question = Gson().fromJson(ch.data, Question::class.java)
-                question.state == "active"
+                val questionDetailsMap = ch.data.toMutableMap()
+
+                questionDetailsMap["active"].toString().toBoolean()
             }
 
             mChannelListAdapter?.setGroupChannelList(activeChannelList)
-
-
-//            if (list.isEmpty()) {
-//                mRecyclerView!!.visibility = View.GONE
-//            } else {
-//                mRecyclerView!!.visibility = View.VISIBLE
-//            }
         })
 
         if (mSwipeRefresh!!.isRefreshing) {
@@ -267,8 +263,8 @@ class GroupAllActiveChatListFragment : Fragment() {
             }
 
             val activeChannelList: List<GroupChannel> = list.filter { ch ->
-                val question = Gson().fromJson(ch.data, Question::class.java)
-                question.status == "active"
+                val questionDetailsMap = ch.data.toMutableMap()
+                (questionDetailsMap["active"] as String).toBoolean()
             }
 
             mChannelListAdapter?.setGroupChannelList(activeChannelList)

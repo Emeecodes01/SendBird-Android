@@ -2,6 +2,8 @@ package com.sendbird.android.sample.main.allChat;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
@@ -16,8 +18,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
@@ -28,7 +32,6 @@ import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.sendBird.ChatMetaData;
-import com.sendbird.android.sample.main.sendBird.Question;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
 import com.sendbird.android.sample.utils.PreferenceUtils;
@@ -39,6 +42,7 @@ import com.sendbird.android.sample.utils.TypingIndicator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Displays a list of Group Channels within a Sendbird application.
  */
-class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<GroupChannel> mChannelList;
     private List<GroupChannel> mAllChannelList;
@@ -59,10 +63,22 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private final ConcurrentHashMap<String, ImageView> mChannelImageViewMap;
     private final ConcurrentHashMap<String, SparseArray<Bitmap>> mChannelBitmapMap;
     private static final int VIEW_TYPE_EMPTY = 1;
-    private static final int VIEW_TYPE_CHANNEL= 0;
+    private static final int VIEW_TYPE_CHANNEL = 0;
+    private static final int VIEW_TYPE_LOADING = 2;
+
+
+    ColorMatrix cm = new ColorMatrix();
+    float[] arry = {
+            0.33f, 0.33f, 0.33f, 0f, 0f,
+            0.33f, 0.33f, 0.33f, 0f, 0f,
+            0.33f, 0.33f, 0.33f, 0f, 0f,
+            0f, 0f, 0f, 1f, 0f
+    };
+
 
     private OnItemClickListener mItemClickListener;
     private OnItemLongClickListener mItemLongClickListener;
+    private boolean isLoading = true;
 
     interface OnItemClickListener {
         void onItemClick(GroupChannel channel);
@@ -110,7 +126,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             notifyDataSetChanged();
-        } catch(Exception e) {
+        } catch (Exception e) {
             // Nothing to load.
         }
     }
@@ -143,10 +159,10 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 try {
                     String content = FileUtils.loadFromFile(hashFile);
                     // If data has not been changed, do not save.
-                    if(md5.equals(content)) {
+                    if (md5.equals(content)) {
                         return;
                     }
-                } catch(IOException e) {
+                } catch (IOException e) {
                     // File not found. Save the data.
                 }
 
@@ -156,7 +172,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 FileUtils.deleteFile(dataFile);
                 FileUtils.deleteFile(hashFile);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -169,6 +185,12 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             return new EmptyChatViewHolder(view);
         }
 
+        if (viewType == VIEW_TYPE_LOADING) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.layout_chat_loading, parent, false);
+            return new LoadingViewHolder(view);
+        }
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_all_chat_channel, parent, false);
         return new ChannelHolder(view);
@@ -178,8 +200,10 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder.getItemViewType() == VIEW_TYPE_CHANNEL) {
             ((ChannelHolder) holder).bind(mContext, position, mChannelList.get(position), mItemClickListener, mItemLongClickListener);
-        }else  {
+        } else if (holder.getItemViewType() == VIEW_TYPE_EMPTY) {
             ((EmptyChatViewHolder) holder).bind();
+        } else {
+            ((LoadingViewHolder) holder).bind();
         }
     }
 
@@ -236,7 +260,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        mItemLongClickListener = listener;
+        mItemLongClickListener = null;
     }
 
     /**
@@ -244,7 +268,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
      */
     private class ChannelHolder extends RecyclerView.ViewHolder {
 
-//        memberCountText, topicText
+        //        memberCountText, topicText
         TextView lastMessageText, unreadCountText, dateText, subjectTv, gradeTv, channelNameTv;
         LinearLayout typingIndicatorContainer;
         ImageView subjectIcon;
@@ -269,9 +293,10 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         /**
          * Binds views in the ViewHolder to information contained within the Group Channel.
+         *
          * @param context
          * @param channel
-         * @param clickListener A listener that handles simple clicks.
+         * @param clickListener     A listener that handles simple clicks.
          * @param longClickListener A listener that handles long clicks.
          */
         void bind(final Context context, int position, final GroupChannel channel,
@@ -325,16 +350,32 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
             indicator.animate();
 
-
             String data = channel.getData();
-            Question question = new Gson().fromJson(data, Question.class);
-            boolean isActive = question.getState().equalsIgnoreCase("active");
-            int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(question.getSubject(), isActive);
 
-            subjectIcon.setImageResource(subjectImgRes);
-            subjectTv.setText(question.getSubject());
-            gradeTv.setText(question.getGrade());
-            channelNameTv.setText(question.getLearner_name());
+            HashMap<String, Object> hashMap = TextUtils.toMap(data);
+            String subjectIconUrl = (String) hashMap.get("subjectAvatar");
+            String subject = (String) hashMap.get("subjectName");
+            String grade = (String) hashMap.get("grade");
+            String learnerName = (String) hashMap.get("studentName");
+
+            boolean isActive = Boolean.parseBoolean((String) hashMap.get("active"));
+            int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
+
+
+            if (!isActive) {
+                //show grey scaled image
+                cm.set(arry);
+                subjectIcon.setColorFilter(new ColorMatrixColorFilter(cm));
+            }
+
+            Glide.with(context).load(subjectIconUrl)
+                    .error(subjectImgRes)
+                    .into(subjectIcon);
+
+
+            subjectTv.setText(subject);
+            gradeTv.setText(grade);
+            channelNameTv.setText(learnerName);
 
 
             // If someone in the channel is typing, display the typing indicator.
@@ -357,19 +398,29 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             // Set an OnLongClickListener to this item.
-            if (longClickListener != null) {
-                itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        //longClickListener.onItemLongClick(channel);
-
-                        // return true if the callback consumed the long click
-                        return true;
-                    }
-                });
-            }
+//            if (longClickListener != null) {
+//                itemView.setOnLongClickListener(new View.OnLongClickListener() {
+//                    @Override
+//                    public boolean onLongClick(View v) {
+//                        //longClickListener.onItemLongClick(channel);
+//
+//                        // return true if the callback consumed the long click
+//                        return true;
+//                    }
+//                });
+//            }
         }
 
+    }
+
+    void showLoadingState() {
+        isLoading = true;
+        notifyDataSetChanged();
+    }
+
+    void hideLoadingState() {
+        isLoading = false;
+        notifyDataSetChanged();
     }
 
 
@@ -384,12 +435,28 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
+
+    private class LoadingViewHolder extends RecyclerView.ViewHolder {
+
+        public LoadingViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+
+        void bind() {
+            //do nothing
+        }
+    }
+
+
     @Override
     public int getItemViewType(int position) {
         int count = mChannelList.size();
+        if (isLoading) {
+            return VIEW_TYPE_LOADING;
+        }
         if (count > 0) {
             return VIEW_TYPE_CHANNEL;
-        }else {
+        } else {
             return VIEW_TYPE_EMPTY;
         }
     }

@@ -94,7 +94,7 @@ public class GroupChannelListFragment extends Fragment {
         seeAllBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData);
+                //new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData);
             }
         });
 
