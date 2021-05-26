@@ -459,16 +459,16 @@ internal class GroupChatAdapter(private var mContext: Context) :
             if (message is UserMessage && msg is UserMessage) {
                 if (msg.requestId == message.requestId) {
                     mMessageList[i] = message
-                    //notifyDataSetChanged()
-                    notifyItemChanged(i)
+                    notifyDataSetChanged()
+                    //notifyItemChanged(i)
                     return
                 }
             } else if (message is FileMessage && msg is FileMessage) {
                 if (msg.requestId == message.requestId) {
                     mTempFileMessageUriTable.remove(message.requestId)
                     mMessageList[i] = message
-                    notifyItemChanged(i)
-                    //notifyDataSetChanged()
+                    //notifyItemChanged(i)
+                    notifyDataSetChanged()
                     return
                 }
             }
@@ -486,9 +486,9 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 message!!
             )
             mMessageList.add(index, message)
-            notifyItemChanged(index)
+            //notifyItemChanged(index)
         }
-        //notifyDataSetChanged()
+        notifyItemChanged(itemCount-1)
     }
 
     fun updateSucceededMessages(messages: List<BaseMessage?>) {
@@ -512,10 +512,10 @@ internal class GroupChatAdapter(private var mContext: Context) :
             )
             if (index != -1) {
                 mMessageList.removeAt(index)
-                notifyItemChanged(index)
+                //notifyItemChanged(index)
             }
         }
-        //notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 
 
@@ -597,15 +597,15 @@ internal class GroupChatAdapter(private var mContext: Context) :
         if (mChannel != null) {
             mChannel!!.markAsRead()
         }
-        //notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 
     fun getLastReadPosition(lastRead: Long): Int {
-        for (i in mMessageList.indices) {
-            if (mMessageList[i].createdAt == lastRead) {
-                return i + mFailedMessageList.size
-            }
-        }
+//        for (i in mMessageList.indices) {
+//            if (mMessageList[i].createdAt == lastRead) {
+//                return i + mFailedMessageList.size
+//            }
+//        }
         return 0
     }
 

@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearSmoothScroller
 import com.bumptech.glide.Glide
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
@@ -66,6 +67,7 @@ import com.sendbird.syncmanager.handler.FetchCompletionHandler
 
 
 class GroupChatFragment : Fragment() {
+    private lateinit var smoothScroller: LinearSmoothScroller
     private var countDownTimer: CountDownTimer? = null
     private val groupChatFragmentArgs: GroupChatFragmentArgs by navArgs()
     private var mIMM: InputMethodManager? = null
@@ -114,6 +116,14 @@ class GroupChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        smoothScroller = object: LinearSmoothScroller(requireContext()) {
+            override fun getVerticalSnapPreference(): Int {
+                return LinearSmoothScroller.SNAP_TO_START
+            }
+        }
+
+
         mIMM =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
@@ -208,7 +218,6 @@ class GroupChatFragment : Fragment() {
                 ).show()
             } else {
                 sendTextMessage()
-                mRecyclerView?.scrollToPosition(0)
             }
         }
 
@@ -691,11 +700,11 @@ class GroupChatFragment : Fragment() {
                         }
                         activity!!.runOnUiThread {
                             mChatAdapter!!.markAllMessagesAsRead()
-                            mLayoutManager!!.scrollToPositionWithOffset(
-                                mChatAdapter!!.getLastReadPosition(
-                                    mLastRead
-                                ), mRecyclerView!!.height / 2
+                            smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(
+                                mLastRead
                             )
+
+                            mLayoutManager?.startSmoothScroll(smoothScroller)
                         }
                     }
                 })
@@ -722,7 +731,7 @@ class GroupChatFragment : Fragment() {
                                 }
                                 activity!!.runOnUiThread {
                                     mChatAdapter?.clear()
-                                    updateActionBarTitle()
+                                    setUpUIChannelElements()
                                 }
                                 fetchInitialMessages()
                             } else {
@@ -741,6 +750,7 @@ class GroupChatFragment : Fragment() {
                     mMessageCollection = MessageCollection(groupChannel, mMessageFilter, mLastRead)
                     mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
                     mChannel = groupChannel
+                    setUpUIChannelElements()
                     mChatAdapter!!.setChannel(mChannel)
                     mChatAdapter?.clear()
                     updateActionBarTitle()
@@ -790,6 +800,8 @@ class GroupChatFragment : Fragment() {
                         MessageEventAction.INSERT -> {
                             mChatAdapter?.insertSucceededMessages(messages)
                             mChatAdapter!!.markAllMessagesAsRead()
+                            smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(mLastRead)
+                            mLayoutManager?.startSmoothScroll(smoothScroller)
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
                         MessageEventAction.UPDATE -> mChatAdapter?.updateSucceededMessages(messages)
@@ -822,6 +834,8 @@ class GroupChatFragment : Fragment() {
                                 }
                             }
                             mChatAdapter?.insertSucceededMessages(pendingMessages)
+                            smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(mLastRead);
+                            mLayoutManager?.startSmoothScroll(smoothScroller);
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
                     }
@@ -1111,7 +1125,8 @@ class GroupChatFragment : Fragment() {
         }
 
         // Display a user message to RecyclerView
-//        mChatAdapter!!.addFirst(tempUserMessage)
+        smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(mLastRead)
+        mLayoutManager?.startSmoothScroll(smoothScroller)
     }
 
     /**
