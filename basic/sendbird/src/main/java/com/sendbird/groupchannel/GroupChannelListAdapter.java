@@ -229,7 +229,7 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
-            subjectText.setText(questionMap.get("subjectName").toString());
+            subjectText.setText((String) questionMap.get("subjectName"));
             Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
 
             if (!new StringUtils().isActive(channel.getData())) {

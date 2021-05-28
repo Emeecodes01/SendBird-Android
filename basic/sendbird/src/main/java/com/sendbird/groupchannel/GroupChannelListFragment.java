@@ -42,11 +42,11 @@ public class GroupChannelListFragment extends BaseFragment {
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String HOST_USER_DATA = "HOST_USER_DATA";
 
-    private static final int CHANNEL_LIST_LIMIT = 15;
     private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
 
     private RecyclerView mRecyclerView;
+    private CardView noChatCard;
     private LinearLayoutManager mLayoutManager;
     private GroupChannelListAdapter mChannelListAdapter;
     private SwipeRefreshLayout mSwipeRefresh;
@@ -81,6 +81,7 @@ public class GroupChannelListFragment extends BaseFragment {
         setRetainInstance(true);
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
+        noChatCard = rootView.findViewById(R.id.nochatCardView);
         Button seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
@@ -96,8 +97,6 @@ public class GroupChannelListFragment extends BaseFragment {
         setUpRecyclerView();
 
         setUpChannelListAdapter();
-
-        refresh();
 
         return rootView;
     }
@@ -181,7 +180,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
     void enterGroupChannel(String channelUrl) {
 
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, "", new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -211,14 +210,15 @@ public class GroupChannelListFragment extends BaseFragment {
         mChannelListAdapter.clearMap();
         mChannelListAdapter.clearChannelList();
         GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
-        query.setLimit(CHANNEL_LIST_LIMIT);
         mChannelCollection = new ChannelCollection(query);
         mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
         mChannelCollection.fetch(e -> {
             if (mSwipeRefresh.isRefreshing()) {
                 mSwipeRefresh.setRefreshing(false);
             }
+
         });
+
     }
 
     ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {
@@ -231,6 +231,10 @@ public class GroupChannelListFragment extends BaseFragment {
             getActivity().runOnUiThread(() -> {
                 if (mSwipeRefresh.isRefreshing()) {
                     mSwipeRefresh.setRefreshing(false);
+                }
+
+                if (list.isEmpty()){
+                    noChatCard.setVisibility(View.VISIBLE);
                 }
 
                 switch (channelEventAction) {

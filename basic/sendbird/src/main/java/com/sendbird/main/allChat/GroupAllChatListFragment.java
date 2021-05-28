@@ -38,7 +38,6 @@ import java.util.Map;
 public class GroupAllChatListFragment extends Fragment {
 
     public static final String IS_ACTIVE = "IS_ACTIVE";
-    private static final int CHANNEL_LIST_LIMIT = 15;
     private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
 
@@ -158,7 +157,7 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, "", new TutorActions() {
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
             }
@@ -186,7 +185,6 @@ public class GroupAllChatListFragment extends Fragment {
         mChannelListAdapter.clearMap();
         mChannelListAdapter.clearChannelList();
         GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
-        query.setLimit(CHANNEL_LIST_LIMIT);
         mChannelCollection = new ChannelCollection(query);
         mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
         mChannelCollection.fetch(e -> {

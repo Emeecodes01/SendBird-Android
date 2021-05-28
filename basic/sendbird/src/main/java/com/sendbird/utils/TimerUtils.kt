@@ -24,8 +24,8 @@ class TimerUtils {
 
         val countTime = 1
 
-        val currentHour = calendar.get(Calendar.HOUR)
-        val currentMinutes = calendar.get(Calendar.MINUTE)
+        val currentHour = calendar.get(Calendar.HOUR) % 12
+        val currentMinutes = calendar.get(Calendar.MINUTE) + 30
         val currentSeconds = calendar.get(Calendar.SECOND)
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds

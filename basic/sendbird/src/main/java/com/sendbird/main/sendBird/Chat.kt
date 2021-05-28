@@ -1,5 +1,6 @@
 package com.sendbird.main.sendBird
 
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -27,7 +28,7 @@ class Chat {
 
             groupChannel?.url?.let {
                 channelUrl(it)
-                val fragment = GroupChatFragment.newInstance(groupChannel.url, object : TutorActions {
+                val fragment = GroupChatFragment.newInstance(groupChannel.url, questionMap.toString(), object : TutorActions {
                     override fun showTutorProfile(members: List<Member>) {}
                     override fun showTutorRating(questionMap: MutableMap<String, Any?>) {}
                 })
@@ -91,24 +92,32 @@ class Chat {
 
     fun showChatList(activity: AppCompatActivity?, layoutId: Int, hostUserData: UserData, tutorActions: TutorActions) {
 
-        val fragment: Fragment = GroupChannelListFragment.newInstance(hostUserData, object : TutorActions {
-            override fun showTutorProfile(members: List<Member>) {
-                tutorActions.showTutorProfile(members)
+        try {
+            val fragment: Fragment = GroupChannelListFragment.newInstance(hostUserData, object : TutorActions {
+                override fun showTutorProfile(members: List<Member>) {
+                    tutorActions.showTutorProfile(members)
+                }
+
+                override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                    tutorActions.showTutorRating(questionMap)
+                }
+            })
+
+            if (activity != null && !fragment.isAdded) {
+
+                val manager: FragmentManager = activity.supportFragmentManager
+
+                manager.beginTransaction()
+                        .add(layoutId, fragment)
+                        .commitAllowingStateLoss()
             }
 
-            override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
-                tutorActions.showTutorRating(questionMap)
+        } catch (e: Exception) {
+            activity?.let {
+                Toast.makeText(it, "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show()
             }
-        })
-
-        if (activity != null && !fragment.isAdded) {
-
-            val manager: FragmentManager = activity.supportFragmentManager
-
-            manager.beginTransaction()
-                    .add(layoutId, fragment)
-                    .commitAllowingStateLoss()
         }
+
 
     }
 

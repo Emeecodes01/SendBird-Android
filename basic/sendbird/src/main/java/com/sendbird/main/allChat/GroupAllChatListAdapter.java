@@ -228,8 +228,10 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
-            subjectText.setText(questionMap.get("subjectName").toString());
-            Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
+            String subjectName = questionMap.get("subjectName")+"";
+            subjectText.setText(subjectName);
+            Glide.with(mContext).load(questionMap.get("subjectAvatar"))
+                    .into(subjectIcon);
 
             if (!new StringUtils().isActive(channel.getData())) {
                 subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);

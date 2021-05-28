@@ -1,8 +1,11 @@
 package com.sendbird.utils;
 
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -13,6 +16,8 @@ import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
+
+import com.sendbird.main.sendBird.FileDownloaded;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,14 +36,8 @@ import java.util.Hashtable;
 
 public class FileUtils {
 
-
     Uri uri;
     String error;
-
-    // Prevent instantiation
-    private FileUtils() {
-
-    }
 
     public static Hashtable<String, Object> getFileInfo(Context context, Uri uri) {
         try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
@@ -105,7 +104,7 @@ public class FileUtils {
     /**
      * Downloads a file using DownloadManager.
      */
-    public static void downloadFile(Context context, String url, String fileName) {
+    public static Long downloadFile(Context context, String url, String fileName) {
         DownloadManager.Request downloadRequest = new DownloadManager.Request(Uri.parse(url));
         downloadRequest.setTitle(fileName);
 
@@ -118,9 +117,31 @@ public class FileUtils {
         downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
         DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        manager.enqueue(downloadRequest);
+       return manager.enqueue(downloadRequest);
     }
 
+    static BroadcastReceiver receiver = null;
+
+    public static void onDownloadFinished(Context context, Long fileId, FileDownloaded fileDownloaded){
+        IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                long reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                if (fileId == reference) {
+                    // Do something with downloaded file.
+                    fileDownloaded.onDownloaded();
+                }
+            }
+        };
+        context.registerReceiver(receiver, filter);
+    }
+
+    public static void unRegisterReceiver(Context context){
+        if (receiver != null){
+            context.unregisterReceiver(receiver);
+        }
+    }
 
     /**
      * Converts byte value to String.
