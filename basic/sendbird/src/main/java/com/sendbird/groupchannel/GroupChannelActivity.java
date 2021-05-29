@@ -58,6 +58,9 @@ public class GroupChannelActivity extends AppCompatActivity {
             new Chat().createChat(this, hostUserData, tutorUserData, questionMap, (channelUrl) -> {
                 Log.d("okh", channelUrl + "channelUrl");
                 return Unit.INSTANCE;
+            }, (updatedToken) -> {
+                Log.d("okh", updatedToken + "updatedToken");
+                return Unit.INSTANCE;
             });
 
             return Unit.INSTANCE;

@@ -246,12 +246,14 @@ public class GroupChatFragment extends Fragment {
             mIMM = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         }
 
-        smoothScroller = new LinearSmoothScroller(requireContext()) {
-            @Override
-            protected int getVerticalSnapPreference() {
-                return LinearSmoothScroller.SNAP_TO_START;
-            }
-        };
+        if (getContext() != null){
+            smoothScroller = new LinearSmoothScroller(getContext()) {
+                @Override
+                protected int getVerticalSnapPreference() {
+                    return LinearSmoothScroller.SNAP_TO_START;
+                }
+            };
+        }
 
         if (savedInstanceState != null) {
             // Get channel URL from saved state.
@@ -381,8 +383,10 @@ public class GroupChatFragment extends Fragment {
                 .placeholder(R.drawable.profile_thumbnail)
                 .error(R.drawable.profile_thumbnail);
 
-        Glide.with(requireContext()).load(tutorProfileUrl).apply(options)
-                .into(mProfileImage);
+        if (getContext() != null) {
+            Glide.with(getContext()).load(tutorProfileUrl).apply(options)
+                    .into(mProfileImage);
+        }
 
         mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
@@ -577,33 +581,36 @@ public class GroupChatFragment extends Fragment {
             String questionImageName = "Question" + (String) questionMap.get("questionId");
             String questionUrl = (String) questionMap.get("questionUrl");
 
-            File imagePath = requireContext().getExternalFilesDir(null);
+            if (getContext() != null){
+                File imagePath = getContext().getExternalFilesDir(null);
 
-            if (imagePath != null) {
+                if (imagePath != null) {
 
-                File tempFile = new File(imagePath + "/" + questionImageName + ".jpg");
+                    File tempFile = new File(imagePath + "/" + questionImageName + ".jpg");
 
 //                if (!tempFile.exists()){
-                Long fileId = FileUtils.downloadFile(requireContext(), questionUrl, questionImageName + ".jpg");
-                FileUtils.onDownloadFinished(requireContext(), fileId, () -> {
+                    Long fileId = FileUtils.downloadFile(getContext(), questionUrl, questionImageName + ".jpg");
+                    FileUtils.onDownloadFinished(getContext(), fileId, () -> {
 
-                    try {
-                        tempFile.createNewFile();
+                        try {
+                            tempFile.createNewFile();
 
-                        if (Build.VERSION.SDK_INT >= 24) {
-//                    sendFileWithThumbnail(FileProvider.getUriForFile(requireContext(), "com.ulesson.debug.theprovider", file));
-                            sendFileWithThumbnail(FileProvider.getUriForFile(requireContext(), "com.sendbird.theprovider", tempFile));
-                        } else {
-                            sendFileWithThumbnail(Uri.fromFile(tempFile));
+                            if (Build.VERSION.SDK_INT >= 24) {
+//                    sendFileWithThumbnail(FileProvider.getUriForFile(getContext(), "com.ulesson.debug.theprovider", file));
+                                sendFileWithThumbnail(FileProvider.getUriForFile(getContext(), "com.sendbird.theprovider", tempFile));
+                            } else {
+                                sendFileWithThumbnail(Uri.fromFile(tempFile));
+                            }
+
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
 
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                });
+                    });
+                }
             }
+
 //            }
 
         }
@@ -615,7 +622,9 @@ public class GroupChatFragment extends Fragment {
 
         SendBird.removeConnectionHandler(CONNECTION_HANDLER_ID);
         SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
-        FileUtils.unRegisterReceiver(requireContext());
+        if (getContext() != null){
+            FileUtils.unRegisterReceiver(getContext());
+        }
         super.onPause();
     }
 
@@ -915,16 +924,21 @@ public class GroupChatFragment extends Fragment {
         if (getActivity() != null) {
             uploadFileDialog.setUploadFile(true, () -> {
 
-                Intent intent = new Intent(requireContext(), MediaUtils.class);
-                intent.putExtra(useCamera, true);
+                if (getContext() != null){
+                    Intent intent = new Intent(getContext(), MediaUtils.class);
+                    intent.putExtra(useCamera, true);
 
-                startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                    startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                }
+
                 return Unit.INSTANCE;
             }, () -> {
 
-                Intent intent = new Intent(requireContext(), MediaUtils.class);
-                intent.putExtra(useCamera, false);
-                startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                if (getContext() != null){
+                    Intent intent = new Intent(getContext(), MediaUtils.class);
+                    intent.putExtra(useCamera, false);
+                    startActivityForResult(intent, MEDIA_REQUEST_CODE);
+                }
 
                 return Unit.INSTANCE;
             }).show(getActivity().getSupportFragmentManager(), "");
@@ -1153,7 +1167,9 @@ public class GroupChatFragment extends Fragment {
 
         mChannel.updateUserMessage(message.getMessageId(), editedMessage, null, null, (userMessage, e) -> {
             if (e != null) {
-                Toast.makeText(requireContext(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (getContext() != null){
+                    Toast.makeText(getContext(), "Oops, could not update that", Toast.LENGTH_SHORT).show();
+                }
                 return;
             }
 
@@ -1169,7 +1185,9 @@ public class GroupChatFragment extends Fragment {
         mChannel.deleteMessage(message, e -> {
             if (e != null) {
                 // Error!
-                Toast.makeText(requireContext(), "Error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (getContext() != null){
+                    Toast.makeText(getContext(), "Oops, could not delete that", Toast.LENGTH_SHORT).show();
+                }
                 return;
             }
 

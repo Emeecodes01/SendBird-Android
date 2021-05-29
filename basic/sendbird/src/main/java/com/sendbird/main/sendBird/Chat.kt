@@ -25,9 +25,9 @@ class Chat {
      */
 
 
-    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, questionMap: MutableMap<String, Any?>?, channelUrl: (String) -> Unit) {
+    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, questionMap: MutableMap<String, Any?>?, channelUrl: (String) -> Unit, updateToken : (String) -> Unit) {
 
-        createGroupChat(hostUserData, otherUserData.id, questionMap) { groupChannel, error ->
+        createGroupChat(hostUserData, otherUserData.id, questionMap, { groupChannel, error ->
 
             error?.let {
 
@@ -51,7 +51,9 @@ class Chat {
                 gotoChat(groupChannel, questionMap, activity)
             }
 
-        }
+        }, {
+            updateToken(it)
+        })
 
     }
 
@@ -66,7 +68,7 @@ class Chat {
                 .commitAllowingStateLoss()
     }
 
-    private fun createGroupChat(hostUserData: UserData, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler) {
+    private fun createGroupChat(hostUserData: UserData, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler, updateToken : (String) -> Unit) {
         val userIdList = listOf(hostUserData.id, otherId)
 
         GroupChannel.createChannelWithUserIds(userIdList, true, "${hostUserData.id} and $otherId Chat", "", questionMap.toString(), "") { groupChannel, error ->
@@ -74,12 +76,14 @@ class Chat {
             error?.let {
 
                 Connect().refreshActivity({
-                    createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
+                    createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler, updateToken)
                 }, {
 
                     val connectUserRequest = ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
                     User().connectUser(connectUserRequest, "", {
-                        createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
+                        hostUserData.accessToken = it.access_token
+                        updateToken(it.access_token)
+                        createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler, updateToken)
                     }, {
 
                     }, {

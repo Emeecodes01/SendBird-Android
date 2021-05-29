@@ -224,7 +224,9 @@ public class GroupChannelListFragment extends BaseFragment {
             });
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
+            if (getContext() != null){
+                Toast.makeText(getContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
+            }
         }
 
     }
