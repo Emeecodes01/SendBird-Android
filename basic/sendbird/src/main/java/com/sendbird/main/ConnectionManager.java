@@ -64,8 +64,9 @@ public class ConnectionManager {
             String userId = PreferenceUtils.getUserId();
             String accessToken = PreferenceUtils.getAccessToken();
             SendBird.connect(userId, accessToken, (user, e) -> {
+                PreferenceUtils.setConnected(e == null);
                 handler.onConnected(e == null);
-            });
+            } );
         }
     }
 

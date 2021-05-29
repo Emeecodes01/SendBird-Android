@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -21,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +38,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.sendbird.R;
 import com.sendbird.android.AdminMessage;
@@ -75,6 +78,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -104,6 +108,7 @@ public class GroupChatFragment extends Fragment {
                     .setMessage(R.string.empty);
     private InputMethodManager mIMM;
     private ConstraintLayout mRootLayout, mchatBoxLayout, mProfileLayout;
+    private ImageView mProfileImage;
     private RecyclerView mRecyclerView;
     private GroupChatAdapter mChatAdapter;
     private LinearLayoutManager mLayoutManager;
@@ -278,6 +283,7 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
             handleTimer(groupChannel);
+
             showTutorProfile(groupChannel);
 
             sendDefaultMessage(groupChannel);
@@ -332,6 +338,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void initializeViews(View rootView) {
+        mProfileImage = rootView.findViewById(R.id.profile_image);
         mProfileLayout = rootView.findViewById(R.id.profile_layout);
         mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
         mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
@@ -351,17 +358,14 @@ public class GroupChatFragment extends Fragment {
         if (channelData != null) {
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
-
             String questionText = (String) questionMap.get("questionText");
 
             if (questionText != null) {
                 sendUserMessage(questionText, groupChannel);
             }
 
-
         }
     }
-
 
 
     private void sendMessage(GroupChannel groupChannel) {
@@ -369,6 +373,17 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void showTutorProfile(GroupChannel groupChannel) {
+        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+        String tutorProfileUrl = (String) questionMap.get("tutorUrl");
+
+        RequestOptions options = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                .placeholder(R.drawable.profile_thumbnail)
+                .error(R.drawable.profile_thumbnail);
+
+        Glide.with(requireContext()).load(tutorProfileUrl).apply(options)
+                .into(mProfileImage);
+
         mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
 
@@ -378,7 +393,7 @@ public class GroupChatFragment extends Fragment {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            new TimerUtils().getTime(mChannelUrl, (countDownTime) -> {
+            new TimerUtils().getTime(mChannelUrl, true, (countDownTime) -> {
 
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
@@ -386,27 +401,23 @@ public class GroupChatFragment extends Fragment {
                 countTime(countDownMinutes, countDownSeconds);
 
                 return Unit.INSTANCE;
-            }, () -> {
-
-//                disableChat(true);
-
-                return Unit.INSTANCE;
-            });
+            }, () -> Unit.INSTANCE);
         } else {
-            disableChat(false);
+            disableChat();
         }
 
     }
 
-    private void disableChat(Boolean isActive) {
+    private void disableChat() {
         mMessageEditText.setEnabled(false);
         mUploadFileButton.setEnabled(false);
         mchatBoxLayout.setAlpha(0.5F);
         button_voice.setEnabled(false);
 
-        if (isActive)
-            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), (groupChannel, e) -> {
-            });
+        HashMap<String, Object> activeMap = new HashMap<>();
+        activeMap.put("active", "false");
+        new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, (groupChannel, e) -> {
+        });
     }
 
     @SuppressLint("SetTextI18n")
@@ -422,7 +433,9 @@ public class GroupChatFragment extends Fragment {
             });
 
         } else {
-            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), (groupChannel, e) -> {
+            HashMap<String, Object> activeMap = new HashMap<>();
+            activeMap.put("active", "false");
+            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, (groupChannel, e) -> {
             });
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
@@ -555,7 +568,7 @@ public class GroupChatFragment extends Fragment {
 
     }
 
-    public void sendDefaultImage(){
+    public void sendDefaultImage() {
 
         if (channelData != null) {
 
@@ -566,31 +579,31 @@ public class GroupChatFragment extends Fragment {
 
             File imagePath = requireContext().getExternalFilesDir(null);
 
-            if (imagePath != null){
+            if (imagePath != null) {
 
-                File tempFile = new File(imagePath + "/"+ questionImageName + ".jpg");
+                File tempFile = new File(imagePath + "/" + questionImageName + ".jpg");
 
 //                if (!tempFile.exists()){
-                    Long fileId = FileUtils.downloadFile(requireContext(), questionUrl, questionImageName + ".jpg");
-                    FileUtils.onDownloadFinished(requireContext(), fileId, () -> {
+                Long fileId = FileUtils.downloadFile(requireContext(), questionUrl, questionImageName + ".jpg");
+                FileUtils.onDownloadFinished(requireContext(), fileId, () -> {
 
-                        try {
-                            tempFile.createNewFile();
+                    try {
+                        tempFile.createNewFile();
 
-                                if (Build.VERSION.SDK_INT >= 24) {
+                        if (Build.VERSION.SDK_INT >= 24) {
 //                    sendFileWithThumbnail(FileProvider.getUriForFile(requireContext(), "com.ulesson.debug.theprovider", file));
-                                    sendFileWithThumbnail(FileProvider.getUriForFile(requireContext(), "com.sendbird.theprovider", tempFile));
-                                } else {
-                                    sendFileWithThumbnail(Uri.fromFile(tempFile));
-                                }
-
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            sendFileWithThumbnail(FileProvider.getUriForFile(requireContext(), "com.sendbird.theprovider", tempFile));
+                        } else {
+                            sendFileWithThumbnail(Uri.fromFile(tempFile));
                         }
 
-                    });
-                }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                });
+            }
 //            }
 
         }

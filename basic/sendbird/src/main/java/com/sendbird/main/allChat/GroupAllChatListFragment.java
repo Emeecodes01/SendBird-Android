@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,19 +20,14 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
 import com.sendbird.groupchannel.GroupChatFragment;
-import com.sendbird.main.ConnectionManager;
 import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
-import com.sendbird.syncmanager.handler.CompletionHandler;
-import com.sendbird.utils.StringUtils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -80,13 +76,13 @@ public class GroupAllChatListFragment extends Fragment {
 
         setUpChannelListAdapter();
 
+        refresh();
+
         return rootView;
     }
 
     @Override
     public void onResume() {
-
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, reconnect -> refresh());
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
@@ -178,20 +174,27 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     private void refresh() {
-        if (mChannelCollection != null) {
-            mChannelCollection.remove();
-        }
 
-        mChannelListAdapter.clearMap();
-        mChannelListAdapter.clearChannelList();
-        GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
-        mChannelCollection = new ChannelCollection(query);
-        mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
-        mChannelCollection.fetch(e -> {
-            if (mSwipeRefresh.isRefreshing()) {
-                mSwipeRefresh.setRefreshing(false);
+        try {
+
+            if (mChannelCollection != null) {
+                mChannelCollection.remove();
             }
-        });
+
+            mChannelListAdapter.clearMap();
+            mChannelListAdapter.clearChannelList();
+            GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
+            mChannelCollection = new ChannelCollection(query);
+            mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
+            mChannelCollection.fetch(e -> {
+                if (mSwipeRefresh.isRefreshing()) {
+                    mSwipeRefresh.setRefreshing(false);
+                }
+            });
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
+        }
     }
 
     ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {

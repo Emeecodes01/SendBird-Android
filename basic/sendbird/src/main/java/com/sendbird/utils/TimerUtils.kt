@@ -20,17 +20,17 @@ class TimerUtils {
         }.start()
     }
 
-    fun getTime(channelUrl: String, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
+    fun getTime(channelUrl: String, isActive : Boolean, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
 
         val countTime = 1
 
-        val currentHour = calendar.get(Calendar.HOUR) % 12
+        val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE) + 30
         val currentSeconds = calendar.get(Calendar.SECOND)
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-        if (PreferenceUtils.getEndTime()?.get(channelUrl) == null) {
+        if ((PreferenceUtils.getEndTime()?.get(channelUrl) == 0 || PreferenceUtils.getEndTime()?.get(channelUrl) == null) && isActive) {
 
             val endHour = currentHour + ((currentMinutes + countTime) / 60)
             val endMinutes = (currentMinutes + countTime) % 60
@@ -49,6 +49,8 @@ class TimerUtils {
                     countDownTime(it - currentTime)
                 } else {
                     timeOut()
+                    val endTimeMap = hashMapOf(channelUrl to 0)
+                    PreferenceUtils.setEndTime(endTimeMap)
                 }
             }
 

@@ -28,6 +28,8 @@ import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.UserMessage;
 import com.sendbird.main.SyncManagerUtils;
+import com.sendbird.main.sendBird.ChatActions;
+import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.utils.DateUtils;
 import com.sendbird.utils.FileUtils;
 import com.sendbird.utils.PreferenceUtils;
@@ -96,13 +98,16 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         return mChannelList.size();
     }
 
-    void insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
+    void insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order, ChatActions chatActions) {
         for (GroupChannel newChannel : channels) {
             int index = SyncManagerUtils.findIndexOfChannel(mChannelList, newChannel, order);
             mChannelList.add(index, newChannel);
         }
 
         notifyDataSetChanged();
+
+        chatActions.chatReceived();
+
     }
 
     void updateChannels(List<GroupChannel> channels) {

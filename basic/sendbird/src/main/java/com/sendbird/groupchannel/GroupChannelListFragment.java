@@ -1,13 +1,12 @@
 package com.sendbird.groupchannel;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,10 +22,10 @@ import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.main.BaseFragment;
-import com.sendbird.main.ConnectionManager;
-import com.sendbird.main.sendBird.Chat;
-import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.main.model.UserData;
+import com.sendbird.main.sendBird.Chat;
+import com.sendbird.main.sendBird.ChatActions;
+import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
@@ -52,12 +51,14 @@ public class GroupChannelListFragment extends BaseFragment {
     private SwipeRefreshLayout mSwipeRefresh;
     private UserData hostUserData;
     public static TutorActions tutorActionsChannel;
+    public static ChatActions chatActionsChannel;
     private ChannelCollection mChannelCollection;
 
-    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions doThis) {
+    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions) {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
         Bundle args = new Bundle();
-        tutorActionsChannel = doThis;
+        tutorActionsChannel = tutorActions;
+        chatActionsChannel = chatActions;
         args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
         fragment.setArguments(args);
         return fragment;
@@ -98,13 +99,13 @@ public class GroupChannelListFragment extends BaseFragment {
 
         setUpChannelListAdapter();
 
+        refresh();
+
         return rootView;
     }
 
     @Override
     public void onResume() {
-
-        ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID, reconnect -> refresh());
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
@@ -203,21 +204,28 @@ public class GroupChannelListFragment extends BaseFragment {
     }
 
     private void refresh() {
-        if (mChannelCollection != null) {
-            mChannelCollection.remove();
-        }
 
-        mChannelListAdapter.clearMap();
-        mChannelListAdapter.clearChannelList();
-        GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
-        mChannelCollection = new ChannelCollection(query);
-        mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
-        mChannelCollection.fetch(e -> {
-            if (mSwipeRefresh.isRefreshing()) {
-                mSwipeRefresh.setRefreshing(false);
+        try {
+
+            if (mChannelCollection != null) {
+                mChannelCollection.remove();
             }
 
-        });
+            mChannelListAdapter.clearMap();
+            mChannelListAdapter.clearChannelList();
+            GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
+            mChannelCollection = new ChannelCollection(query);
+            mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
+            mChannelCollection.fetch(e -> {
+                if (mSwipeRefresh.isRefreshing()) {
+                    mSwipeRefresh.setRefreshing(false);
+                }
+
+            });
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -233,14 +241,14 @@ public class GroupChannelListFragment extends BaseFragment {
                     mSwipeRefresh.setRefreshing(false);
                 }
 
-                if (list.isEmpty()){
+                if (list.isEmpty()) {
                     noChatCard.setVisibility(View.VISIBLE);
                 }
 
                 switch (channelEventAction) {
                     case INSERT:
                         mChannelListAdapter.clearMap();
-                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder());
+                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), () -> chatActionsChannel.chatReceived());
                         break;
 
                     case UPDATE:

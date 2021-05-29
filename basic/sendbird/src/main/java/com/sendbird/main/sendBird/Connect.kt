@@ -34,10 +34,22 @@ class Connect {
         }
     }
 
-    fun refreshChannel(connected : () -> Unit){
+    fun refreshChannel(connected : () -> Unit, error : () -> Unit){
         ConnectionManager.addConnectionManagementHandler("CHANNEL_HANDLER_GROUP_CHANNEL_LIST") { reconnect: Boolean ->
            if (reconnect){
                connected()
+           }else{
+               error()
+           }
+        }
+    }
+
+    fun refreshActivity(connected : () -> Unit, error : () -> Unit){
+        ConnectionManager.addConnectionManagementHandler("CONNECTION_HANDLER_GROUP_CHANNEL_ACTIVITY") { reconnect: Boolean ->
+           if (reconnect){
+               connected()
+           }else{
+               error()
            }
         }
     }

@@ -15,8 +15,10 @@ class User {
 
     private val networkRequest = NetworkRequest()
 
-    fun disconnectUser() {
-        ConnectionManager.logout {}
+    fun disconnectUser(logout : () -> Unit) {
+        ConnectionManager.logout {
+            logout()
+        }
     }
 
     fun connectUser(userData: ConnectUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
@@ -33,8 +35,6 @@ class User {
                     userResponse(it)
                 }, {
                     errorResponse(it)
-                }, {
-                    updateAccessToken(it)
                 })
 
             })
@@ -43,7 +43,23 @@ class User {
 
             if (ConnectionManager.isLogin() && PreferenceUtils.getUserId() != null && PreferenceUtils.getContext() != null) {
 
-                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.user_id) { SendBirdSyncManager.getInstance().resumeSync() }
+                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.user_id) {  error ->
+
+                    error?.let {
+
+                        val loginData = UserData(userData.user_id, userData.nickname)
+
+                        updateUser(loginData, {
+                            userResponse(it)
+                        }, {
+                            errorResponse(it)
+                        })
+
+                    }?: kotlin.run{
+                        SendBirdSyncManager.getInstance().resumeSync()
+                    }
+
+                }
 
                 userResponse(UserResponse(userData.user_id, userData.nickname, userData.profile_url, accessToken))
 
@@ -62,8 +78,6 @@ class User {
                             userResponse(it)
                         }, {
                             errorResponse(it)
-                        }, {
-                            updateAccessToken(it)
                         })
                     }
 
@@ -73,7 +87,7 @@ class User {
         }
     }
 
-    private fun updateUser(userData: UserData, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
+    private fun updateUser(userData: UserData, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit) {
 
         networkRequest.updateUser(UpdateUserRequest(userData.id, true), { userResponse ->
 
@@ -82,8 +96,7 @@ class User {
             Connect().login(loginData) { user, loginError ->
 
                 user?.let {
-                    userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, ""))
-                    updateAccessToken(userResponse.access_token)
+                    userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, userResponse.access_token))
                 } ?: kotlin.run {
                     errorResponse(ErrorData(loginError.message, loginError.code, true))
                 }
