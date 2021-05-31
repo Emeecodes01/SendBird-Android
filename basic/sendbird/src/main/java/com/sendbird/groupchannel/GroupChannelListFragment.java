@@ -181,7 +181,8 @@ public class GroupChannelListFragment extends BaseFragment {
 
     void enterGroupChannel(String channelUrl) {
 
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, "", new TutorActions() {
+
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl,  false, new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -192,6 +193,8 @@ public class GroupChannelListFragment extends BaseFragment {
             public void showTutorProfile(List<? extends Member> members) {
                 tutorActionsChannel.showTutorProfile(members);
             }
+        }, () -> {
+
         });
 
         if (getActivity() != null && !fragment.isAdded()) {

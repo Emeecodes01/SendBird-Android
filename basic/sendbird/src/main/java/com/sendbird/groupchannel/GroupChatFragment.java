@@ -53,6 +53,7 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.sendbird.main.sendBird.Chat;
+import com.sendbird.main.sendBird.ChatActions;
 import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.syncmanager.FailedMessageEventActionReason;
 import com.sendbird.syncmanager.MessageCollection;
@@ -129,7 +130,8 @@ public class GroupChatFragment extends Fragment {
     private RecyclerView.SmoothScroller smoothScroller;
     private long mLastRead;
     private static TutorActions tutorActionsChat;
-    private static String channelData;
+    private static ChatActions tutorChatActions;
+    private static Boolean channelCreate;
 
     private final MessageCollectionHandler mMessageCollectionHandler = new MessageCollectionHandler() {
         @Override
@@ -227,10 +229,11 @@ public class GroupChatFragment extends Fragment {
         }
     };
 
-    public static GroupChatFragment newInstance(@NonNull String channelUrl, @NonNull String data, @NonNull TutorActions tutorActions) {
+    public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
         GroupChatFragment fragment = new GroupChatFragment();
         tutorActionsChat = tutorActions;
-        channelData = data;
+        tutorChatActions = chatActions;
+        channelCreate = isCreateChat;
         Bundle args = new Bundle();
         args.putString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL, channelUrl);
         fragment.setArguments(args);
@@ -246,7 +249,7 @@ public class GroupChatFragment extends Fragment {
             mIMM = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         }
 
-        if (getContext() != null){
+        if (getContext() != null) {
             smoothScroller = new LinearSmoothScroller(getContext()) {
                 @Override
                 protected int getVerticalSnapPreference() {
@@ -284,13 +287,19 @@ public class GroupChatFragment extends Fragment {
         setUpRecyclerView();
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
+
             handleTimer(groupChannel);
 
             showTutorProfile(groupChannel);
 
-            sendDefaultMessage(groupChannel);
+            if (channelCreate){
+                sendDefaultMessage(groupChannel);
+//                sendDefaultImage(groupChannel);
+            }
 
             sendMessage(groupChannel);
+
+            tutorChatActions.chatReceived();
 
         });
 
@@ -333,7 +342,11 @@ public class GroupChatFragment extends Fragment {
         toolbar_group_channel.setNavigationOnClickListener(view -> {
 
             if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
+                if (channelCreate) {
+                    getActivity().finish();
+                } else {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                }
             }
 
         });
@@ -357,9 +370,9 @@ public class GroupChatFragment extends Fragment {
 
     private void sendDefaultMessage(GroupChannel groupChannel) {
 
-        if (channelData != null) {
+        if (groupChannel.getData() != null) {
 
-            Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
+            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
             String questionText = (String) questionMap.get("questionText");
 
             if (questionText != null) {
@@ -393,11 +406,11 @@ public class GroupChatFragment extends Fragment {
 
     private void handleTimer(GroupChannel groupChannel) {
 
-        if (new StringUtils().isActive(groupChannel.getData())) {
+         if (new StringUtils().isActive(groupChannel.getData())) {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            new TimerUtils().getTime(mChannelUrl, true, (countDownTime) -> {
+            new TimerUtils().getTime(mChannelUrl, channelCreate, (countDownTime) -> {
 
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
@@ -417,7 +430,7 @@ public class GroupChatFragment extends Fragment {
         mUploadFileButton.setEnabled(false);
         mchatBoxLayout.setAlpha(0.5F);
         button_voice.setEnabled(false);
-
+        countdownTxt.setVisibility(View.GONE);
         HashMap<String, Object> activeMap = new HashMap<>();
         activeMap.put("active", "false");
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, (groupChannel, e) -> {
@@ -439,7 +452,7 @@ public class GroupChatFragment extends Fragment {
         } else {
             HashMap<String, Object> activeMap = new HashMap<>();
             activeMap.put("active", "false");
-            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, (groupChannel, e) -> {
+            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap,  (groupChannel, e) -> {
             });
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
@@ -572,16 +585,16 @@ public class GroupChatFragment extends Fragment {
 
     }
 
-    public void sendDefaultImage() {
+    public void sendDefaultImage(GroupChannel groupChannel) {
 
-        if (channelData != null) {
+        if (groupChannel.getData() != null) {
 
-            Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
+            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
 
             String questionImageName = "Question" + (String) questionMap.get("questionId");
             String questionUrl = (String) questionMap.get("questionUrl");
 
-            if (getContext() != null){
+            if (getContext() != null) {
                 File imagePath = getContext().getExternalFilesDir(null);
 
                 if (imagePath != null) {
@@ -622,7 +635,7 @@ public class GroupChatFragment extends Fragment {
 
         SendBird.removeConnectionHandler(CONNECTION_HANDLER_ID);
         SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
-        if (getContext() != null){
+        if (getContext() != null) {
             FileUtils.unRegisterReceiver(getContext());
         }
         super.onPause();
@@ -824,14 +837,20 @@ public class GroupChatFragment extends Fragment {
                 }
 
                 if (getActivity() != null) {
-                    getActivity().getSupportFragmentManager().popBackStack();
+                    if (channelCreate) {
+                        getActivity().finish();
+                    } else {
+                        getActivity().getSupportFragmentManager().popBackStack();
+                    }
                 }
 
             }
 
         };
 
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        if (getActivity() != null) {
+            getActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        }
 
     }
 
@@ -924,7 +943,7 @@ public class GroupChatFragment extends Fragment {
         if (getActivity() != null) {
             uploadFileDialog.setUploadFile(true, () -> {
 
-                if (getContext() != null){
+                if (getContext() != null) {
                     Intent intent = new Intent(getContext(), MediaUtils.class);
                     intent.putExtra(useCamera, true);
 
@@ -934,7 +953,7 @@ public class GroupChatFragment extends Fragment {
                 return Unit.INSTANCE;
             }, () -> {
 
-                if (getContext() != null){
+                if (getContext() != null) {
                     Intent intent = new Intent(getContext(), MediaUtils.class);
                     intent.putExtra(useCamera, false);
                     startActivityForResult(intent, MEDIA_REQUEST_CODE);
@@ -1167,7 +1186,7 @@ public class GroupChatFragment extends Fragment {
 
         mChannel.updateUserMessage(message.getMessageId(), editedMessage, null, null, (userMessage, e) -> {
             if (e != null) {
-                if (getContext() != null){
+                if (getContext() != null) {
                     Toast.makeText(getContext(), "Oops, could not update that", Toast.LENGTH_SHORT).show();
                 }
                 return;
@@ -1185,7 +1204,7 @@ public class GroupChatFragment extends Fragment {
         mChannel.deleteMessage(message, e -> {
             if (e != null) {
                 // Error!
-                if (getContext() != null){
+                if (getContext() != null) {
                     Toast.makeText(getContext(), "Oops, could not delete that", Toast.LENGTH_SHORT).show();
                 }
                 return;

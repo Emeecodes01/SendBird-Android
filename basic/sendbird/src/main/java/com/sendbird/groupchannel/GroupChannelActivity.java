@@ -40,7 +40,7 @@ public class GroupChannelActivity extends AppCompatActivity {
 //        ConnectUserRequest tutorUserData = new ConnectUserRequest("1347", "Tamilore Oyola", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
 //                true);
 
-        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "44edac0c469c513c7fe56676b3df93445e0c06");
+        UserData hostUserData = new UserData("1827", "Taiwo Adebayo", "7f900b89cf1a2f4939712c2e025dae33221166b2");
         UserData tutorUserData = new UserData("7", "Wapnen Gowok", "");
 
         HashMap<String, Object> questionMap =  new HashMap<String, Object>();
@@ -52,15 +52,27 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("subjectName", "Maths");
         questionMap.put("subjectAvatar", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
 
-        new User().connectUser(connectUserRequest, "44edac0c469c513c7fe56676b3df93445e0c06", (userResponse) -> {
+        new User().connectUser(connectUserRequest, "7f900b89cf1a2f4939712c2e025dae33221166b2", (userResponse) -> {
 
             Log.d("okh", userResponse.getAccess_token()+" new token");
+            Log.d("okh",   "channe started");
             new Chat().createChat(this, hostUserData, tutorUserData, questionMap, (channelUrl) -> {
                 Log.d("okh", channelUrl + "channelUrl");
                 return Unit.INSTANCE;
-            }, (updatedToken) -> {
-                Log.d("okh", updatedToken + "updatedToken");
+            }, () -> {
+
+                Log.d("okh", "channe started");
                 return Unit.INSTANCE;
+            }, new TutorActions() {
+                @Override
+                public void showTutorProfile(@NotNull List<? extends Member> members) {
+
+                }
+
+                @Override
+                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
+
+                }
             });
 
             return Unit.INSTANCE;
@@ -76,7 +88,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
             // If started from notification
-            Fragment fragment = GroupChatFragment.newInstance(channelUrl, "", new TutorActions() {
+            Fragment fragment = GroupChatFragment.newInstance(channelUrl, false, new TutorActions() {
                 @Override
                 public void showTutorProfile(@NotNull List<? extends Member> members) {
 
@@ -85,6 +97,8 @@ public class GroupChannelActivity extends AppCompatActivity {
                 @Override
                 public void showTutorRating(Map<String, Object> questionMap) {
                 }
+
+            }, () -> {
 
             });
 

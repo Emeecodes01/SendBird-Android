@@ -17,6 +17,7 @@ import com.sendbird.main.model.UserData
 import com.sendbird.network.userModel.ConnectUserRequest
 import com.sendbird.utils.StringUtils.Companion.isActive
 import com.sendbird.utils.StringUtils.Companion.toMutableMap
+import java.util.*
 
 class Chat {
 
@@ -24,51 +25,101 @@ class Chat {
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
+    fun createChat(activity: FragmentActivity?, hostUserData: UserData, otherUserData: UserData, questionMap: HashMap<String, Any?>, channelUrl: (String) -> Unit, chatCreated: () -> Unit, tutorActions: TutorActions) {
 
-    fun createChat(activity: FragmentActivity, hostUserData: UserData, otherUserData: UserData, questionMap: MutableMap<String, Any?>?, channelUrl: (String) -> Unit, updateToken : (String) -> Unit) {
+        questionMap["active"] = "true"
 
-        createGroupChat(hostUserData, otherUserData.id, questionMap, { groupChannel, error ->
+        createGroupChat(hostUserData, otherUserData.id, questionMap) { groupChannel, error ->
 
-            error?.let {
+            if (error == null) {
 
                 if (groupChannel.data.isActive()) {
-                    gotoChat(groupChannel, questionMap, activity)
+                    gotoChat(groupChannel, activity, object : TutorActions{
+                        override fun showTutorProfile(members: List<Member>) {
+                            tutorActions.showTutorProfile(members)
+                        }
+
+                        override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                            tutorActions.showTutorRating(questionMap)
+                        }
+                    }, object : ChatActions {
+                        override fun chatReceived() {
+                            chatCreated()
+                        }
+
+                    })
                 } else {
 
-                    val activeMap = HashMap<String, Any>()
-                    activeMap["active"] = true
-                    updateGroupChat(groupChannel.url, groupChannel.data, activeMap) { updatedGroupChannel, updatedError ->
+                    updateGroupChat(groupChannel.url, groupChannel.data, questionMap) { updatedGroupChannel, updatedError ->
 
                         updatedGroupChannel?.url?.let {
                             channelUrl(it)
 
-                            gotoChat(updatedGroupChannel, questionMap, activity)
+                            gotoChat(updatedGroupChannel, activity, object : TutorActions{
+                                override fun showTutorProfile(members: List<Member>) {
+                                    tutorActions.showTutorProfile(members)
+                                }
+
+                                override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                                    tutorActions.showTutorRating(questionMap)
+                                }
+                            }, object : ChatActions {
+                                override fun chatReceived() {
+                                    chatCreated()
+                                }
+
+                            })
                         }
                     }
                 }
+            } else {
+                gotoChat(groupChannel, activity, object : TutorActions{
+                    override fun showTutorProfile(members: List<Member>) {
+                        tutorActions.showTutorProfile(members)
+                    }
 
-            } ?: kotlin.run {
-                gotoChat(groupChannel, questionMap, activity)
+                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                        tutorActions.showTutorRating(questionMap)
+                    }
+                }, object : ChatActions {
+                    override fun chatReceived() {
+                        chatCreated()
+                    }
+
+                })
             }
 
-        }, {
-            updateToken(it)
-        })
+        }
+    }
+
+    private fun gotoChat(groupChannel: GroupChannel, activity: FragmentActivity?, tutorActions: TutorActions, chatActions: ChatActions) {
+
+        activity?.let {
+
+            val fragment = GroupChatFragment.newInstance(groupChannel.url, true, object : TutorActions {
+                override fun showTutorProfile(members: List<Member>) {
+                    tutorActions.showTutorProfile(members)
+                }
+                override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                    tutorActions.showTutorRating(questionMap)
+                }
+            }, object : ChatActions {
+                override fun chatReceived() {
+                    chatActions.chatReceived()
+                }
+
+            })
+
+            if (!it.supportFragmentManager.isDestroyed) {
+                it.supportFragmentManager.beginTransaction().add(R.id.content, fragment)
+                        .commitAllowingStateLoss()
+            }
+
+        }
 
     }
 
-    private fun gotoChat(groupChannel: GroupChannel, questionMap: MutableMap<String, Any?>?, activity: FragmentActivity): Int {
-        val fragment = GroupChatFragment.newInstance(groupChannel.url, questionMap.toString(), object : TutorActions {
-            override fun showTutorProfile(members: List<Member>) {}
-            override fun showTutorRating(questionMap: MutableMap<String, Any?>) {}
-        })
-        return activity.supportFragmentManager.beginTransaction()
-                .add(R.id.content, fragment)
-                .addToBackStack(fragment.tag)
-                .commitAllowingStateLoss()
-    }
-
-    private fun createGroupChat(hostUserData: UserData, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler, updateToken : (String) -> Unit) {
+    private fun createGroupChat(hostUserData: UserData, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler) {
         val userIdList = listOf(hostUserData.id, otherId)
 
         GroupChannel.createChannelWithUserIds(userIdList, true, "${hostUserData.id} and $otherId Chat", "", questionMap.toString(), "") { groupChannel, error ->
@@ -76,14 +127,13 @@ class Chat {
             error?.let {
 
                 Connect().refreshActivity({
-                    createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler, updateToken)
+                    createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
                 }, {
 
                     val connectUserRequest = ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
                     User().connectUser(connectUserRequest, "", {
                         hostUserData.accessToken = it.access_token
-                        updateToken(it.access_token)
-                        createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler, updateToken)
+                        createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
                     }, {
 
                     }, {
@@ -101,13 +151,13 @@ class Chat {
 
     }
 
-
-    fun updateGroupChat(channelUrl: String, channelData: String, updateMap: HashMap<String, Any>, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
+    fun updateGroupChat(channelUrl: String, channelData: String, updateMap: MutableMap<String, Any?>, groupChannelUpdateHandler: GroupChannel.GroupChannelUpdateHandler) {
 
         GroupChannel.getChannel(channelUrl) { groupChannel, e ->
 
             val groupChannelParams = GroupChannelParams()
-            val map = channelData.toMutableMap() + updateMap.toMutableMap()
+            val map = channelData.toMutableMap() + updateMap
+
             groupChannelParams.setData(map.toString())
             groupChannel.updateChannel(groupChannelParams, groupChannelUpdateHandler)
 
@@ -124,7 +174,7 @@ class Chat {
 
         val fragment: Fragment = PagerFragment()
 
-        if (activity != null && !fragment.isAdded) {
+        if (activity != null && !fragment.isAdded && !activity.supportFragmentManager.isDestroyed) {
             val manager: FragmentManager = activity.supportFragmentManager
             manager.beginTransaction()
                     .add(layoutId, fragment)
@@ -151,7 +201,7 @@ class Chat {
 
         })
 
-        if (activity != null && !fragment.isAdded) {
+        if (activity != null && !fragment.isAdded && !activity.supportFragmentManager.isDestroyed) {
 
             val manager: FragmentManager = activity.supportFragmentManager
 

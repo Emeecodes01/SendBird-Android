@@ -153,7 +153,7 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, "", new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, new TutorActions() {
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
             }
@@ -162,6 +162,8 @@ public class GroupAllChatListFragment extends Fragment {
             public void showTutorProfile(@NotNull List<? extends Member> members) {
 
             }
+        }, () -> {
+
         });
 
         if (getActivity() != null) {
