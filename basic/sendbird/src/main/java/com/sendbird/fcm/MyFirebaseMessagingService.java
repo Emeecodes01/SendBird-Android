@@ -29,16 +29,20 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.sendbird.R;
 import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
-import com.sendbird.android.SendBirdPushHandler;
-import com.sendbird.android.SendBirdPushHelper;
-import com.sendbird.main.SplashActivity;
+import com.sendbird.groupchannel.GroupChannelActivity;
 import com.sendbird.utils.PreferenceUtils;
 
 import org.json.JSONException;
@@ -46,10 +50,85 @@ import org.json.JSONObject;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MyFirebaseMessagingService extends SendBirdPushHandler {
+public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
-    private static final String TAG = "MyFirebaseMsgService";
+    private static final String TAG = "okh";
     private static final AtomicReference<String> pushToken = new AtomicReference<>();
+
+    public interface ITokenResult {
+        void onPushTokenReceived(String pushToken);
+    }
+
+    @Override
+    public void onNewToken(String token) {
+        Log.i(TAG, "onNewToken(" + token + ")");
+
+        sendRegistrationToServer(token);
+    }
+
+    private void sendRegistrationToServer(final String token) {
+        SendBird.registerPushTokenForCurrentUser(token, (pushTokenRegistrationStatus, e) -> {
+            if (e != null) {
+                Toast.makeText(MyFirebaseMessagingService.this, "" + e.getCode() + ":" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Log.d("okh", pushTokenRegistrationStatus.name() +" send reg to server");
+
+            if (pushTokenRegistrationStatus == SendBird.PushTokenRegistrationStatus.PENDING) {
+                Toast.makeText(MyFirebaseMessagingService.this, "Connection required to register push token.", Toast.LENGTH_SHORT).show();
+            }
+            pushToken.set(token);
+        });
+    }
+
+    /**
+     * Called when message is received.
+     *
+     * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
+     */
+    // [START receive_message]
+    @Override
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        // [START_EXCLUDE]
+        // There are two types of messages data messages and notification messages. Data messages are handled
+        // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
+        // traditionally used with GCM. Notification messages are only received here in onMessageReceived when the app
+        // is in the foreground. When the app is in the background an automatically generated notification is displayed.
+        // When the user taps on the notification they are returned to the app. Messages containing both notification
+        // and data payloads are treated as notification messages. The Firebase console always sends notification
+        // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
+        // [END_EXCLUDE]
+
+        // TODO(developer): Handle FCM messages here.
+        // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
+        Log.d(TAG, "Message From: " + remoteMessage.getFrom());
+
+        // Check if message contains a data payload.
+        if (remoteMessage.getData().size() > 0) {
+            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+        }
+
+        // Check if message contains a notification payload.
+        if (remoteMessage.getNotification() != null) {
+            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+        }
+
+        String channelUrl = null;
+        try {
+            JSONObject sendBird = new JSONObject(remoteMessage.getData().get("sendbird"));
+            JSONObject channel = (JSONObject) sendBird.get("channel");
+            channelUrl = (String) channel.get("channel_url");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        SendBird.markAsDelivered(channelUrl);
+        // Also if you intend on generating your own notifications as a result of a received FCM
+        // message, here is where that should be initiated. See sendNotification method below.
+        sendNotification(this, remoteMessage.getData().get("message"), channelUrl);
+    }
+    // [END receive_message]
 
     /**
      * Create and show a simple notification containing the received FCM message.
@@ -65,8 +144,8 @@ public class MyFirebaseMessagingService extends SendBirdPushHandler {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Intent intent = new Intent(context, SplashActivity.class);
-        intent.putExtra("groupChannelUrl", channelUrl);
+        Intent intent = new Intent(context, GroupChannelActivity.class);
+        intent.putExtra("GROUP_CHANNEL_URL", channelUrl);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -91,87 +170,30 @@ public class MyFirebaseMessagingService extends SendBirdPushHandler {
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
 
-    public static void getPushToken(ITokenResult listener) {
+    public static void getPushToken(ITokenResult listner) {
         String token = pushToken.get();
         if (!TextUtils.isEmpty(token)) {
-            listener.onPushTokenReceived(token, null);
+            listner.onPushTokenReceived(token);
             return;
         }
 
-        SendBirdPushHelper.getPushToken((token1, e) -> {
-            Log.d(TAG, "FCM token : " + token1);
-            if (listener != null) {
-                listener.onPushTokenReceived(token1, e);
-            }
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                if (!task.isSuccessful()) {
+                    Log.w(TAG, "getInstanceId failed", task.getException());
+                    return;
+                }
 
-            if (e == null) {
-                pushToken.set(token1);
+                // Get new Instance ID token
+                InstanceIdResult result = task.getResult();
+                if (result != null) {
+                    String token = result.getToken();
+                    Log.d(TAG, "FCM token : " + token);
+                    pushToken.set(token);
+                    listner.onPushTokenReceived(token);
+                }
             }
         });
-    }
-
-    @Override
-    protected boolean isUniquePushToken() {
-        return false;
-    }
-
-    @Override
-    public void onNewToken(String token) {
-        Log.i(TAG, "onNewToken(" + token + ")");
-        pushToken.set(token);
-    }
-    // [END receive_message]
-
-    /**
-     * Called when message is received.
-     *
-     * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
-     */
-    // [START receive_message]
-    @Override
-    public void onMessageReceived(Context context, RemoteMessage remoteMessage) {
-        // [START_EXCLUDE]
-        // There are two types of messages data messages and notification messages. Data messages are handled
-        // here in onMessageReceived whether the app is in the foreground or background. Data messages are the type
-        // traditionally used with GCM. Notification messages are only received here in onMessageReceived when the app
-        // is in the foreground. When the app is in the background an automatically generated notification is displayed.
-        // When the user taps on the notification they are returned to the app. Messages containing both notification
-        // and data payloads are treated as notification messages. The Firebase console always sends notification
-        // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
-        // [END_EXCLUDE]
-
-        // TODO(developer): Handle FCM messages here.
-        // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-
-        // Check if message contains a data payload.
-        if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-        }
-
-        // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-        }
-
-        String channelUrl = null;
-        try {
-            if (remoteMessage.getData().containsKey("sendbird")) {
-                JSONObject sendBird = new JSONObject(remoteMessage.getData().get("sendbird"));
-                JSONObject channel = (JSONObject) sendBird.get("channel");
-                channelUrl = (String) channel.get("channel_url");
-
-                SendBird.markAsDelivered(channelUrl);
-                // Also if you intend on generating your own notifications as a result of a received FCM
-                // message, here is where that should be initiated. See sendNotification method below.
-                sendNotification(context, remoteMessage.getData().get("message"), channelUrl);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public interface ITokenResult {
-        void onPushTokenReceived(String pushToken, SendBirdException e);
     }
 }

@@ -34,6 +34,9 @@ class Chat {
             if (error == null) {
 
                 if (groupChannel.data.isActive()) {
+
+                    channelUrl(groupChannel.url)
+
                     gotoChat(groupChannel, activity, object : TutorActions{
                         override fun showTutorProfile(members: List<Member>) {
                             tutorActions.showTutorProfile(members)
@@ -72,21 +75,6 @@ class Chat {
                         }
                     }
                 }
-            } else {
-                gotoChat(groupChannel, activity, object : TutorActions{
-                    override fun showTutorProfile(members: List<Member>) {
-                        tutorActions.showTutorProfile(members)
-                    }
-
-                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
-                        tutorActions.showTutorRating(questionMap)
-                    }
-                }, object : ChatActions {
-                    override fun chatReceived() {
-                        chatCreated()
-                    }
-
-                })
             }
 
         }
@@ -122,7 +110,7 @@ class Chat {
     private fun createGroupChat(hostUserData: UserData, otherId: String, questionMap: MutableMap<String, Any?>?, groupChannelCreateHandler: GroupChannelCreateHandler) {
         val userIdList = listOf(hostUserData.id, otherId)
 
-        GroupChannel.createChannelWithUserIds(userIdList, true, "${hostUserData.id} and $otherId Chat", "", questionMap.toString(), "") { groupChannel, error ->
+        GroupChannel.createChannelWithUserIds(userIdList, false, "${hostUserData.id} and $otherId Chat", "", questionMap.toString(), "") { groupChannel, error ->
 
             error?.let {
 

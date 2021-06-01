@@ -5,7 +5,6 @@ import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectHandler
 import com.sendbird.android.SendBird.UserInfoUpdateHandler
 import com.sendbird.android.SendBirdException
-import com.sendbird.fcm.MyFirebaseMessagingService
 import com.sendbird.main.ConnectionManager
 import com.sendbird.main.SyncManagerUtils
 import com.sendbird.main.model.UserData
@@ -26,7 +25,16 @@ class Connect {
             if (e == null && PreferenceUtils.getContext() != null) {
                 PreferenceUtils.setConnected(true)
                 updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
-                PushUtils.registerPushHandler(MyFirebaseMessagingService())
+                PushUtils.registerPushTokenForCurrentUser(object : SendBird.RegisterPushTokenWithStatusHandler {
+                    override fun onRegistered(p0: SendBird.PushTokenRegistrationStatus?, p1: SendBirdException?) {
+                        if (p1 != null) {
+                            return
+                        }
+
+                        PreferenceUtils.setNotifications(true)
+                    }
+
+                })
 
                 SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.id) { SendBirdSyncManager.getInstance().resumeSync() }
             }
@@ -34,7 +42,7 @@ class Connect {
         }
     }
 
-    fun refreshChannel(connected : () -> Unit, error : () -> Unit){
+    fun refreshChannel(connected: () -> Unit, error: () -> Unit){
         ConnectionManager.addConnectionManagementHandler("CHANNEL_HANDLER_GROUP_CHANNEL_LIST") { reconnect: Boolean ->
            if (reconnect){
                connected()
@@ -44,7 +52,7 @@ class Connect {
         }
     }
 
-    fun refreshActivity(connected : () -> Unit, error : () -> Unit){
+    fun refreshActivity(connected: () -> Unit, error: () -> Unit){
         ConnectionManager.addConnectionManagementHandler("CONNECTION_HANDLER_GROUP_CHANNEL_ACTIVITY") { reconnect: Boolean ->
            if (reconnect){
                connected()

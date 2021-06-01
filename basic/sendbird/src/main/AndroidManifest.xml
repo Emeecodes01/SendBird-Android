@@ -21,15 +21,15 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:allowBackup">
 
-        <activity
-            android:name=".groupchannel.GroupChannelActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name=".groupchannel.GroupChannelActivity"-->
+<!--            android:windowSoftInputMode="stateHidden"-->
+<!--            android:label="@string/app_name">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
         <activity
             android:name=".utils.PhotoViewerActivity"
@@ -41,6 +41,13 @@
         <activity
             android:name=".utils.MediaUtils"
             android:launchMode="singleTop" />
+
+        <service android:name="com.sendbird.fcm.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

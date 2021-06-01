@@ -3,6 +3,7 @@ package com.sendbird.main;
 import com.sendbird.android.SendBird;
 import com.sendbird.syncmanager.SendBirdSyncManager;
 import com.sendbird.utils.PreferenceUtils;
+import com.sendbird.utils.PushUtils;
 
 public class ConnectionManager {
 
@@ -18,6 +19,7 @@ public class ConnectionManager {
                 handler.onConnected(user, e);
             }
 
+            PushUtils.registerPushTokenForCurrentUser();
         });
     }
 
