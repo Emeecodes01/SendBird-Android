@@ -67,7 +67,7 @@
         android:textColor="#8e8e8e"
         android:textSize="10dp" />
 
-    <com.sendbird.widget.MessageStatusView
+    <com.ulesson.chat.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

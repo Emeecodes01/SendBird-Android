@@ -1,4 +1,4 @@
-package com.sendbird.groupchannel;
+package com.ulesson.chat.groupchannel;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,15 +21,15 @@ import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
-import com.sendbird.main.BaseFragment;
-import com.sendbird.main.model.UserData;
-import com.sendbird.main.sendBird.Chat;
-import com.sendbird.main.sendBird.ChatActions;
-import com.sendbird.main.sendBird.TutorActions;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
 import com.sendbird.syncmanager.handler.CompletionHandler;
+import com.ulesson.chat.main.BaseFragment;
+import com.ulesson.chat.main.model.UserData;
+import com.ulesson.chat.main.sendBird.Chat;
+import com.ulesson.chat.main.sendBird.ChatActions;
+import com.ulesson.chat.main.sendBird.TutorActions;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,15 +43,59 @@ public class GroupChannelListFragment extends BaseFragment {
 
     private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
-
+    public static TutorActions tutorActionsChannel;
+    public static ChatActions chatActionsChannel;
     private RecyclerView mRecyclerView;
     private CardView noChatCard;
     private LinearLayoutManager mLayoutManager;
-    private GroupChannelListAdapter mChannelListAdapter;
+    private com.ulesson.chat.groupchannel.GroupChannelListAdapter mChannelListAdapter;
     private SwipeRefreshLayout mSwipeRefresh;
+    ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {
+        @Override
+        public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
+            if (getActivity() == null) {
+                return;
+            }
+
+            getActivity().runOnUiThread(() -> {
+                if (mSwipeRefresh.isRefreshing()) {
+                    mSwipeRefresh.setRefreshing(false);
+                }
+
+                if (list.isEmpty()) {
+                    noChatCard.setVisibility(View.VISIBLE);
+                }
+
+                switch (channelEventAction) {
+                    case INSERT:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), () -> chatActionsChannel.chatReceived());
+                        break;
+
+                    case UPDATE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.updateChannels(list);
+                        break;
+
+                    case MOVE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.moveChannels(list, channelCollection.getQuery().getOrder());
+                        break;
+
+                    case REMOVE:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.removeChannels(list);
+                        break;
+
+                    case CLEAR:
+                        mChannelListAdapter.clearMap();
+                        mChannelListAdapter.clearChannelList();
+                        break;
+                }
+            });
+        }
+    };
     private UserData hostUserData;
-    public static TutorActions tutorActionsChannel;
-    public static ChatActions chatActionsChannel;
     private ChannelCollection mChannelCollection;
 
     public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions) {
@@ -93,7 +137,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
         seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData));
 
-        mChannelListAdapter = new GroupChannelListAdapter(getActivity());
+        mChannelListAdapter = new com.ulesson.chat.groupchannel.GroupChannelListAdapter(getActivity());
 
         setUpRecyclerView();
 
@@ -182,7 +226,7 @@ public class GroupChannelListFragment extends BaseFragment {
     void enterGroupChannel(String channelUrl) {
 
 
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl,  false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -227,57 +271,11 @@ public class GroupChannelListFragment extends BaseFragment {
             });
 
         } catch (Exception e) {
-            if (getContext() != null){
+            if (getContext() != null) {
                 Toast.makeText(getContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
             }
         }
 
     }
-
-    ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {
-        @Override
-        public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
-            if (getActivity() == null) {
-                return;
-            }
-
-            getActivity().runOnUiThread(() -> {
-                if (mSwipeRefresh.isRefreshing()) {
-                    mSwipeRefresh.setRefreshing(false);
-                }
-
-                if (list.isEmpty()) {
-                    noChatCard.setVisibility(View.VISIBLE);
-                }
-
-                switch (channelEventAction) {
-                    case INSERT:
-                        mChannelListAdapter.clearMap();
-                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), () -> chatActionsChannel.chatReceived());
-                        break;
-
-                    case UPDATE:
-                        mChannelListAdapter.clearMap();
-                        mChannelListAdapter.updateChannels(list);
-                        break;
-
-                    case MOVE:
-                        mChannelListAdapter.clearMap();
-                        mChannelListAdapter.moveChannels(list, channelCollection.getQuery().getOrder());
-                        break;
-
-                    case REMOVE:
-                        mChannelListAdapter.clearMap();
-                        mChannelListAdapter.removeChannels(list);
-                        break;
-
-                    case CLEAR:
-                        mChannelListAdapter.clearMap();
-                        mChannelListAdapter.clearChannelList();
-                        break;
-                }
-            });
-        }
-    };
 
 }

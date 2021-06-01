@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginBottom="5dp"
     android:background="#E5E5E5"
     android:minWidth="50dp"
@@ -54,12 +54,12 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/text_group_chat_date"
         android:layout_marginVertical="5dp"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="12dp"
         android:layout_toRightOf="@id/image_group_chat_profile"
         android:background="@drawable/other_message_shape"
         android:minWidth="50dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp">
 
         <TextView
             android:id="@+id/text_group_chat_message"
@@ -86,18 +86,18 @@
             android:id="@+id/url_preview_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:visibility="gone"
-            tools:visibility="visible"
-            android:orientation="vertical">
+            tools:visibility="visible">
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginVertical="4dp"
-                android:visibility="gone"
-                tools:visibility="visible"
                 android:background="@android:color/darker_gray"
-                android:maxWidth="260dp" />
+                android:maxWidth="260dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/text_url_preview_site_name"

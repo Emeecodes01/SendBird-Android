@@ -36,7 +36,7 @@
         app:layout_constraintStart_toStartOf="@id/cl_main"
         app:layout_constraintTop_toTopOf="@id/cl_main" />
 
-    <com.sendbird.utils.DialogBackgroundView
+    <com.ulesson.chat.utils.DialogBackgroundView
         android:id="@+id/dbv_background_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -131,11 +131,11 @@
             android:fontFamily="@font/muli_bold"
             android:gravity="center"
             android:letterSpacing="0.125"
-            android:visibility="gone"
             android:lineSpacingExtra="1sp"
             android:textAllCaps="true"
             android:textColor="@color/color_white"
             android:textSize="12sp"
+            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/bt_negative"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -147,9 +147,11 @@
             android:id="@+id/bt_camera"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
-            android:layout_marginStart="30dp"
             android:layout_marginVertical="36dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginLeft="30dp"
             android:drawableStart="@drawable/ic_camera"
+            android:drawableLeft="@drawable/ic_camera"
             android:drawablePadding="5dp"
             android:fontFamily="@font/muli_bold"
             android:gravity="center"
@@ -160,21 +162,21 @@
             android:textAllCaps="true"
             android:textColor="@color/color_black"
             android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@id/bt_gallery"
             app:layout_constraintTop_toBottomOf="@id/tv_title"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Camera"
-            android:layout_marginLeft="30dp"
-            android:drawableLeft="@drawable/ic_camera" />
+            tools:text="Camera" />
 
         <TextView
             android:id="@+id/bt_gallery"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_marginEnd="30dp"
+            android:layout_marginRight="30dp"
             android:layout_marginBottom="30dp"
             android:drawableStart="@drawable/ic_gallery"
+            android:drawableLeft="@drawable/ic_gallery"
             android:fontFamily="@font/muli_bold"
             android:gravity="center"
             android:letterSpacing="0.125"
@@ -187,9 +189,7 @@
             app:layout_constraintLeft_toRightOf="@id/bt_camera"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="@id/bt_camera"
-            tools:text="Gallery"
-            android:layout_marginRight="30dp"
-            android:drawableLeft="@drawable/ic_gallery" />
+            tools:text="Gallery" />
 
         <TextView
             android:id="@+id/bt_negative"
@@ -250,6 +250,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginEnd="60dp"
             android:fontFamily="@font/itim_regular"
+            android:gravity="center_horizontal"
             android:letterSpacing="0.0125"
             android:lineSpacingExtra="1sp"
             android:text="@string/congratulations"
@@ -258,8 +259,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Congratulations!!!"
-            android:gravity="center_horizontal" />
+            tools:text="Congratulations!!!" />
 
         <TextView
             android:id="@+id/tv_badge_name"
@@ -268,10 +268,10 @@
             android:layout_marginTop="10dp"
             android:ellipsize="end"
             android:fontFamily="@font/itim_regular"
+            android:gravity="center"
             android:letterSpacing="0.025"
             android:lineSpacingExtra="4sp"
             android:maxLines="2"
-            android:gravity="center"
             android:textColor="@color/color_white"
             android:textSize="20sp"
             app:layout_constraintLeft_toLeftOf="@id/tv_congratulation"
@@ -288,11 +288,11 @@
             android:alpha="0.8"
             android:ellipsize="end"
             android:fontFamily="@font/muli_regular"
+            android:gravity="center"
             android:letterSpacing="0.025"
             android:lineSpacingExtra="4sp"
             android:maxLines="3"
             android:minLines="3"
-            android:gravity="center"
             android:textColor="@color/color_white"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@id/btn_share_badge"

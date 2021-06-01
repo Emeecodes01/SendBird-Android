@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "497283167759",
-    "project_id": "sendbird-f2720",
-    "storage_bucket": "sendbird-f2720.appspot.com"
+    "project_number": "250499057571",
+    "project_id": "ulesson-app-chat",
+    "storage_bucket": "ulesson-app-chat.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:497283167759:android:083d76c6900274acfb157a",
+        "mobilesdk_app_id": "1:250499057571:android:a3d1067c64608f64f23c16",
         "android_client_info": {
-          "package_name": "com.sendbird"
+          "package_name": "com.ulesson.chat"
         }
       },
       "oauth_client": [
         {
-          "client_id": "497283167759-6q67qsqs8kcg20e5k5sa3i3jja9d0vhh.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sendbird",
-            "certificate_hash": "33d2af628bcb8119055492f02606e9719f64d7d6"
-          }
-        },
-        {
-          "client_id": "497283167759-jn7tg4f8erfhci3spasdt4agri5ttnmr.apps.googleusercontent.com",
+          "client_id": "250499057571-cvj1ictb11v87iodp9ngrbqhm213du8h.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCD1J2-TcllBPF_WapgtCtAaK5D6JLmhOs"
+          "current_key": "AIzaSyCMSuW7XSpFvRfuVgme7Wnj1C56aETbpCQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "497283167759-jn7tg4f8erfhci3spasdt4agri5ttnmr.apps.googleusercontent.com",
+              "client_id": "250499057571-cvj1ictb11v87iodp9ngrbqhm213du8h.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
