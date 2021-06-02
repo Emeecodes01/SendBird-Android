@@ -51,7 +51,6 @@
                     android:id="@+id/userName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-
                     android:layout_marginStart="10dp"
                     android:layout_marginLeft="10dp"
                     android:ellipsize="end"
@@ -207,7 +206,6 @@
             android:layout_marginLeft="11dp"
             android:background="@drawable/ic_send_btn"
             android:gravity="center"
-            android:textColor="@drawable/selector_btn_send"
             app:fontFamily="MuliRegular"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

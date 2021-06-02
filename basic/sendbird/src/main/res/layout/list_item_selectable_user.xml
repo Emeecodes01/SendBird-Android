@@ -33,7 +33,6 @@
             android:id="@+id/image_user_list_blocked"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:background="@drawable/icon_block_38_dp"
             android:visibility="gone" />
 
     </RelativeLayout>

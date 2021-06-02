@@ -7,7 +7,7 @@
         android:id="@+id/image_message_status"
         android:layout_width="15dp"
         android:layout_height="15dp"
-        android:src="@drawable/logo_sendbird"
+        android:src="@drawable/ic_ulesson"
         android:visibility="gone" />
 
     <ProgressBar

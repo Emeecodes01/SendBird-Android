@@ -64,6 +64,16 @@
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">
 
+        <ImageView
+            android:id="@+id/text_image_chat_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/profile_thumbnail"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
         <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_message"
             android:layout_width="wrap_content"
@@ -146,7 +156,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="148dp"
                 android:adjustViewBounds="true"
-                android:scaleType="centerCrop" />
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
 
         </LinearLayout>
     </LinearLayout>
