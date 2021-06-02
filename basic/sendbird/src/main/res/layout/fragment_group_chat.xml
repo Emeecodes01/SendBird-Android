@@ -47,10 +47,11 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/profile_thumbnail" />
 
-                <TextView
+                <com.ulesson.chat.utils.CustomFontTextView
                     android:id="@+id/userName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+
                     android:layout_marginStart="10dp"
                     android:layout_marginLeft="10dp"
                     android:ellipsize="end"
@@ -63,9 +64,10 @@
                     app:layout_constraintTop_toTopOf="@id/profile_image"
                     tools:text="Tamilore Chidinma ChidinmaChidinmaChidinmaChidinmaChidinma" />
 
-                <TextView
+                <com.ulesson.chat.utils.CustomFontTextView
                     android:id="@+id/text_group_chat_current_event"
                     android:layout_width="wrap_content"
+
                     android:layout_height="wrap_content"
                     android:text="typing..."
                     android:textSize="12sp"
@@ -73,9 +75,10 @@
                     app:layout_constraintStart_toStartOf="@id/userName"
                     app:layout_constraintTop_toBottomOf="@id/userName" />
 
-                <TextView
+                <com.ulesson.chat.utils.CustomFontTextView
                     android:id="@+id/countdownTxt"
                     android:layout_width="wrap_content"
+
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="19dp"
                     android:layout_marginRight="19dp"
@@ -151,7 +154,7 @@
                 android:hint="@string/write_a_reply"
                 android:inputType="textMultiLine"
                 android:maxLines="3"
-                android:paddingVertical="12dp"
+                android:paddingVertical="10dp"
                 android:paddingStart="12dp"
                 android:paddingLeft="10dp"
                 android:paddingEnd="30dp"
@@ -164,7 +167,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <Button
+            <com.ulesson.chat.utils.CustomFontButton
                 android:id="@+id/button_voice"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -191,11 +194,11 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_attach" />
+                app:srcCompat="@drawable/ic_media_attach" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
+        <com.ulesson.chat.utils.CustomFontButton
             android:id="@+id/send_message_btn"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -205,6 +208,7 @@
             android:background="@drawable/ic_send_btn"
             android:gravity="center"
             android:textColor="@drawable/selector_btn_send"
+            app:fontFamily="MuliRegular"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/chat_body"

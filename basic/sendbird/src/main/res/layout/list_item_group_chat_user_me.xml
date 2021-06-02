@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,9 +15,10 @@
         android:layout_height="12dp"
         android:layout_alignParentTop="true" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
         android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
         android:layout_below="@id/view_group_chat_padding"
@@ -44,8 +46,9 @@
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">
 
-        <TextView
+        <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_message"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxWidth="260dp"
@@ -53,8 +56,9 @@
             android:textColor="@color/groupChatTextMe"
             android:textSize="14sp" />
 
-        <TextView
+        <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_edited"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -87,7 +91,7 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <TextView
+            <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_site_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -97,9 +101,10 @@
                 android:maxLines="1"
                 android:text="\@Reddit"
                 android:textColor="@color/groupChatTextMe"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                app:fontFamily="MuliRegular" />
 
-            <TextView
+            <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -109,9 +114,10 @@
                 android:maxLines="1"
                 android:text="Title will be here."
                 android:textColor="@color/groupChatTextMe"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                app:fontFamily="MuliRegular" />
 
-            <TextView
+            <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -121,7 +127,8 @@
                 android:paddingBottom="4dp"
                 android:text="Description will be here. Blah Blah WWW Blah Wl Blah W WW WW ABCD EFG WW WW WW W Third Line. WWW Z XCVB QWER"
                 android:textColor="@color/groupChatTextMe"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                app:fontFamily="MuliRegular" />
 
             <ImageView
                 android:id="@+id/image_url_preview_main"
@@ -135,8 +142,9 @@
     </LinearLayout>
 
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"
@@ -151,6 +159,7 @@
 
     <com.ulesson.chat.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"

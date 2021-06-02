@@ -38,7 +38,7 @@
 
     </RelativeLayout>
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_selectable_user_list_nickname"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

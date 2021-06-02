@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="8dp">
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_open_chat_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
         android:layout_marginTop="4dp"
         android:contentDescription="@string/open_channel_chat_content_desc_profile" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_open_chat_nickname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,7 +44,7 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_open_chat_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
         android:textColor="@color/openChatText"
         android:textSize="16sp" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_open_chat_edited"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
         android:textSize="14sp"
         android:visibility="gone" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_open_chat_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

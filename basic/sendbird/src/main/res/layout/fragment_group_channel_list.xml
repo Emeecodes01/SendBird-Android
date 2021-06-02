@@ -32,26 +32,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextView
+            <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/recentChatTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="10dp"
-                android:fontFamily="@font/itim_regular"
                 android:text="Recent Chats"
                 android:textColor="#313848"
                 android:textSize="24sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
+            <com.ulesson.chat.utils.CustomFontButton
                 android:id="@+id/seeAllBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="14dp"
                 android:background="@android:color/transparent"
-                android:fontFamily="@font/itim_regular"
                 android:gravity="center_vertical|end"
                 android:text="@string/see_all"
                 android:textAllCaps="false"
@@ -91,12 +89,11 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:srcCompat="@drawable/ic_empty_chat" />
 
-                    <TextView
+                    <com.ulesson.chat.utils.CustomFontTextView
                         android:id="@+id/noChatTxt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="17dp"
-                        android:fontFamily="@font/itim_regular"
                         android:text="You have no chats"
                         android:textColor="#313848"
                         android:textSize="24sp"
@@ -104,12 +101,11 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/nochatImg" />
 
-                    <TextView
+                    <com.ulesson.chat.utils.CustomFontTextView
                         android:id="@+id/askQuestionChatTxt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="7dp"
-                        android:fontFamily="@font/itim_regular"
                         android:text="Ask a question to start a chat with a tutor"
                         android:textColor="#313848"
                         android:textSize="14sp"

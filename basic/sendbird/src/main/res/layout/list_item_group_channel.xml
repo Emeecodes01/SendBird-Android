@@ -10,7 +10,7 @@
     android:clickable="true"
     android:focusable="true">
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_channel_list_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -18,16 +18,16 @@
         android:layout_marginTop="15dp"
         android:alpha="0.5"
         android:ellipsize="end"
-        android:fontFamily="@font/muli_regular"
         android:maxLines="2"
         android:textColor="#313848"
         android:textSize="14sp"
+        app:fontFamily="MuliRegular"
         app:layout_constraintEnd_toStartOf="@id/text_group_channel_list_unread_count"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Use logarithms to solve the equation of a line bisecting a circle of radi..." />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_channel_list_subject"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -37,12 +37,12 @@
         android:layout_marginTop="14dp"
         android:layout_marginBottom="14dp"
         android:ellipsize="end"
-        android:fontFamily="@font/muli_regular"
         android:gravity="center_vertical"
         android:maxLines="2"
         android:text="Mathematics"
         android:textColor="#313848"
         android:textSize="14sp"
+        app:fontFamily="MuliRegular"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/container_group_channel_list_typing_indicator"
         app:layout_constraintStart_toEndOf="@id/subjectIcon"
@@ -60,10 +60,11 @@
         app:layout_constraintEnd_toStartOf="@id/text_group_channel_list_date"
         app:layout_constraintTop_toTopOf="@id/text_group_channel_list_date" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_channel_list_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+
         android:layout_marginTop="3dp"
         android:layout_marginEnd="21dp"
         android:layout_marginRight="21dp"
@@ -85,10 +86,11 @@
         app:layout_constraintTop_toTopOf="@id/text_group_channel_list_subject"
         app:srcCompat="@drawable/ic_subject_icon" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_channel_list_unread_count"
         android:layout_width="20dp"
         android:layout_height="20dp"
+
         android:layout_marginEnd="18dp"
         android:layout_marginRight="18dp"
         android:background="@drawable/ic_unread_bg"

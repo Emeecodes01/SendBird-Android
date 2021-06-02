@@ -7,8 +7,9 @@
     android:paddingLeft="8dp"
     android:paddingRight="8dp">
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -36,8 +37,9 @@
         android:layout_marginRight="8dp"
         android:src="@drawable/profile_placeholder" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_nickname"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/image_group_chat_profile"
@@ -63,9 +65,10 @@
             android:scaleType="fitXY"
             android:src="@drawable/ic_file_message" />
 
-        <TextView
+        <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_file_name"
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginLeft="12dp"
@@ -90,9 +93,10 @@
 
     </LinearLayout>
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
         android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/layout_group_chat_file_message"
         android:layout_toRightOf="@id/layout_group_chat_file_message"

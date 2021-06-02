@@ -5,8 +5,9 @@
     android:paddingLeft="8dp"
     android:paddingRight="8dp">
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -35,8 +36,9 @@
         android:padding="2dp"
         android:scaleType="center" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/image_group_chat_file_thumbnail"
@@ -49,6 +51,7 @@
 
     <com.ulesson.chat.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/image_group_chat_file_thumbnail"

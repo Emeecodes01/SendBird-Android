@@ -29,9 +29,10 @@
 
     </RelativeLayout>
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_user_list_nickname"
         android:layout_width="0dp"
+
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
@@ -45,8 +46,9 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="0">
 
-        <TextView
+        <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_view_blocked"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"

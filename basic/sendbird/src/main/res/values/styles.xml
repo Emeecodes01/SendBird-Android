@@ -20,11 +20,11 @@
     </style>
 
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
-        <item name="fontFamily">@font/muli_regular</item>
+        <item name="fontFamily">@fonts/muliRegular</item>
     </style>
 
     <style name="TextViewStyle" parent="Widget.AppCompat.TextView">
-        <item name="fontFamily">@font/muli_regular</item>
+        <item name="fontFamily">@fonts/MuliRegular</item>
     </style>
 
     <style name="AppTheme.ButtonStyle" parent="ThemeOverlay.AppCompat">

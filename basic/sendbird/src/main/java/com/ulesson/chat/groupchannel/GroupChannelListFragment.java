@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.sendbird.R;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
@@ -25,11 +23,13 @@ import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
 import com.sendbird.syncmanager.handler.CompletionHandler;
+import com.ulesson.chat.R;
 import com.ulesson.chat.main.BaseFragment;
 import com.ulesson.chat.main.model.UserData;
 import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.TutorActions;
+import com.ulesson.chat.utils.CustomFontButton;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -127,7 +127,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
         noChatCard = rootView.findViewById(R.id.nochatCardView);
-        Button seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
+        CustomFontButton seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
         mSwipeRefresh.setOnRefreshListener(() -> {

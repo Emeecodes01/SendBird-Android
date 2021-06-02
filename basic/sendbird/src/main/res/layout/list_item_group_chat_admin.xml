@@ -9,9 +9,10 @@
     android:layout_marginBottom="8dp"
     android:orientation="vertical">
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
         android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="24dp"
@@ -26,9 +27,10 @@
         android:textColor="@color/groupChatDateText"
         android:textSize="14sp" />
 
-    <TextView
+    <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_message"
         android:layout_width="match_parent"
+
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/group_chat_admin_background"
