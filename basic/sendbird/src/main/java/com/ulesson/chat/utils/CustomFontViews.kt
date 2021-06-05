@@ -38,7 +38,7 @@ private fun readTypeFace(context: Context, attrs: AttributeSet?): Typeface? {
     } catch (e: Exception) {
         null
     } finally {
-        a?.recycle()
+        a.recycle()
     }
 
 }

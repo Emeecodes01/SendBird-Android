@@ -1,5 +1,5 @@
-//apply plugin: 'com.android.library'
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
+//apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -9,13 +9,11 @@ android {
     buildToolsVersion '28.0.3'
 
     defaultConfig {
-        applicationId "com.ulesson.chat"
+//        applicationId "com.ulesson.chat"
         minSdkVersion 16
-
         targetSdkVersion 30
         versionCode 1
         versionName '1.0.1'
-
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -89,8 +87,10 @@ dependencies {
     // External libraries
     implementation 'com.github.bumptech.glide:glide:4.7.1'
     implementation 'org.jsoup:jsoup:1.11.2'
-//    implementation 'com.github.stfalcon:multiimageview:0.1'
     implementation "androidx.core:core-ktx:+"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    //workmanager
+    implementation "androidx.work:work-runtime:2.4.0"
 }
 apply plugin: 'com.google.gms.google-services'

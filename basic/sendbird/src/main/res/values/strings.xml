@@ -78,5 +78,7 @@
     <string name="empty" />
     <string name="sample_question">Use logarithms to solve the equation 25r = 32 x1, given the answer correct to 3 significant figures.</string>
     <string name="see_all"><u>See all</u></string>
+    <string name="no_active_chat">You have no active chats</string>
+    <string name="no_past_chat">You have no past chats</string>
 
 </resources>

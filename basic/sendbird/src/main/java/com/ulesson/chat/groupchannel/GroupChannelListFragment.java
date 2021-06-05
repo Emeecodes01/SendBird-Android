@@ -18,11 +18,9 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
-import com.sendbird.syncmanager.handler.CompletionHandler;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.BaseFragment;
 import com.ulesson.chat.main.model.UserData;
@@ -48,11 +46,17 @@ public class GroupChannelListFragment extends BaseFragment {
     private RecyclerView mRecyclerView;
     private CardView noChatCard;
     private LinearLayoutManager mLayoutManager;
-    private com.ulesson.chat.groupchannel.GroupChannelListAdapter mChannelListAdapter;
+    private GroupChannelListAdapter mChannelListAdapter;
     private SwipeRefreshLayout mSwipeRefresh;
+    private boolean groupChannelEmpty = true;
+
     ChannelCollectionHandler mChannelCollectionHandler = new ChannelCollectionHandler() {
+
         @Override
         public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
+
+            groupChannelEmpty = false;
+
             if (getActivity() == null) {
                 return;
             }
@@ -63,7 +67,11 @@ public class GroupChannelListFragment extends BaseFragment {
                 }
 
                 if (list.isEmpty()) {
+                    mRecyclerView.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);
+                } else {
+                    noChatCard.setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
                 }
 
                 switch (channelEventAction) {
@@ -127,6 +135,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
         noChatCard = rootView.findViewById(R.id.nochatCardView);
+
         CustomFontButton seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
@@ -135,9 +144,10 @@ public class GroupChannelListFragment extends BaseFragment {
             refresh();
         });
 
-        seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData));
-
-        mChannelListAdapter = new com.ulesson.chat.groupchannel.GroupChannelListAdapter(getActivity());
+        if (getActivity() != null) {
+            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData));
+            mChannelListAdapter = new GroupChannelListAdapter(getActivity());
+        }
 
         setUpRecyclerView();
 
@@ -197,12 +207,9 @@ public class GroupChannelListFragment extends BaseFragment {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if (mLayoutManager.findLastVisibleItemPosition() == mChannelListAdapter.getItemCount() - 1) {
                         if (mChannelCollection != null) {
-                            mChannelCollection.fetch(new CompletionHandler() {
-                                @Override
-                                public void onCompleted(SendBirdException e) {
-                                    if (mSwipeRefresh.isRefreshing()) {
-                                        mSwipeRefresh.setRefreshing(false);
-                                    }
+                            mChannelCollection.fetch(e -> {
+                                if (mSwipeRefresh.isRefreshing()) {
+                                    mSwipeRefresh.setRefreshing(false);
                                 }
                             });
                         }
@@ -226,7 +233,7 @@ public class GroupChannelListFragment extends BaseFragment {
     void enterGroupChannel(String channelUrl) {
 
 
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -263,16 +270,26 @@ public class GroupChannelListFragment extends BaseFragment {
             GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
             mChannelCollection = new ChannelCollection(query);
             mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
+
             mChannelCollection.fetch(e -> {
                 if (mSwipeRefresh.isRefreshing()) {
                     mSwipeRefresh.setRefreshing(false);
                 }
 
+                if (groupChannelEmpty) {
+                    mRecyclerView.setVisibility(View.GONE);
+                    noChatCard.setVisibility(View.VISIBLE);
+                } else {
+                    noChatCard.setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                }
+                chatActionsChannel.chatReceived();
+
             });
 
         } catch (Exception e) {
             if (getContext() != null) {
-                Toast.makeText(getContext(), "You are not signed in to your chat, please re-login your app to display your chats", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Please refresh your dashboard to display your chats", Toast.LENGTH_LONG).show();
             }
         }
 

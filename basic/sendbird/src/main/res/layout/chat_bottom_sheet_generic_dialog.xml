@@ -86,7 +86,7 @@
             tools:src="@drawable/ic_lock"
             tools:visibility="visible" />
 
-        <com.ulesson.chat.utils.CustomFontTextView
+        <com.ulesson.chat.utils.EllipsizingCustomFontTextView
             android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -108,7 +108,7 @@
 
         <include
             android:id="@+id/layout_pick_camera"
-            layout="@layout/layout_pick_camera"
+            layout="@layout/chat_layout_pick_camera"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="26dp"
@@ -123,7 +123,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
-
             android:layout_marginTop="10dp"
             android:alpha="0.60"
             android:ellipsize="end"

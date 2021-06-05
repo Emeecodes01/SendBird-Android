@@ -15,8 +15,8 @@ class ScalingImageView : AppCompatImageView {
     private var mMaxWidth: Int = 0
     private var mMaxHeight: Int = 0
 
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     override //  getAdjustViewBounds() was added in api level 16, so for backwards compatibility sake...
     fun setAdjustViewBounds(adjustViewBounds: Boolean) {
