@@ -44,6 +44,7 @@ public class GroupChannelListFragment extends BaseFragment {
     public static TutorActions tutorActionsChannel;
     public static ChatActions chatActionsChannel;
     private RecyclerView mRecyclerView;
+    private CustomFontButton seeAllBtn;
     private CardView noChatCard;
     private LinearLayoutManager mLayoutManager;
     private GroupChannelListAdapter mChannelListAdapter;
@@ -136,7 +137,7 @@ public class GroupChannelListFragment extends BaseFragment {
         mRecyclerView = rootView.findViewById(R.id.recycler_group_channel_list);
         noChatCard = rootView.findViewById(R.id.nochatCardView);
 
-        CustomFontButton seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
+        seeAllBtn = rootView.findViewById(R.id.seeAllBtn);
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list);
 
         mSwipeRefresh.setOnRefreshListener(() -> {
@@ -278,10 +279,12 @@ public class GroupChannelListFragment extends BaseFragment {
 
                 if (groupChannelEmpty) {
                     mRecyclerView.setVisibility(View.GONE);
+                    seeAllBtn.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);
                 } else {
                     noChatCard.setVisibility(View.GONE);
                     mRecyclerView.setVisibility(View.VISIBLE);
+                    seeAllBtn.setVisibility(View.VISIBLE);
                 }
                 chatActionsChannel.chatReceived();
 

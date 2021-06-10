@@ -192,26 +192,32 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         } else if (message instanceof FileMessage) {
             FileMessage fileMessage = (FileMessage) message;
-            if (fileMessage.getType().toLowerCase().startsWith("image")) {
-                // If the sender is current user
-                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                    return VIEW_TYPE_FILE_MESSAGE_IMAGE_ME;
+
+            if (fileMessage.getSender() != null && fileMessage.getSender().getUserId() != null) {
+
+                if (fileMessage.getType().toLowerCase().startsWith("image")) {
+                    // If the sender is current user
+                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                        return VIEW_TYPE_FILE_MESSAGE_IMAGE_ME;
+                    } else {
+                        return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
+                    }
+
+                } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
+                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                        return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
+                    } else {
+                        return VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER;
+                    }
                 } else {
-                    return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
-                }
-            } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
-                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                    return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
-                } else {
-                    return VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER;
-                }
-            } else {
-                if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                    return VIEW_TYPE_FILE_MESSAGE_ME;
-                } else {
-                    return VIEW_TYPE_FILE_MESSAGE_OTHER;
+                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                        return VIEW_TYPE_FILE_MESSAGE_ME;
+                    } else {
+                        return VIEW_TYPE_FILE_MESSAGE_OTHER;
+                    }
                 }
             }
+
         } else if (message instanceof AdminMessage) {
             return VIEW_TYPE_ADMIN_MESSAGE;
         }

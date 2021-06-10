@@ -53,7 +53,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/bg_btn_next_lesson"
+            tools:src="@drawable/bg_btn_next_lesson"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -68,7 +68,6 @@
 
         <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_edited"
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -111,7 +110,7 @@
                 android:text="\@Reddit"
                 android:textColor="@color/groupChatTextMe"
                 android:textSize="12sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_title"
@@ -124,7 +123,7 @@
                 android:text="Title will be here."
                 android:textColor="@color/groupChatTextMe"
                 android:textSize="14sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_description"
@@ -137,7 +136,7 @@
                 android:text="Description will be here. Blah Blah WWW Blah Wl Blah W WW WW ABCD EFG WW WW WW W Third Line. WWW Z XCVB QWER"
                 android:textColor="@color/groupChatTextMe"
                 android:textSize="12sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <ImageView
                 android:id="@+id/image_url_preview_main"

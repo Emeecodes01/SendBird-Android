@@ -224,6 +224,7 @@ public class GroupChatFragment extends Fragment {
         public void onNewMessage(MessageCollection collection, BaseMessage message) {
         }
     };
+
     private View rootView;
 
     public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
@@ -351,10 +352,7 @@ public class GroupChatFragment extends Fragment {
                 if (channelFinish) {
                     getActivity().finish();
                 } else {
-                    Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentByTag(GROUP_CHAT_TAG);
-                    if (currentFragment == GroupChatFragment.this) {
-                        getActivity().getSupportFragmentManager().popBackStack();
-                    }
+                    getActivity().getSupportFragmentManager().popBackStack();
                 }
             }
 
@@ -423,28 +421,45 @@ public class GroupChatFragment extends Fragment {
 
             new TimerUtils().getTime(mChannelUrl, channelCreate, (countDownTime) -> {
 
+                chatStatus(true);
+
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
 
                 countTime(countDownMinutes, countDownSeconds);
 
                 return Unit.INSTANCE;
-            }, () -> Unit.INSTANCE);
+
+            }, () -> {
+                chatStatus(false);
+                updateChat();
+                return Unit.INSTANCE;
+            });
         } else {
-            disableChat();
+            chatStatus(false);
+            updateChat();
         }
 
     }
 
-    private void disableChat() {
-        mMessageEditText.setEnabled(false);
-        mUploadFileButton.setEnabled(false);
-        mchatBoxLayout.setAlpha(0.5F);
-        button_voice.setEnabled(false);
-        countdownTxt.setVisibility(View.GONE);
+    private void chatStatus(boolean enable) {
+        mMessageEditText.setEnabled(enable);
+        mUploadFileButton.setEnabled(enable);
+        button_voice.setEnabled(enable);
+        if (enable) {
+            mchatBoxLayout.setAlpha(1.0F);
+            countdownTxt.setVisibility(View.VISIBLE);
+        } else {
+            mchatBoxLayout.setAlpha(0.5F);
+            countdownTxt.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateChat() {
         HashMap<String, Object> activeMap = new HashMap<>();
         activeMap.put("active", "false");
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
+            new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
             return Unit.INSTANCE;
         });
     }
@@ -462,12 +477,8 @@ public class GroupChatFragment extends Fragment {
             });
 
         } else {
-            HashMap<String, Object> activeMap = new HashMap<>();
-            activeMap.put("active", "false");
-            new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
-
-                return Unit.INSTANCE;
-            });
+            chatStatus(false);
+            updateChat();
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
             }
@@ -475,7 +486,6 @@ public class GroupChatFragment extends Fragment {
         }
 
     }
-
 
     private void sendTextMessage(GroupChannel groupChannel) {
         String userInput = mMessageEditText.getText().toString();

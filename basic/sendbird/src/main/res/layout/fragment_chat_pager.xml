@@ -41,7 +41,7 @@
                     android:textColor="#313848"
                     android:textSize="23sp"
                     android:textStyle="bold"
-
+                    app:fontName="MuliRegular"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

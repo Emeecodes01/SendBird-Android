@@ -123,6 +123,7 @@ public class MediaUtils extends Activity {
             e.printStackTrace();
         } finally {
             // Set this as true to restore background connection management.
+            finish();
             SendBird.setAutoBackgroundDetection(true);
         }
 

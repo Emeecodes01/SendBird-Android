@@ -206,7 +206,7 @@
             android:layout_marginLeft="11dp"
             android:background="@drawable/ic_send_btn"
             android:gravity="center"
-            app:fontFamily="MuliRegular"
+            app:fontName="MuliRegular"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/chat_body"

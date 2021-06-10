@@ -92,7 +92,6 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
     @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -248,12 +247,11 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun startAnimation(view: View) {
         if (!view.isAttachedToWindow)
             return
         val endRadius = hypot(view.width.toDouble(), view.height.toDouble()).toFloat()
-        val dimCircularAnimation = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+        val dimCircularAnimation =
             ViewAnimationUtils.createCircularReveal(
                     getBackgroundColorView(view),
                     view.width / 2,
@@ -261,9 +259,6 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
                     0F,
                     endRadius
             )
-        } else {
-            TODO("VERSION.SDK_INT < LOLLIPOP")
-        }
         dimCircularAnimation.duration = 800L
         getBackgroundColorView(view).visibility = View.VISIBLE
         dimCircularAnimation.start()

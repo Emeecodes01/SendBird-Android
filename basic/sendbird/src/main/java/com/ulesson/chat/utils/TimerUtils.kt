@@ -26,11 +26,11 @@ class TimerUtils {
 
     fun getTime(channelUrl: String, isChannelCreate: Boolean, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
 
-        if (isChannelCreate && PreferenceUtils.getEndTime()?.get(channelUrl) != null) {
+        if (isChannelCreate && PreferenceUtils.getEndTime()?.get(channelUrl) == -1) {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
 
-        val countTime = 0
+        val countTime = 1
 
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
@@ -38,31 +38,41 @@ class TimerUtils {
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-        if ((PreferenceUtils.getEndTime()?.get(channelUrl) == -1 || PreferenceUtils.getEndTime()?.get(channelUrl) == null)) {
+        val endHour = currentHour + ((currentMinutes + countTime) / 60)
+        val endMinutes = (currentMinutes + countTime) % 60
+        val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
 
-            val endHour = currentHour + ((currentMinutes + countTime) / 60)
-            val endMinutes = (currentMinutes + countTime) % 60
-            val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds + 10)
+        when {
+            PreferenceUtils.getEndTime()?.get(channelUrl) == null -> {
 
-            val endTimeMap = hashMapOf(channelUrl to endTime)
-            PreferenceUtils.setEndTime(endTimeMap)
+                val endTimeMap = hashMapOf(channelUrl to endTime)
+                PreferenceUtils.setEndTime(endTimeMap)
 
-            countDownTime(endTime - currentTime)
+                countDownTime(endTime - currentTime)
 
-        } else {
-
-            PreferenceUtils.getEndTime()?.get(channelUrl)?.let {
-
-                if (it > currentTime) {
-                    countDownTime(it - currentTime)
-                } else {
-                    PreferenceUtils.setEndTime(hashMapOf(channelUrl to -1))
-                    timeOut()
-                }
             }
+            PreferenceUtils.getEndTime()?.get(channelUrl) == -1 -> {
+                timeOut()
+            }
+            else -> {
 
+                PreferenceUtils.getEndTime()?.get(channelUrl)?.let {
+
+                    if (it in (currentTime + 1) until endTime) {
+                        countDownTime(it - currentTime)
+                    } else {
+                        PreferenceUtils.setEndTime(hashMapOf(channelUrl to -1))
+                        timeOut()
+                    }
+                }
+
+            }
         }
 
+    }
+
+    fun updateChannelData(channelUrl : String){
+        PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
     }
 
 }

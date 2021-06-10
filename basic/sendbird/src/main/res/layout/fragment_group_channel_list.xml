@@ -38,7 +38,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
+                app:fontName="ItimRegular"
+                android:letterSpacing="0.0125"
                 android:text="Recent Chats"
                 android:textColor="#313848"
                 android:textSize="24sp"
@@ -54,6 +55,7 @@
                 android:gravity="center_vertical|end"
                 android:text="@string/see_all"
                 android:textAllCaps="false"
+                app:fontName="ItimRegular"
                 android:textColor="#7B7FDA"
                 android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="@id/recentChatTxt"
@@ -63,16 +65,13 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/nochatCardView"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="24dp"
                 android:visibility="gone"
                 app:cardCornerRadius="15dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/recentChatTxt"
-                app:layout_constraintVertical_bias="0.4">
+                app:layout_constraintTop_toBottomOf="@id/recentChatTxt">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -96,7 +95,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="17dp"
                         android:text="You have no chats"
+                        android:textStyle="bold"
                         android:textColor="#313848"
+                        app:fontName="ItimRegular"
                         android:textSize="24sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -109,6 +110,7 @@
                         android:layout_marginTop="7dp"
                         android:text="Ask a question to start a chat with a tutor"
                         android:textColor="#313848"
+                        app:fontName="MuliRegular"
                         android:textSize="14sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -123,11 +125,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginBottom="30dp"
+                android:layout_marginBottom="20dp"
                 android:orientation="vertical"
                 android:scrollbars="vertical"
                 android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/recentChatTxt"
                 tools:listitem="@layout/list_item_group_channel" />
 

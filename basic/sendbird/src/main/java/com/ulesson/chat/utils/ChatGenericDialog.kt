@@ -205,7 +205,6 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     ): View? =
             inflater.inflate(R.layout.chat_bottom_sheet_generic_dialog, container, false)
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

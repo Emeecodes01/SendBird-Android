@@ -25,7 +25,7 @@
         android:text="February 22"
         android:textColor="@color/groupChatDateText"
         android:textSize="14sp"
-        app:fontFamily="MuliRegular" />
+        app:fontName="MuliRegular" />
 
     <ImageView
         android:id="@+id/image_group_chat_profile"
@@ -49,7 +49,7 @@
         android:text="Daniel Silberschatz"
         android:textSize="14sp"
         android:visibility="gone"
-        app:fontFamily="MuliRegular" />
+        app:fontName="MuliRegular" />
 
     <LinearLayout
         android:id="@+id/group_chat_message_container"
@@ -82,7 +82,7 @@
             android:text="Hi, how are you today?"
             android:textColor="@color/groupChatTextOther"
             android:textSize="14sp"
-            app:fontFamily="MuliRegular" />
+            app:fontName="MuliRegular" />
 
         <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_edited"
@@ -95,7 +95,7 @@
             android:textColor="#828282"
             android:textSize="14sp"
             android:visibility="gone"
-            app:fontFamily="MuliRegular" />
+            app:fontName="MuliRegular" />
 
         <LinearLayout
             android:id="@+id/url_preview_container"
@@ -124,7 +124,7 @@
                 android:text="\@Reddit"
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="12sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_title"
@@ -136,7 +136,7 @@
                 android:text="Title will be here."
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="14sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <com.ulesson.chat.utils.CustomFontTextView
                 android:id="@+id/text_url_preview_description"
@@ -149,7 +149,7 @@
                 android:text="Description will be here. Blah Blah WWW Blah Wl Blah W WW WW ABCD EFG WW WW WW W Third Line. WWW Z XCVB QWER"
                 android:textColor="@color/groupChatTextOther"
                 android:textSize="12sp"
-                app:fontFamily="MuliRegular" />
+                app:fontName="MuliRegular" />
 
             <ImageView
                 android:id="@+id/image_url_preview_main"
@@ -162,7 +162,6 @@
         </LinearLayout>
     </LinearLayout>
 
-
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
         android:layout_width="wrap_content"
@@ -174,6 +173,6 @@
         android:textColor="#8e8e8e"
         android:textSize="10dp"
         android:visibility="gone"
-        app:fontFamily="MuliRegular" />
+        app:fontName="MuliRegular" />
 
 </RelativeLayout>
