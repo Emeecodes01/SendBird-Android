@@ -79,6 +79,9 @@ public class GroupChannelListFragment extends BaseFragment {
                     case INSERT:
                         mChannelListAdapter.clearMap();
                         mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), () -> chatActionsChannel.chatReceived());
+
+                        groupChannelEmpty = list.isEmpty();
+
                         break;
 
                     case UPDATE:

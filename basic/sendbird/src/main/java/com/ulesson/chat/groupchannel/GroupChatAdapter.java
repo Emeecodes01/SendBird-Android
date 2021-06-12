@@ -994,12 +994,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (listener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFileMessageItemClick(message);
-                    }
-                });
+                itemView.setOnClickListener(v -> listener.onFileMessageItemClick(message));
             }
         }
     }

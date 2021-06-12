@@ -80,5 +80,7 @@
     <string name="see_all"><u>See all</u></string>
     <string name="no_active_chat">You have no active chats</string>
     <string name="no_past_chat">You have no past chats</string>
+    <string name="typing">typing...</string>
+    <string name="_00_00">00:00</string>
 
 </resources>

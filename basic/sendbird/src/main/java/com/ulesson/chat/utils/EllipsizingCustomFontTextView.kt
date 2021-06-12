@@ -48,7 +48,7 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
             val fontName = a.getString(R.styleable.CustomFont_fontName) ?: null
             typeface = Typeface.createFromAsset(context.assets, "fonts/$fontName.ttf")
         } finally {
-            a?.recycle()
+            a.recycle()
         }
 
         setEndPunctuationPattern(DEFAULT_END_PUNCTUATION)
@@ -128,7 +128,7 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
         var ellipsized = false
 
         if (maxLines != -1) {
-            if (mEllipsizeStrategy == null) setEllipsize(null)
+            if (mEllipsizeStrategy == null) ellipsize = null
             workingText = mEllipsizeStrategy!!.processText(mFullText)
             ellipsized = !mEllipsizeStrategy!!.isInLayout(mFullText)
         }

@@ -1,6 +1,9 @@
 package com.ulesson.chat.utils
 
+import android.content.Context
 import android.os.CountDownTimer
+import android.os.SystemClock
+import android.widget.Chronometer
 import java.util.*
 
 class TimerUtils {
@@ -8,6 +11,7 @@ class TimerUtils {
     private val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
 
     private var countdownTimer: CountDownTimer? = null
+    private var chronometer : Chronometer? = null
 
     fun timer(seconds: Long, onTick: (Long) -> Unit, finished: () -> Unit) {
 
@@ -22,6 +26,16 @@ class TimerUtils {
                 finished()
             }
         }.start()
+    }
+
+    fun countTime(context : Context, time : (Long) -> Unit){
+        chronometer = Chronometer(context)
+        chronometer?.stop()
+        chronometer?.base = SystemClock.elapsedRealtime()
+        chronometer?.start()
+        chronometer?.setOnChronometerTickListener {
+            time(SystemClock.elapsedRealtime() - it.base)
+        }
     }
 
     fun getTime(channelUrl: String, isChannelCreate: Boolean, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {

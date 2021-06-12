@@ -62,20 +62,20 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 
-            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> {
-
-                return Unit.INSTANCE;
-            }, () -> Unit.INSTANCE, new TutorActions() {
-                @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) {
-
-                }
-
-                @Override
-                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
-
-                }
-            });
+//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> {
+//
+//                return Unit.INSTANCE;
+//            }, () -> Unit.INSTANCE, new TutorActions() {
+//                @Override
+//                public void showTutorProfile(@NotNull List<? extends Member> members) {
+//
+//                }
+//
+//                @Override
+//                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
+//
+//                }
+//            });
 
             new Chat().showChatList(this, R.id.container_group_channel, hostUserData, new TutorActions() {
                 @Override

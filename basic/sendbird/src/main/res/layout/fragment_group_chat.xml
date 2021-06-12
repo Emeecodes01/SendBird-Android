@@ -5,7 +5,8 @@
     android:id="@+id/layout_group_chat_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
+    android:clickable="true"
+    android:focusable="true"
     android:background="#E5E5E5"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -35,7 +36,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
                 android:paddingVertical="10dp">
 
                 <ImageView
@@ -51,14 +51,13 @@
                     android:id="@+id/userName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginHorizontal="10dp"
                     android:ellipsize="end"
                     android:maxLength="35"
                     android:textColor="#313848"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="@id/profile_image"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/countdownTxt"
                     app:layout_constraintStart_toEndOf="@id/profile_image"
                     app:layout_constraintTop_toTopOf="@id/profile_image"
                     tools:text="Tamilore Chidinma ChidinmaChidinmaChidinmaChidinmaChidinma" />
@@ -66,9 +65,8 @@
                 <com.ulesson.chat.utils.CustomFontTextView
                     android:id="@+id/text_group_chat_current_event"
                     android:layout_width="wrap_content"
-
                     android:layout_height="wrap_content"
-                    android:text="typing..."
+                    android:text="@string/typing"
                     android:textSize="12sp"
                     android:visibility="gone"
                     app:layout_constraintStart_toStartOf="@id/userName"
@@ -77,18 +75,15 @@
                 <com.ulesson.chat.utils.CustomFontTextView
                     android:id="@+id/countdownTxt"
                     android:layout_width="wrap_content"
-
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="19dp"
-                    android:layout_marginRight="19dp"
                     android:background="@drawable/ic_countdown"
                     android:drawableStart="@drawable/ic_clock"
-                    android:drawableLeft="@drawable/ic_clock"
                     android:drawablePadding="4dp"
                     android:letterSpacing="0.1"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="5dp"
-                    android:text="00:00"
+                    android:text="@string/_00_00"
                     android:textColor="@color/color_white"
                     android:textFontWeight="700"
                     android:textSize="12sp"
@@ -125,9 +120,7 @@
         android:background="#FCFBF9"
         android:minHeight="80dp"
         android:paddingStart="18dp"
-        android:paddingLeft="18dp"
         android:paddingEnd="20dp"
-        android:paddingRight="20dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -142,22 +135,63 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/record_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                android:clickable="false"
+                app:constraint_referenced_ids="ic_voice, ic_voice1, ic_voice2,cancel_record_txt, chronometer" />
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/text_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:clickable="false"
+                app:constraint_referenced_ids="ic_voice1, edittext_group_chat_message, button_group_chat_upload" />
+
+            <Chronometer
+                android:id="@+id/chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:alpha="0.3"
+                android:textColor="#434958"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/edittext_group_chat_message"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <com.ulesson.chat.utils.CustomFontButton
+                android:id="@+id/cancel_record_txt"
+                android:layout_width="64dp"
+                android:layout_height="25dp"
+                android:layout_marginVertical="10dp"
+                android:background="@drawable/shape_red_rounded"
+                android:stateListAnimator="@null"
+                android:text="@string/cancel"
+                android:textColor="@color/color_white"
+                android:textSize="12sp"
+                app:fontFamily="ItimRegular"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/edittext_group_chat_message"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <EditText
                 android:id="@+id/edittext_group_chat_message"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginEnd="11dp"
-                android:layout_marginRight="11dp"
                 android:background="@android:color/transparent"
                 android:hint="@string/write_a_reply"
                 android:inputType="textMultiLine"
                 android:maxLines="3"
                 android:paddingVertical="10dp"
                 android:paddingStart="12dp"
-                android:paddingLeft="10dp"
                 android:paddingEnd="30dp"
-                android:paddingRight="30dp"
                 android:textColorHint="#4D434958"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/button_group_chat_upload"
@@ -166,17 +200,47 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <com.ulesson.chat.utils.CustomFontButton
+            <ImageView
+                android:id="@+id/ic_voice1"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_voice1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ic_voice"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_voice"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ic_voice2"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_voice2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <ImageButton
                 android:id="@+id/button_voice"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="14dp"
                 android:layout_marginEnd="22dp"
-                android:layout_marginRight="22dp"
-                android:background="@drawable/ic_voice"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/upload_file"
                 android:padding="10dp"
+                android:src="@drawable/ic_mic"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -186,7 +250,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/upload_file"
                 android:padding="5dp"
@@ -203,7 +266,6 @@
             android:layout_height="40dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="11dp"
-            android:layout_marginLeft="11dp"
             android:background="@drawable/ic_send_btn"
             android:gravity="center"
             app:fontName="MuliRegular"

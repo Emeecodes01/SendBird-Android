@@ -1,6 +1,8 @@
 package com.ulesson.chat.groupchannel;
 
 import android.Manifest;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -28,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.Group;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -115,15 +120,16 @@ public class GroupChatFragment extends Fragment {
     private LinearLayoutManager mLayoutManager;
     private EditText mMessageEditText;
     private CustomFontButton mSendMessage;
-    private CustomFontButton button_voice;
-    private ImageButton mUploadFileButton;
+    private ImageView icVoice, icVoice1, icVoice2;
+    private ImageButton mUploadFileButton, button_voice;
     private Toolbar toolbar_group_channel;
-    private TextView mCurrentEventText;
-    private TextView mUserName;
-    private TextView countdownTxt;
+    private TextView mCurrentEventText, mUserName, countdownTxt, cancelRecord;
+    private Group recordGroup, textGroup;
+    private Chronometer chronometer;
     private GroupChannel mChannel;
     private String mChannelUrl;
     private boolean mIsTyping;
+    private boolean isRecording = false;
     private int mCurrentState = STATE_NORMAL;
     private BaseMessage mEditingMessage = null;
     private MessageCollection mMessageCollection;
@@ -284,6 +290,8 @@ public class GroupChatFragment extends Fragment {
 
             initializeViews(rootView);
 
+            voiceView(false);
+
             setUpRecyclerView();
 
             createMessageCollection(mChannelUrl, (groupChannel, e) -> {
@@ -305,6 +313,8 @@ public class GroupChatFragment extends Fragment {
             onBack();
 
             mUploadFileButton.setOnClickListener(v -> pickMedia());
+            button_voice.setOnClickListener(v -> recordVoice());
+            cancelRecord.setOnClickListener(v -> recordVoice());
 
             mIsTyping = false;
 
@@ -372,7 +382,29 @@ public class GroupChatFragment extends Fragment {
         mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
         mSendMessage = rootView.findViewById(R.id.send_message_btn);
         button_voice = rootView.findViewById(R.id.button_voice);
+        icVoice = rootView.findViewById(R.id.ic_voice);
+        icVoice1 = rootView.findViewById(R.id.ic_voice1);
+        icVoice2 = rootView.findViewById(R.id.ic_voice2);
+        chronometer = rootView.findViewById(R.id.chronometer);
+        cancelRecord = rootView.findViewById(R.id.cancel_record_txt);
+        recordGroup = rootView.findViewById(R.id.record_group);
+        textGroup = rootView.findViewById(R.id.text_group);
         mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
+    }
+
+    private void animateVoice(boolean animate) {
+        if (requireContext() != null) {
+            AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(requireContext(), R.animator.fade_animator);
+            if (animate) {
+                set.setTarget(icVoice);
+                set.setTarget(icVoice1);
+                set.setTarget(icVoice2);
+                set.start();
+
+            } else {
+                set.cancel();
+            }
+        }
     }
 
     private void sendDefaultMessage(GroupChannel groupChannel) {
@@ -445,12 +477,12 @@ public class GroupChatFragment extends Fragment {
     private void chatStatus(boolean enable) {
         mMessageEditText.setEnabled(enable);
         mUploadFileButton.setEnabled(enable);
-        button_voice.setEnabled(enable);
+//        button_voice.setEnabled(enable);
         if (enable) {
             mchatBoxLayout.setAlpha(1.0F);
             countdownTxt.setVisibility(View.VISIBLE);
         } else {
-            mchatBoxLayout.setAlpha(0.5F);
+//            mchatBoxLayout.setAlpha(0.5F);
             countdownTxt.setVisibility(View.GONE);
         }
     }
@@ -912,6 +944,39 @@ public class GroupChatFragment extends Fragment {
                 nickName = getString(R.string.users_typing);
             }
             mCurrentEventText.setText(nickName);
+        }
+    }
+
+    private void recordVoice() {
+        if (isRecording) {
+            voiceView(false);
+            isRecording = false;
+            animateVoice(false);
+            //stop recording
+
+        } else {
+            voiceView(true);
+            isRecording = true;
+            animateVoice(true);
+            //start recording
+            chronometer.stop();
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
+            chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText()+""));
+        }
+    }
+
+    private void voiceView(Boolean show) {
+        if (show) {
+            textGroup.setVisibility(View.INVISIBLE);
+            recordGroup.setVisibility(View.VISIBLE);
+            icVoice.setImageResource(R.drawable.ic_voice);
+            icVoice1.setImageResource(R.drawable.ic_voice1);
+        } else {
+            recordGroup.setVisibility(View.INVISIBLE);
+            textGroup.setVisibility(View.VISIBLE);
+            icVoice1.setImageResource(R.drawable.ic_voice);
+            icVoice1.setVisibility(View.VISIBLE);
         }
     }
 
