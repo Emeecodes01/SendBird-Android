@@ -8,11 +8,26 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.ulesson.chat.R
+import com.ulesson.chat.main.sendBird.ChatActions
+import com.ulesson.chat.main.sendBird.TutorActions
 import kotlinx.android.synthetic.main.fragment_chat_pager.view.*
 
 class PagerFragment : Fragment() {
 
     lateinit var chatPagerAdapter: ChatPagerAdapter
+
+    companion object {
+
+        lateinit var tutorActionsChannel: TutorActions
+        lateinit var chatActionsChannel: ChatActions
+
+        fun newInstance(tutorActions: TutorActions, chatActions: ChatActions): PagerFragment {
+            tutorActionsChannel = tutorActions
+            chatActionsChannel = chatActions
+            return PagerFragment()
+        }
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -28,14 +43,15 @@ class PagerFragment : Fragment() {
             activity?.supportFragmentManager?.popBackStack()
         }
 
-        chatPagerAdapter = ChatPagerAdapter(this)
+        chatPagerAdapter = ChatPagerAdapter(this, tutorActionsChannel, chatActionsChannel)
         chatPager.adapter = chatPagerAdapter
 
         TabLayoutMediator(tabLayout, chatPager) { tab, position ->
 
             when (position) {
-                0 -> tab.text = Html.fromHtml("\t\t\t\tACTIVE\t\t\t\t")
-                1 -> tab.text = Html.fromHtml("\t\t\t\tPAST\t\t\t\t")
+                0 -> tab.text = Html.fromHtml("\t\t\t\tPENDING\t\t\t\t")
+                1 -> tab.text = Html.fromHtml("\t\t\t\tACTIVE\t\t\t\t")
+                2 -> tab.text = Html.fromHtml("\t\t\t\tPAST\t\t\t\t")
             }
         }.attach()
 

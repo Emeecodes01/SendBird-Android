@@ -1,6 +1,7 @@
 package com.ulesson.chat.groupchannel;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
@@ -10,8 +11,10 @@ import androidx.fragment.app.FragmentManager;
 
 import com.sendbird.android.Member;
 import com.ulesson.chat.R;
+import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.model.UserData;
 import com.ulesson.chat.main.sendBird.Chat;
+import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.main.sendBird.User;
 import com.ulesson.chat.network.userModel.ConnectUserRequest;
@@ -19,6 +22,7 @@ import com.ulesson.chat.utils.PushUtils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +81,22 @@ public class GroupChannelActivity extends AppCompatActivity {
 //                }
 //            });
 
+            List<Question> questionList = new ArrayList<>();
+            questionList.add(new Question(1,
+                    "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+                    "What is Mathematics", "What's good",
+                    "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+                    "20210609"));
+            questionList.add(new Question(2,
+                    "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+                    "What is Chemistry", "Another question",
+                    "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
+                    "20210609"));
+
+//            new Chat().setPendingQuestions(new Gson().toJson(questionList));
+
             new Chat().showChatList(this, R.id.container_group_channel, hostUserData, new TutorActions() {
+
                 @Override
                 public void showTutorProfile(@NotNull List<? extends Member> members) {
 
@@ -87,7 +106,16 @@ public class GroupChannelActivity extends AppCompatActivity {
                 public void showTutorRating(@NotNull Map<String, Object> questionMap) {
 
                 }
-            }, () -> {
+            }, new ChatActions() {
+                @Override
+                public void chatReceived() {
+
+                }
+
+                @Override
+                public void showDummyChat(@NotNull Question question) {
+                    Log.d("okh", question.toString() + " question");
+                }
             });
 
             return Unit.INSTANCE;
@@ -106,8 +134,16 @@ public class GroupChannelActivity extends AppCompatActivity {
                 public void showTutorRating(Map<String, Object> questionMap) {
                 }
 
-            }, () -> {
+            }, new ChatActions() {
+                @Override
+                public void chatReceived() {
 
+                }
+
+                @Override
+                public void showDummyChat(@NotNull Question question) {
+
+                }
             });
 
             FragmentManager manager = getSupportFragmentManager();

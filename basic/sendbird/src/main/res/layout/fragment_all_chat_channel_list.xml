@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     android:background="#EDEDEE">
 
     <androidx.constraintlayout.widget.Guideline
@@ -53,7 +55,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="17dp"
-                        android:text="You have no chats"
+                        android:text="@string/chat_status_message"
                         android:textColor="#313848"
                         android:textSize="24sp"
                         app:fontName="ItimRegular"
@@ -62,11 +64,11 @@
                         app:layout_constraintTop_toBottomOf="@id/nochatImg" />
 
                     <com.ulesson.chat.utils.CustomFontTextView
-                        android:id="@+id/askQuestionChatTxt"
+                        android:id="@+id/noChatDetailsTxt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="7dp"
-                        android:text="Ask a question to start a chat with a tutor"
+                        android:text="@string/chat_status_detail"
                         android:textColor="#313848"
                         android:textSize="14sp"
                         app:layout_constraintEnd_toEndOf="parent"

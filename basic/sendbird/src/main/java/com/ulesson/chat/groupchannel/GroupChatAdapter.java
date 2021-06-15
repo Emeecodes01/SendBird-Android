@@ -174,6 +174,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+
     @Override
     public int getItemViewType(int position) {
 

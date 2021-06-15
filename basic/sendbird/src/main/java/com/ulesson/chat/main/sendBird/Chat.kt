@@ -18,10 +18,12 @@ import com.ulesson.chat.groupchannel.GroupChatActivity
 import com.ulesson.chat.groupchannel.GroupChatFragment
 import com.ulesson.chat.groupchannel.GroupChatFragment.GROUP_CHAT_TAG
 import com.ulesson.chat.main.allChat.PagerFragment
+import com.ulesson.chat.main.model.Question
 import com.ulesson.chat.main.model.UserData
 import com.ulesson.chat.main.model.UserGroup
 import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.network.userModel.ConnectUserRequest
+import com.ulesson.chat.utils.PreferenceUtils
 import com.ulesson.chat.utils.StringUtils.Companion.isActive
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
 import java.util.*
@@ -32,7 +34,7 @@ class Chat {
      * Create chat between 2 users, each user has a UserData object which contains their userid, nickname and access token
      */
 
-    fun createChat(activity: FragmentActivity?, hostUserData: UserData, otherUserData: UserData, toFinish: Boolean, questionMap: HashMap<String, Any?>, channelUrl: (String) -> Unit, chatCreated: () -> Unit, tutorActions: TutorActions) {
+    fun createChat(activity: FragmentActivity?, hostUserData: UserData, otherUserData: UserData, toFinish: Boolean, questionMap: HashMap<String, Any?>, channelUrl: (String) -> Unit, chatCreated: () -> Unit, pendingQuestion: (Question) -> Unit, tutorActions: TutorActions) {
 
         questionMap["active"] = "true"
 
@@ -58,6 +60,10 @@ class Chat {
                             chatCreated()
                         }
 
+                        override fun showDummyChat(question: Question) {
+                            pendingQuestion(question)
+                        }
+
                     })
                 } else {
 
@@ -77,6 +83,10 @@ class Chat {
                             }, object : ChatActions {
                                 override fun chatReceived() {
                                     chatCreated()
+                                }
+
+                                override fun showDummyChat(question: Question) {
+                                    pendingQuestion(question)
                                 }
 
                             })
@@ -108,6 +118,10 @@ class Chat {
                         chatActions.chatReceived()
                     }
 
+                    override fun showDummyChat(question: Question) {
+                        chatActions.showDummyChat(question)
+                    }
+
                 })
 
                 val intent = Intent(activity.baseContext, GroupChatActivity::class.java)
@@ -128,6 +142,10 @@ class Chat {
                 }, object : ChatActions {
                     override fun chatReceived() {
                         chatActions.chatReceived()
+                    }
+
+                    override fun showDummyChat(question: Question) {
+                        chatActions.showDummyChat(question)
                     }
 
                 })
@@ -213,9 +231,9 @@ class Chat {
      * Show all the chat list of a user, pass in the data of the user you want to show
      */
 
-    fun showAllChat(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData) {
+    fun showAllChat(activity: FragmentActivity?, layoutId: Int, hostUserData: UserData, tutorActions: TutorActions, chatActions: ChatActions) {
 
-        val fragment: Fragment = PagerFragment()
+        val fragment: Fragment = PagerFragment.newInstance(tutorActions, chatActions)
 
         if (activity != null && !activity.supportFragmentManager.isDestroyed) {
             val manager: FragmentManager = activity.supportFragmentManager
@@ -242,6 +260,10 @@ class Chat {
                 chatActions.chatReceived()
             }
 
+            override fun showDummyChat(question: Question) {
+                chatActions.showDummyChat(question)
+            }
+
         })
 
         if (activity != null && !activity.supportFragmentManager.isDestroyed) {
@@ -252,6 +274,10 @@ class Chat {
                     .commitAllowingStateLoss()
         }
 
+    }
+
+    fun setPendingQuestions(pendingQuestions: String) {
+        PreferenceUtils.setPendingQuestions(pendingQuestions)
     }
 
 }
