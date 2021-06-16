@@ -16,28 +16,27 @@ class ChatPagerAdapter(
     override fun createFragment(position: Int): Fragment {
 
         return when (position) {
-            0 -> GroupAllChatListFragment.newInstance(
-                GroupAllChatListFragment.ChatType.Pending,
-                tutorActions,
-                chatActions
-            )
-            1 -> GroupAllChatListFragment.newInstance(
-                GroupAllChatListFragment.ChatType.Active,
-                tutorActions,
-                chatActions
-            )
-            2 -> GroupAllChatListFragment.newInstance(
-                GroupAllChatListFragment.ChatType.Past,
-                tutorActions,
-                chatActions
-            )
-            else -> GroupAllChatListFragment.newInstance(
-                GroupAllChatListFragment.ChatType.Active,
-                tutorActions,
-                chatActions
-            )
+            0 -> {
+                GroupAllChatListFragment.newInstance(
+                    GroupAllChatListFragment.ChatType.Pending,
+                    tutorActions,
+                    chatActions
+                )
+            }
+            1 -> {
+                GroupAllChatListFragment.newInstance(
+                    GroupAllChatListFragment.ChatType.Active,
+                    tutorActions,
+                    chatActions
+                )
+            }
+            else -> {
+                GroupAllChatListFragment.newInstance(
+                    GroupAllChatListFragment.ChatType.Past,
+                    tutorActions,
+                    chatActions
+                )
+            }
         }
-
     }
-
 }

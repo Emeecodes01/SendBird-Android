@@ -70,7 +70,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     void clearChannelList() {
-        isPastChannel.clear();
         questionList.clear();
         isPendingChannel.clear();
         isActiveChannel.clear();
@@ -158,23 +157,21 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         for (GroupChannel newChannel : channels) {
-            int activeIndex = SyncManagerUtils.findIndexOfChannel(isActiveChannel, newChannel, order);
-            int pastIndex = SyncManagerUtils.findIndexOfChannel(isPastChannel, newChannel, order);
-
             if (new StringUtils().isActive(newChannel.getData())) {
-                isActiveChannel.add(activeIndex, newChannel);
+                isActiveChannel.add(newChannel);
             } else {
-                isPastChannel.add(pastIndex, newChannel);
+                isPastChannel.add(newChannel);
             }
         }
 
-        notifyDataSetChanged();
-
         if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
+            notifyDataSetChanged();
             return isPendingChannel;
         } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
+            notifyDataSetChanged();
             return isActiveChannel;
         } else {
+            notifyDataSetChanged();
             return isPastChannel;
         }
     }

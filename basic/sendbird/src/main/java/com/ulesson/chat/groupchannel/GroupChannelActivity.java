@@ -67,19 +67,18 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 
-//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> {
-//
-//                return Unit.INSTANCE;
-//            }, () -> Unit.INSTANCE, (question) -> Unit.INSTANCE, new TutorActions() {
+//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
 //                @Override
-//                public void showTutorProfile(@NotNull List<? extends Member> members) {
-//
-//                }
-//
+//                public void chatReceived() { }
 //                @Override
-//                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
-//
-//                }
+//                public void showDummyChat(@NotNull Question question) { }
+//                @Override
+//                public void getPendingQuestions() { }
+//            }, new TutorActions() {
+//                @Override
+//                public void showTutorProfile(@NotNull List<? extends Member> members) { }
+//                @Override
+//                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
 //            });
 
             List<Question> questionList = new ArrayList<>();
@@ -99,25 +98,19 @@ public class GroupChannelActivity extends AppCompatActivity {
             new Chat().showChatList(this, R.id.container_group_channel, hostUserData, new TutorActions() {
 
                 @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) {
-
-                }
-
+                public void showTutorProfile(@NotNull List<? extends Member> members) {}
                 @Override
-                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
+                public void showTutorRating(@NotNull Map<String, Object> questionMap) {}
 
-                }
             }, new ChatActions() {
                 @Override
                 public void getPendingQuestions() {
-                    questionList.clear();
+//                    questionList.clear();
                     new Chat().setPendingQuestions(new Gson().toJson(questionList));
                 }
 
                 @Override
-                public void chatReceived() {
-
-                }
+                public void chatReceived() {}
 
                 @Override
                 public void showDummyChat(@NotNull Question question) {
@@ -133,29 +126,17 @@ public class GroupChannelActivity extends AppCompatActivity {
             // If started from notification
             Fragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
                 @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) {
-
-                }
-
+                public void showTutorProfile(@NotNull List<? extends Member> members) {}
                 @Override
-                public void showTutorRating(Map<String, Object> questionMap) {
-                }
+                public void showTutorRating(Map<String, Object> questionMap) {}
 
             }, new ChatActions() {
                 @Override
-                public void getPendingQuestions() {
-
-                }
-
+                public void getPendingQuestions() {}
                 @Override
-                public void chatReceived() {
-
-                }
-
+                public void chatReceived() {}
                 @Override
-                public void showDummyChat(@NotNull Question question) {
-
-                }
+                public void showDummyChat(@NotNull Question question) {}
             });
 
             FragmentManager manager = getSupportFragmentManager();

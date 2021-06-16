@@ -41,7 +41,7 @@ public class GroupAllChatListFragment extends Fragment {
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
     public static TutorActions tutorActionsChannel;
     public static ChatActions chatActionsChannel;
-    private static GroupAllChatListAdapter mChannelListAdapter;
+    private GroupAllChatListAdapter mChannelListAdapter;
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private SwipeRefreshLayout mSwipeRefresh;
@@ -96,9 +96,10 @@ public class GroupAllChatListFragment extends Fragment {
         }
     };
     private ChannelCollection mChannelCollection;
+    static GroupAllChatListFragment fragment;
 
     public static GroupAllChatListFragment newInstance(@NonNull ChatType chatType, TutorActions tutorActions, ChatActions chatActions) {
-        GroupAllChatListFragment fragment = new GroupAllChatListFragment();
+        fragment = new GroupAllChatListFragment();
         tutorActionsChannel = tutorActions;
         chatActionsChannel = chatActions;
         Bundle args = new Bundle();
@@ -108,7 +109,7 @@ public class GroupAllChatListFragment extends Fragment {
         return fragment;
     }
 
-    public static void updateQuestion() {
+    public void updateQuestion() {
         if (mChannelListAdapter != null) {
             mChannelListAdapter.notifyDataSetChanged();
         }
@@ -119,8 +120,6 @@ public class GroupAllChatListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_all_chat_channel_list, container, false);
-
-        setRetainInstance(true);
 
         mRecyclerView = rootView.findViewById(R.id.recycler_group_all_chat_list);
         noChatCard = rootView.findViewById(R.id.nochatCardView);
@@ -280,6 +279,7 @@ public class GroupAllChatListFragment extends Fragment {
                         if (mSwipeRefresh.isRefreshing()) {
                             mSwipeRefresh.setRefreshing(false);
                         }
+                        mChannelListAdapter.notifyDataSetChanged();
                     });
                 }
                 mChannelListAdapter.notifyDataSetChanged();
