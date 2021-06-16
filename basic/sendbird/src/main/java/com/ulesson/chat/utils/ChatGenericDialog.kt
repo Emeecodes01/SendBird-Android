@@ -86,9 +86,9 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     }
 
     fun setPositiveButton(
-            stringResId: Int,
-            backgroundResId: Int,
-            callback: () -> Unit
+        stringResId: Int,
+        backgroundResId: Int,
+        callback: () -> Unit
     ): ChatGenericDialog {
         this.positiveTextResId = stringResId
         this.positiveBackgroundResId = backgroundResId
@@ -97,9 +97,9 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     }
 
     fun setNegativeButton(
-            stringResId: Int,
-            backgroundResId: Int? = null,
-            callback: () -> Unit
+        stringResId: Int,
+        backgroundResId: Int? = null,
+        callback: () -> Unit
     ): ChatGenericDialog {
         this.negativeTextResId = stringResId
         this.negativeBackgroundResId = backgroundResId
@@ -108,8 +108,8 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     }
 
     fun setUploadFile(
-            cameraCallback: () -> Unit,
-            galleryCallback: () -> Unit
+        cameraCallback: () -> Unit,
+        galleryCallback: () -> Unit
     ): ChatGenericDialog {
         this.cameraCallback = cameraCallback
         this.galleryCallback = galleryCallback
@@ -127,7 +127,10 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
         countDownTimer = null
     }
 
-    fun setCountdownTimer(countDownTimeMillis: Long, onCountDownFinish: () -> Unit): ChatGenericDialog {
+    fun setCountdownTimer(
+        countDownTimeMillis: Long,
+        onCountDownFinish: () -> Unit
+    ): ChatGenericDialog {
         this.countDownTimeMillis = countDownTimeMillis
         this.countDownTimerCallback = onCountDownFinish
 
@@ -159,9 +162,9 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
         val seconds = TimeUnit.MILLISECONDS.toSeconds(timeToSetInMillisecond)
         try {
             tv_timer.text = resources.getQuantityString(
-                    R.plurals.seconds,
-                    seconds.toInt(),
-                    seconds
+                R.plurals.seconds,
+                seconds.toInt(),
+                seconds
             )
         } catch (e: Exception) {
         }
@@ -199,11 +202,11 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? =
-            inflater.inflate(R.layout.chat_bottom_sheet_generic_dialog, container, false)
+        inflater.inflate(R.layout.chat_bottom_sheet_generic_dialog, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -221,7 +224,7 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
 
         bt_positive.setText(positiveTextResId!!)
         bt_positive.setBackgroundResource(
-                positiveBackgroundResId ?: R.drawable.bg_btn_onboarding_next
+            positiveBackgroundResId ?: R.drawable.bg_btn_onboarding_next
         )
         bt_positive.setClickListener { positiveBtnCallback?.invoke() }
 
@@ -275,7 +278,7 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     override fun getMainView(view: View): View = view.cl_main
 
     override fun getDialogBackgroundView(view: View): DialogBackgroundView =
-            view.dbv_background_view
+        view.dbv_background_view
 
     override fun getImageBadgeView(view: View): ImageView = view.iv_badge
 
@@ -289,10 +292,10 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun View.setMargin(
-            topMargin: Int? = null,
-            endMargin: Int? = null,
-            bottomMargin: Int? = null,
-            startMargin: Int? = null
+        topMargin: Int? = null,
+        endMargin: Int? = null,
+        bottomMargin: Int? = null,
+        startMargin: Int? = null
     ) {
         val viewLayoutParam = layoutParams
         if (viewLayoutParam is RelativeLayout.LayoutParams) {
@@ -349,11 +352,11 @@ class ChatGenericDialog : BaseBottomSheetDialog() {
     private fun getDummyInstance(subjectThemeKey: String): ChatGenericDialog {
         val genericDialog = newInstance(subjectThemeKey)
         genericDialog
-                .setTitle(R.string.on_boarding_fragment_first_main)
-                .setMessage(R.string.on_boarding_fragment_third_sub)
-                .setPositiveButton(R.string.next, R.drawable.bg_btn_onboarding_next) {
-                    genericDialog.startBadgeLayoutAnimation()
-                }
+            .setTitle(R.string.on_boarding_fragment_first_main)
+            .setMessage(R.string.on_boarding_fragment_third_sub)
+            .setPositiveButton(R.string.next, R.drawable.bg_btn_onboarding_next) {
+                genericDialog.startBadgeLayoutAnimation()
+            }
         return genericDialog
     }
 

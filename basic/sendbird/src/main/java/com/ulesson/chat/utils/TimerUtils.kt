@@ -11,7 +11,7 @@ class TimerUtils {
     private val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
 
     private var countdownTimer: CountDownTimer? = null
-    private var chronometer : Chronometer? = null
+    private var chronometer: Chronometer? = null
 
     fun timer(seconds: Long, onTick: (Long) -> Unit, finished: () -> Unit) {
 
@@ -28,7 +28,7 @@ class TimerUtils {
         }.start()
     }
 
-    fun countTime(context : Context, time : (Long) -> Unit){
+    fun countTime(context: Context, time: (Long) -> Unit) {
         chronometer = Chronometer(context)
         chronometer?.stop()
         chronometer?.base = SystemClock.elapsedRealtime()
@@ -38,7 +38,12 @@ class TimerUtils {
         }
     }
 
-    fun getTime(channelUrl: String, isChannelCreate: Boolean, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
+    fun getTime(
+        channelUrl: String,
+        isChannelCreate: Boolean,
+        countDownTime: (Int) -> Unit,
+        timeOut: () -> Unit
+    ) {
 
         if (isChannelCreate && PreferenceUtils.getEndTime()?.get(channelUrl) == -1) {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
@@ -85,7 +90,7 @@ class TimerUtils {
 
     }
 
-    fun updateChannelData(channelUrl : String){
+    fun updateChannelData(channelUrl: String) {
         PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
     }
 

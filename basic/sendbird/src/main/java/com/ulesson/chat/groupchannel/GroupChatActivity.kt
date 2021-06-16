@@ -22,8 +22,9 @@ class GroupChatActivity : AppCompatActivity() {
             }
 
             if (fragment != null) {
-                supportFragmentManager.beginTransaction().replace(R.id.container_group_chat, fragment, GroupChatFragment.GROUP_CHAT_TAG)
-                        .commit()
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container_group_chat, fragment, GroupChatFragment.GROUP_CHAT_TAG)
+                    .commit()
             }
         }
 

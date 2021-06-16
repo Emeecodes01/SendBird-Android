@@ -143,8 +143,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 String messageContent = remoteMessage.getData().get("message");
                 if (messageContent != null) {
                     SendBird.markAsDelivered(channelUrl);
-                    String message = messageContent.split(":")[1];
-                    sendNotification(this, message, channelUrl, senderName);
+                    String[] messageArray = messageContent.split(":");
+                    if (messageArray.length > 1)
+                        sendNotification(this, messageArray[1], channelUrl, senderName);
                 }
 
             }

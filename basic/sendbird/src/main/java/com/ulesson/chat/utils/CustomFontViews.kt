@@ -7,9 +7,9 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.ulesson.chat.R
 
 open class CustomFontTextView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = android.R.attr.textViewStyle
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = android.R.attr.textViewStyle
 ) : AppCompatTextView(context, attrs, defStyleAttr) {
 
     init {
@@ -18,9 +18,9 @@ open class CustomFontTextView @JvmOverloads constructor(
 }
 
 class CustomFontButton @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = androidx.appcompat.R.attr.buttonStyle
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = androidx.appcompat.R.attr.buttonStyle
 ) : AppCompatTextView(context, attrs, defStyleAttr) {
     init {
         typeface = readTypeFace(context, attrs)

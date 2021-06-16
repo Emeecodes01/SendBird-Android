@@ -19,27 +19,27 @@ class RetrofitInstance {
         val interceptor = HttpLoggingInterceptor()
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val client = OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .addInterceptor(object : Interceptor {
-                    override fun intercept(chain: Interceptor.Chain): Response {
+            .addInterceptor(interceptor)
+            .addInterceptor(object : Interceptor {
+                override fun intercept(chain: Interceptor.Chain): Response {
 
-                        val original = chain.request()
+                    val original = chain.request()
 
-                        val request = original.newBuilder()
-                                .header("Content-Type", "application/json; charset=utf8")
-                                .header("Api-Token", MASTER_TOKEN)
-                                .method(original.method, original.body)
-                                .build()
+                    val request = original.newBuilder()
+                        .header("Content-Type", "application/json; charset=utf8")
+                        .header("Api-Token", MASTER_TOKEN)
+                        .method(original.method, original.body)
+                        .build()
 
-                        return chain.proceed(request)
-                    }
-                }).build()
+                    return chain.proceed(request)
+                }
+            }).build()
 
         return Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
+            .baseUrl(baseUrl)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
     }
 }

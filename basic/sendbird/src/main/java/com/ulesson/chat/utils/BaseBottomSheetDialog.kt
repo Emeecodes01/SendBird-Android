@@ -2,7 +2,6 @@ package com.ulesson.chat.utils
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
@@ -10,7 +9,6 @@ import android.view.*
 import android.view.animation.*
 import android.widget.ImageView
 import androidx.annotation.CallSuper
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -110,124 +108,124 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
         if (themeMap.isEmpty()) {
 
             themeMap[THEME_MATH] = Theme(
-                    R.string.mathematics,
-                    R.color.colorMaths,
-                    R.color.colorMathsDark,
-                    R.color.colorBiology,
-                    overlayColor = R.color.colorMaths_40,
-                    plainSubjectIcon = R.drawable.ic_maths_plain,
-                    dashboardBtnBackground = R.drawable.bg_btn_maths,
-                    videoPlayIcon = R.drawable.ic_btn_play_maths,
-                    videoPauseIcon = R.drawable.ic_btn_pause_maths,
-                    chapterDetailBg = BackgroundComponent(
-                            R.drawable.bg_comp_sub_maths,
-                            111,
-                            171,
-                            BackgroundComponent.POS_END,
-                            BackgroundComponent.POS_TOP
+                R.string.mathematics,
+                R.color.colorMaths,
+                R.color.colorMathsDark,
+                R.color.colorBiology,
+                overlayColor = R.color.colorMaths_40,
+                plainSubjectIcon = R.drawable.ic_maths_plain,
+                dashboardBtnBackground = R.drawable.bg_btn_maths,
+                videoPlayIcon = R.drawable.ic_btn_play_maths,
+                videoPauseIcon = R.drawable.ic_btn_pause_maths,
+                chapterDetailBg = BackgroundComponent(
+                    R.drawable.bg_comp_sub_maths,
+                    111,
+                    171,
+                    BackgroundComponent.POS_END,
+                    BackgroundComponent.POS_TOP
+                ),
+                pathColor = R.color.path_color_maths,
+                mileStoneTextdrawable = R.drawable.bg_comp_journey_maths_text_milestone,
+                mileStonedrawable = R.drawable.bg_comp_journey_maths_milestone,
+                journeyBackgroundComponent = listOf(
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_left_rock,
+                        319,
+                        746,
+                        BackgroundComponent.POS_START,
+                        0.95F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_START
                     ),
-                    pathColor = R.color.path_color_maths,
-                    mileStoneTextdrawable = R.drawable.bg_comp_journey_maths_text_milestone,
-                    mileStonedrawable = R.drawable.bg_comp_journey_maths_milestone,
-                    journeyBackgroundComponent = listOf(
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_left_rock,
-                                    319,
-                                    746,
-                                    BackgroundComponent.POS_START,
-                                    0.95F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_START
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_divider,
-                                    127,
-                                    107,
-                                    BackgroundComponent.POS_END,
-                                    1.45F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_END
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_set_square,
-                                    108,
-                                    126,
-                                    BackgroundComponent.POS_END,
-                                    1.3F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_END
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_small_rock,
-                                    126,
-                                    168,
-                                    0.2F,
-                                    1.1F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_END
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_pi,
-                                    107,
-                                    127,
-                                    BackgroundComponent.POS_START,
-                                    0.9F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_START
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_plus,
-                                    42,
-                                    64,
-                                    BackgroundComponent.POS_START,
-                                    0.75F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_START
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_minus,
-                                    48,
-                                    49,
-                                    0.08F,
-                                    0.65F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_CENTER
-                            ),
-                            BackgroundComponent(
-                                    R.drawable.bg_comp_journey_maths_right_rock,
-                                    319,
-                                    675,
-                                    BackgroundComponent.POS_END,
-                                    0.01F,
-                                    frSeparationY = 2F,
-                                    frSeparationX = 0F,
-                                    scaleType = ImageView.ScaleType.FIT_END
-                            )
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_divider,
+                        127,
+                        107,
+                        BackgroundComponent.POS_END,
+                        1.45F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_END
                     ),
-                    analysisBigBg = R.drawable.ic_chapter_bg_maths_big,
-                    analysisSmallBg = R.drawable.ic_chapter_bg_maths_small,
-                    practiceBeginnerDrawableResId = R.drawable.ic_practice_beginner_mathematics,
-                    practiceProDrawableResId = R.drawable.ic_practice_pro_mathematics,
-                    practiceMasterDrawableResId = R.drawable.ic_practice_master_mathematics,
-                    filterFillIconResId = R.drawable.ic_maths_fill,
-                    filterNoFillIconResId = R.drawable.ic_maths_no_fill,
-                    expandedIconResId = R.drawable.ic_maths_plain,
-                    expandedIconBackResId = R.drawable.ic_maths_bg,
-                    collapsedIconResId = R.drawable.ic_maths_bg,
-                    playPauseSelectorResId = R.drawable.play_pause_selector_maths,
-                    lockIconResId = R.drawable.ic_lock_maths,
-                    lockIconResIdSmall = R.drawable.ic_lock_maths_small,
-                    testNowBtnResId = R.drawable.bg_btn_test_now_quest_complete,
-                    nextLessonResId = R.drawable.bg_btn_next_lesson,
-                    bigBannerBg = R.drawable.ic_live_classes_big_banner_maths,
-                    listBannerBg = R.drawable.ic_live_class_list_banner_maths
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_set_square,
+                        108,
+                        126,
+                        BackgroundComponent.POS_END,
+                        1.3F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_END
+                    ),
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_small_rock,
+                        126,
+                        168,
+                        0.2F,
+                        1.1F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_END
+                    ),
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_pi,
+                        107,
+                        127,
+                        BackgroundComponent.POS_START,
+                        0.9F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_START
+                    ),
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_plus,
+                        42,
+                        64,
+                        BackgroundComponent.POS_START,
+                        0.75F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_START
+                    ),
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_minus,
+                        48,
+                        49,
+                        0.08F,
+                        0.65F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                    ),
+                    BackgroundComponent(
+                        R.drawable.bg_comp_journey_maths_right_rock,
+                        319,
+                        675,
+                        BackgroundComponent.POS_END,
+                        0.01F,
+                        frSeparationY = 2F,
+                        frSeparationX = 0F,
+                        scaleType = ImageView.ScaleType.FIT_END
+                    )
+                ),
+                analysisBigBg = R.drawable.ic_chapter_bg_maths_big,
+                analysisSmallBg = R.drawable.ic_chapter_bg_maths_small,
+                practiceBeginnerDrawableResId = R.drawable.ic_practice_beginner_mathematics,
+                practiceProDrawableResId = R.drawable.ic_practice_pro_mathematics,
+                practiceMasterDrawableResId = R.drawable.ic_practice_master_mathematics,
+                filterFillIconResId = R.drawable.ic_maths_fill,
+                filterNoFillIconResId = R.drawable.ic_maths_no_fill,
+                expandedIconResId = R.drawable.ic_maths_plain,
+                expandedIconBackResId = R.drawable.ic_maths_bg,
+                collapsedIconResId = R.drawable.ic_maths_bg,
+                playPauseSelectorResId = R.drawable.play_pause_selector_maths,
+                lockIconResId = R.drawable.ic_lock_maths,
+                lockIconResIdSmall = R.drawable.ic_lock_maths_small,
+                testNowBtnResId = R.drawable.bg_btn_test_now_quest_complete,
+                nextLessonResId = R.drawable.bg_btn_next_lesson,
+                bigBannerBg = R.drawable.ic_live_classes_big_banner_maths,
+                listBannerBg = R.drawable.ic_live_class_list_banner_maths
             )
 
         }
@@ -241,8 +239,8 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         dialog?.window?.setGravity(Gravity.BOTTOM)
         dialog?.window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
@@ -253,24 +251,42 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
         val endRadius = hypot(view.width.toDouble(), view.height.toDouble()).toFloat()
         val dimCircularAnimation =
             ViewAnimationUtils.createCircularReveal(
-                    getBackgroundColorView(view),
-                    view.width / 2,
-                    view.height,
-                    0F,
-                    endRadius
+                getBackgroundColorView(view),
+                view.width / 2,
+                view.height,
+                0F,
+                endRadius
             )
         dimCircularAnimation.duration = 800L
         getBackgroundColorView(view).visibility = View.VISIBLE
         dimCircularAnimation.start()
 
         val violetSlideAnimation =
-                ScaleAnimation(1F, 1F, 0F, 1F, Animation.RELATIVE_TO_SELF, 1F, Animation.RELATIVE_TO_SELF, 1F)
+            ScaleAnimation(
+                1F,
+                1F,
+                0F,
+                1F,
+                Animation.RELATIVE_TO_SELF,
+                1F,
+                Animation.RELATIVE_TO_SELF,
+                1F
+            )
         violetSlideAnimation.interpolator = OvershootInterpolator(3F)
         violetSlideAnimation.duration = 600L
         violetSlideAnimation.startOffset = 400L
 
         val orangeSlideAnimation =
-                ScaleAnimation(1F, 1F, 0F, 1F, Animation.RELATIVE_TO_SELF, 1F, Animation.RELATIVE_TO_SELF, 1F)
+            ScaleAnimation(
+                1F,
+                1F,
+                0F,
+                1F,
+                Animation.RELATIVE_TO_SELF,
+                1F,
+                Animation.RELATIVE_TO_SELF,
+                1F
+            )
         orangeSlideAnimation.interpolator = OvershootInterpolator(1.5F)
         orangeSlideAnimation.duration = 600L
         orangeSlideAnimation.startOffset = 500L
@@ -305,14 +321,14 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
             slideDown.setAnimationListener(animationListener)
 
             val scaleAnimation = ScaleAnimation(
-                    0F,
-                    1F,
-                    0F,
-                    1F,
-                    Animation.ABSOLUTE,
-                    getSubjectBackgroundImageView(view)!!.width.toFloat(),
-                    Animation.ABSOLUTE,
-                    getSubjectBackgroundImageView(view)!!.height.toFloat()
+                0F,
+                1F,
+                0F,
+                1F,
+                Animation.ABSOLUTE,
+                getSubjectBackgroundImageView(view)!!.width.toFloat(),
+                Animation.ABSOLUTE,
+                getSubjectBackgroundImageView(view)!!.height.toFloat()
             )
             scaleAnimation.fillAfter = true
             scaleAnimation.duration = 800
@@ -327,7 +343,12 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
 
             getSubjectBackgroundImageView(view)!!.setImageResource(theme.analysisBigBg)
             getDialogBackgroundView(view)!!.startAnimation(theme.colorPrimary, 800L)
-            getImageBadgeBackView(view)?.setColorFilter(ContextCompat.getColor(context!!, theme.colorPrimaryDark), android.graphics.PorterDuff.Mode.SRC_IN)
+            getImageBadgeBackView(view)?.setColorFilter(
+                ContextCompat.getColor(
+                    context!!,
+                    theme.colorPrimaryDark
+                ), android.graphics.PorterDuff.Mode.SRC_IN
+            )
 
         }
     }

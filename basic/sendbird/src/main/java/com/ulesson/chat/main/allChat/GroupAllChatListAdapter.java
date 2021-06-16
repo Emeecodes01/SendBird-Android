@@ -3,7 +3,6 @@ package com.ulesson.chat.main.allChat;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,13 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private static final int VIEW_TYPE_GROUP_CHANNELS = 1;
+    private static final int VIEW_TYPE_PENDING_QUESTION = 2;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, Integer> mSimpleTargetIndexMap;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, GroupChannel> mSimpleTargetGroupChannelMap;
     private final ConcurrentHashMap<String, Integer> mChannelImageNumMap;
     private final ConcurrentHashMap<String, ImageView> mChannelImageViewMap;
     private final ConcurrentHashMap<String, SparseArray<Bitmap>> mChannelBitmapMap;
     private final Context mContext;
-    private final List<GroupChannel> mChannelList;
     private final List<Question> questionList;
     private final List<GroupChannel> isActiveChannel;
     private final List<GroupChannel> isPendingChannel;
@@ -56,19 +56,13 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private OnQuestionLongClickListener onQuestionLongClickListener;
     private String chatType = "pending";
 
-
-    private static final int VIEW_TYPE_GROUP_CHANNELS = 1;
-    private static final int VIEW_TYPE_PENDING_QUESTION = 2;
-
     GroupAllChatListAdapter(Context context) {
         mContext = context;
-
         mSimpleTargetIndexMap = new ConcurrentHashMap<>();
         mSimpleTargetGroupChannelMap = new ConcurrentHashMap<>();
         mChannelImageNumMap = new ConcurrentHashMap<>();
         mChannelImageViewMap = new ConcurrentHashMap<>();
         mChannelBitmapMap = new ConcurrentHashMap<>();
-        mChannelList = new ArrayList<>();
         questionList = new ArrayList<>();
         isPendingChannel = new ArrayList<>();
         isActiveChannel = new ArrayList<>();
@@ -76,8 +70,8 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     void clearChannelList() {
-        mChannelList.clear();
         isPastChannel.clear();
+        questionList.clear();
         isPendingChannel.clear();
         isActiveChannel.clear();
         isPastChannel.clear();
@@ -128,7 +122,11 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_GROUP_CHANNELS:
-                ((ChannelHolder) holder).bind(mContext, position, mChannelList.get(position), mItemClickListener, mItemLongClickListener);
+                if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
+                    ((ChannelHolder) holder).bind(mContext, position, isActiveChannel.get(position), mItemClickListener, mItemLongClickListener);
+                } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Past.name())) {
+                    ((ChannelHolder) holder).bind(mContext, position, isPastChannel.get(position), mItemClickListener, mItemLongClickListener);
+                }
                 break;
             case VIEW_TYPE_PENDING_QUESTION:
                 ((QuestionHolder) holder).bind(position, PreferenceUtils.getPendingQuestions().get(position), onQuestionClickListener, onQuestionLongClickListener);
@@ -151,6 +149,14 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         this.chatType = chatType;
 
+        //set pending questions list
+        List<Question> pendingQuestions = PreferenceUtils.getPendingQuestions();
+
+        for (Question question : pendingQuestions) {
+            isPendingChannel.add(null);
+            questionList.add(question);
+        }
+
         for (GroupChannel newChannel : channels) {
             int activeIndex = SyncManagerUtils.findIndexOfChannel(isActiveChannel, newChannel, order);
             int pastIndex = SyncManagerUtils.findIndexOfChannel(isPastChannel, newChannel, order);
@@ -162,63 +168,84 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
         }
 
-        if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
-            //set pending questions list
-            List<Question> pendingQuestions = PreferenceUtils.getPendingQuestions();
+        notifyDataSetChanged();
 
-            for (Question question : pendingQuestions) {
-                isPendingChannel.add(null);
-                questionList.add(question);
-            }
-            notifyDataSetChanged();
+        if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
             return isPendingChannel;
         } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
-            mChannelList.addAll(isActiveChannel);
-            notifyDataSetChanged();
             return isActiveChannel;
         } else {
-            mChannelList.addAll(isPastChannel);
-            notifyDataSetChanged();
             return isPastChannel;
         }
     }
 
     void updateChannels(List<GroupChannel> channels) {
         for (GroupChannel updatedChannel : channels) {
-            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, updatedChannel);
-            if (index != -1) {
-                mChannelList.set(index, updatedChannel);
-                notifyItemChanged(index);
+
+            if (new StringUtils().isActive(updatedChannel.getData())) {
+                int index = SyncManagerUtils.getIndexOfChannel(isActiveChannel, updatedChannel);
+                if (index != -1) {
+                    isActiveChannel.set(index, updatedChannel);
+                    notifyItemChanged(index);
+                }
+            } else {
+                int index = SyncManagerUtils.getIndexOfChannel(isPastChannel, updatedChannel);
+                if (index != -1) {
+                    isPastChannel.set(index, updatedChannel);
+                    notifyItemChanged(index);
+                }
             }
+
+
         }
     }
 
     void moveChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
         for (GroupChannel movedChannel : channels) {
-            int fromIndex = SyncManagerUtils.getIndexOfChannel(mChannelList, movedChannel);
-            int toIndex = SyncManagerUtils.findIndexOfChannel(mChannelList, movedChannel, order);
-            if (fromIndex != -1) {
-                mChannelList.remove(fromIndex);
-                mChannelList.add(toIndex, movedChannel);
-                notifyItemMoved(fromIndex, toIndex);
-                notifyItemChanged(toIndex);
+
+            if (new StringUtils().isActive(movedChannel.getData())) {
+
+                int fromIndex = SyncManagerUtils.getIndexOfChannel(isActiveChannel, movedChannel);
+                int toIndex = SyncManagerUtils.findIndexOfChannel(isActiveChannel, movedChannel, order);
+                if (fromIndex != -1) {
+                    isActiveChannel.remove(fromIndex);
+                    isActiveChannel.add(toIndex, movedChannel);
+                    notifyItemMoved(fromIndex, toIndex);
+                    notifyItemChanged(toIndex);
+                }
+            } else {
+
+                int fromIndex = SyncManagerUtils.getIndexOfChannel(isPastChannel, movedChannel);
+                int toIndex = SyncManagerUtils.findIndexOfChannel(isPastChannel, movedChannel, order);
+                if (fromIndex != -1) {
+                    isPastChannel.remove(fromIndex);
+                    isPastChannel.add(toIndex, movedChannel);
+                    notifyItemMoved(fromIndex, toIndex);
+                    notifyItemChanged(toIndex);
+                }
             }
+
         }
     }
 
     void removeChannels(List<GroupChannel> channels) {
         for (GroupChannel removedChannel : channels) {
-            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, removedChannel);
-            if (index != -1) {
-                mChannelList.remove(index);
-                notifyItemRemoved(index);
-            }
-        }
-    }
 
-    void addLast(List<GroupChannel> channel) {
-        mChannelList.addAll(channel);
-        notifyItemInserted(mChannelList.size() - 1);
+            if (new StringUtils().isActive(removedChannel.getData())) {
+                int index = SyncManagerUtils.getIndexOfChannel(isActiveChannel, removedChannel);
+                if (index != -1) {
+                    isActiveChannel.remove(index);
+                    notifyItemRemoved(index);
+                }
+            } else {
+                int index = SyncManagerUtils.getIndexOfChannel(isPastChannel, removedChannel);
+                if (index != -1) {
+                    isPastChannel.remove(index);
+                    notifyItemRemoved(index);
+                }
+            }
+
+        }
     }
 
     void updateOrInsert(BaseChannel channel) {
@@ -228,17 +255,33 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         GroupChannel groupChannel = (GroupChannel) channel;
 
-        for (int i = 0; i < mChannelList.size(); i++) {
-            if (mChannelList.get(i).getUrl().equals(groupChannel.getUrl())) {
-                mChannelList.remove(mChannelList.get(i));
-                mChannelList.add(0, groupChannel);
-                notifyDataSetChanged();
-                Log.v(GroupAllChatListAdapter.class.getSimpleName(), "Channel replaced.");
-                return;
+        if (new StringUtils().isActive(groupChannel.getData())) {
+
+            for (int i = 0; i < isActiveChannel.size(); i++) {
+                if (isActiveChannel.get(i).getUrl().equals(groupChannel.getUrl())) {
+                    isActiveChannel.remove(isActiveChannel.get(i));
+                    isActiveChannel.add(0, groupChannel);
+                    notifyDataSetChanged();
+                    return;
+                }
             }
+            isActiveChannel.add(0, groupChannel);
+
+        } else {
+
+            for (int i = 0; i < isPastChannel.size(); i++) {
+                if (isPastChannel.get(i).getUrl().equals(groupChannel.getUrl())) {
+                    isPastChannel.remove(isPastChannel.get(i));
+                    isPastChannel.add(0, groupChannel);
+                    notifyDataSetChanged();
+                    return;
+                }
+            }
+
+            isPastChannel.add(0, groupChannel);
+
         }
 
-        mChannelList.add(0, groupChannel);
         notifyDataSetChanged();
     }
 
@@ -351,12 +394,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // Set an OnClickListener to this item.
             if (clickListener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        clickListener.onItemClick(channel);
-                    }
-                });
+                itemView.setOnClickListener(v -> clickListener.onItemClick(channel));
             }
 
             // Set an OnLongClickListener to this item.

@@ -15,6 +15,9 @@ interface Api {
     fun createUser(@Body user: ConnectUserRequest): Call<UserResponse>
 
     @PUT("/v3/users/{user_id}")
-    fun updateUser(@Path("user_id") user_id: String, @Body user: UpdateUserRequest): Call<UserResponse>
+    fun updateUser(
+        @Path("user_id") user_id: String,
+        @Body user: UpdateUserRequest
+    ): Call<UserResponse>
 
 }

@@ -8,7 +8,8 @@ import com.sendbird.android.GroupChannel
 import com.sendbird.android.SendBirdException
 import com.ulesson.chat.main.model.UserGroup
 
-class ChannelWorker(val context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+class ChannelWorker(val context: Context, workerParams: WorkerParameters) :
+    Worker(context, workerParams) {
 
     companion object {
 
@@ -22,7 +23,10 @@ class ChannelWorker(val context: Context, workerParams: WorkerParameters) : Work
     override fun doWork(): Result {
 
         val userGroupString = inputData.getString("userGroup")
-        val (channelUrl, groupChannelParams) = Gson().fromJson(userGroupString, UserGroup::class.java)
+        val (channelUrl, groupChannelParams) = Gson().fromJson(
+            userGroupString,
+            UserGroup::class.java
+        )
 
         GroupChannel.getChannel(channelUrl) { groupChannel: GroupChannel, e: SendBirdException? ->
             groupChannel.updateChannel(groupChannelParams) { updatedGroupChannel: GroupChannel?, error: SendBirdException? ->

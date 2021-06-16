@@ -29,7 +29,11 @@ class PagerFragment : Fragment() {
     }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         return inflater.inflate(R.layout.fragment_chat_pager, container, false)
     }
@@ -49,9 +53,9 @@ class PagerFragment : Fragment() {
         TabLayoutMediator(tabLayout, chatPager) { tab, position ->
 
             when (position) {
-                0 -> tab.text = Html.fromHtml("\t\t\t\tPENDING\t\t\t\t")
-                1 -> tab.text = Html.fromHtml("\t\t\t\tACTIVE\t\t\t\t")
-                2 -> tab.text = Html.fromHtml("\t\t\t\tPAST\t\t\t\t")
+                0 -> tab.text = Html.fromHtml("PENDING")
+                1 -> tab.text = Html.fromHtml("ACTIVE")
+                2 -> tab.text = Html.fromHtml("PAST")
             }
         }.attach()
 

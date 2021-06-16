@@ -25,8 +25,12 @@ class Connect {
             if (e == null && PreferenceUtils.getContext() != null) {
                 PreferenceUtils.setConnected(true)
                 updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
-                PushUtils.registerPushTokenForCurrentUser(object : SendBird.RegisterPushTokenWithStatusHandler {
-                    override fun onRegistered(p0: SendBird.PushTokenRegistrationStatus?, p1: SendBirdException?) {
+                PushUtils.registerPushTokenForCurrentUser(object :
+                    SendBird.RegisterPushTokenWithStatusHandler {
+                    override fun onRegistered(
+                        p0: SendBird.PushTokenRegistrationStatus?,
+                        p1: SendBirdException?
+                    ) {
                         if (p1 != null) {
                             return
                         }
@@ -35,7 +39,10 @@ class Connect {
 
                 })
 
-                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.id) { SendBirdSyncManager.getInstance().resumeSync() }
+                SyncManagerUtils.setup(
+                    PreferenceUtils.getContext(),
+                    userData.id
+                ) { SendBirdSyncManager.getInstance().resumeSync() }
             }
             handler.onConnected(user, e)
         }

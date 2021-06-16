@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.gson.Gson;
 import com.sendbird.android.Member;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.model.Question;
@@ -69,7 +70,7 @@ public class GroupChannelActivity extends AppCompatActivity {
 //            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> {
 //
 //                return Unit.INSTANCE;
-//            }, () -> Unit.INSTANCE, new TutorActions() {
+//            }, () -> Unit.INSTANCE, (question) -> Unit.INSTANCE, new TutorActions() {
 //                @Override
 //                public void showTutorProfile(@NotNull List<? extends Member> members) {
 //
@@ -93,7 +94,7 @@ public class GroupChannelActivity extends AppCompatActivity {
                     "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                     "20210609"));
 
-//            new Chat().setPendingQuestions(new Gson().toJson(questionList));
+            new Chat().setPendingQuestions(new Gson().toJson(questionList));
 
             new Chat().showChatList(this, R.id.container_group_channel, hostUserData, new TutorActions() {
 
@@ -107,6 +108,12 @@ public class GroupChannelActivity extends AppCompatActivity {
 
                 }
             }, new ChatActions() {
+                @Override
+                public void getPendingQuestions() {
+                    questionList.clear();
+                    new Chat().setPendingQuestions(new Gson().toJson(questionList));
+                }
+
                 @Override
                 public void chatReceived() {
 
@@ -135,6 +142,11 @@ public class GroupChannelActivity extends AppCompatActivity {
                 }
 
             }, new ChatActions() {
+                @Override
+                public void getPendingQuestions() {
+
+                }
+
                 @Override
                 public void chatReceived() {
 

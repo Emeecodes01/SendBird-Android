@@ -4,9 +4,9 @@
     <objectAnimator
         android:duration="800"
         android:propertyName="alpha"
-        android:repeatMode="reverse"
         android:repeatCount="infinite"
+        android:repeatMode="reverse"
         android:valueFrom="0f"
-        android:valueType="floatType"
-        android:valueTo="1f" />
+        android:valueTo="1f"
+        android:valueType="floatType" />
 </set>

@@ -21,7 +21,13 @@ class User {
         }
     }
 
-    fun connectUser(userData: ConnectUserRequest, accessToken: String?, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit, updateAccessToken: (String?) -> Unit) {
+    fun connectUser(
+        userData: ConnectUserRequest,
+        accessToken: String?,
+        userResponse: (UserResponse) -> Unit,
+        errorResponse: (ErrorData) -> Unit,
+        updateAccessToken: (String?) -> Unit
+    ) {
 
         if (accessToken.isNullOrEmpty()) {
 
@@ -61,7 +67,14 @@ class User {
 
                 }
 
-                userResponse(UserResponse(userData.user_id, userData.nickname, userData.profile_url, accessToken))
+                userResponse(
+                    UserResponse(
+                        userData.user_id,
+                        userData.nickname,
+                        userData.profile_url,
+                        accessToken
+                    )
+                )
 
             } else {
                 val loginData = UserData(userData.user_id, userData.nickname, accessToken)
@@ -69,7 +82,14 @@ class User {
                 Connect().login(loginData) { user, loginError ->
 
                     user?.let {
-                        userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, accessToken))
+                        userResponse(
+                            UserResponse(
+                                it.userId,
+                                it.nickname,
+                                it.profileUrl,
+                                accessToken
+                            )
+                        )
                         updateAccessToken(null)
                     }
 
@@ -87,7 +107,11 @@ class User {
         }
     }
 
-    private fun updateUser(userData: UserData, userResponse: (UserResponse) -> Unit, errorResponse: (ErrorData) -> Unit) {
+    private fun updateUser(
+        userData: UserData,
+        userResponse: (UserResponse) -> Unit,
+        errorResponse: (ErrorData) -> Unit
+    ) {
 
         networkRequest.updateUser(UpdateUserRequest(userData.id, true), { userResponse ->
 
@@ -96,7 +120,14 @@ class User {
             Connect().login(loginData) { user, loginError ->
 
                 user?.let {
-                    userResponse(UserResponse(it.userId, it.nickname, it.profileUrl, userResponse.access_token))
+                    userResponse(
+                        UserResponse(
+                            it.userId,
+                            it.nickname,
+                            it.profileUrl,
+                            userResponse.access_token
+                        )
+                    )
                 } ?: kotlin.run {
                     errorResponse(ErrorData(loginError.message, loginError.code, true))
                 }

@@ -57,11 +57,11 @@ public class GroupChannelListFragment extends BaseFragment {
         @Override
         public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
 
-            groupChannelEmpty = false;
-
             if (getActivity() == null) {
                 return;
             }
+
+            groupChannelEmpty = false;
 
             getActivity().runOnUiThread(() -> {
                 if (mSwipeRefresh.isRefreshing()) {
@@ -77,9 +77,15 @@ public class GroupChannelListFragment extends BaseFragment {
                 }
 
                 switch (channelEventAction) {
+
                     case INSERT:
                         mChannelListAdapter.clearMap();
                         mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), new ChatActions() {
+                            @Override
+                            public void getPendingQuestions() {
+                                chatActionsChannel.getPendingQuestions();
+                            }
+
                             @Override
                             public void chatReceived() {
                                 chatActionsChannel.chatReceived();
@@ -261,6 +267,11 @@ public class GroupChannelListFragment extends BaseFragment {
             }
         }, new ChatActions() {
             @Override
+            public void getPendingQuestions() {
+                chatActionsChannel.getPendingQuestions();
+            }
+
+            @Override
             public void chatReceived() {
                 chatActionsChannel.chatReceived();
             }
@@ -301,12 +312,12 @@ public class GroupChannelListFragment extends BaseFragment {
 
                 if (groupChannelEmpty) {
                     mRecyclerView.setVisibility(View.GONE);
-                    seeAllBtn.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);
                 } else {
                     noChatCard.setVisibility(View.GONE);
-                    mRecyclerView.setVisibility(View.VISIBLE);
                     seeAllBtn.setVisibility(View.VISIBLE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                    mRecyclerView.smoothScrollToPosition(0);
                 }
                 chatActionsChannel.chatReceived();
 

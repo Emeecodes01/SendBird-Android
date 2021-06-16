@@ -15,8 +15,8 @@ import java.util.*
 import java.util.regex.Pattern
 
 class EllipsizingCustomFontTextView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null
+    context: Context,
+    attrs: AttributeSet? = null
 ) : CustomFontTextView(context, attrs) {
     private val mEllipsizeListeners = ArrayList<EllipsizeListener>()
     private var mEllipsizeStrategy: EllipsizeStrategy? = null
@@ -36,9 +36,9 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
 
     init {
         var a = context.obtainStyledAttributes(
-                attrs,
-                intArrayOf(android.R.attr.maxLines),
-                0, 0
+            attrs,
+            intArrayOf(android.R.attr.maxLines),
+            0, 0
         )
         maxLines = a.getInt(0, Integer.MAX_VALUE)
         a.recycle()
@@ -244,10 +244,10 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
          */
         protected fun createWorkingLayout(workingText: CharSequence?): Layout {
             return StaticLayout(
-                    workingText, paint,
-                    measuredWidth - paddingLeft - paddingRight,
-                    Alignment.ALIGN_NORMAL, mLineSpacingMult,
-                    mLineAddVertPad, false /* includepad */
+                workingText, paint,
+                measuredWidth - paddingLeft - paddingRight,
+                Alignment.ALIGN_NORMAL, mLineSpacingMult,
+                mLineAddVertPad, false /* includepad */
             )
         }
 
@@ -282,7 +282,7 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
             var cutOffLength = textLength - cutOffIndex
             if (cutOffLength < ELLIPSIS.length) cutOffLength = ELLIPSIS.length
             var workingText =
-                    TextUtils.substring(fullText, 0, textLength - cutOffLength).trim { it <= ' ' }
+                TextUtils.substring(fullText, 0, textLength - cutOffLength).trim { it <= ' ' }
             var strippedText = stripEndPunctuation(workingText)
 
             while (!isInLayout(strippedText + ELLIPSIS)) {
@@ -330,13 +330,13 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
             var cutOffLength = textLength - cutOffIndex
             if (cutOffLength < ELLIPSIS.length) cutOffLength = ELLIPSIS.length
             var workingText =
-                    TextUtils.substring(fullText, cutOffLength, textLength).trim { it <= ' ' }
+                TextUtils.substring(fullText, cutOffLength, textLength).trim { it <= ' ' }
 
             while (!isInLayout(ELLIPSIS + workingText)) {
                 val firstSpace = workingText.indexOf(' ')
                 if (firstSpace == -1) break
                 workingText =
-                        workingText.substring(firstSpace, workingText.length).trim { it <= ' ' }
+                    workingText.substring(firstSpace, workingText.length).trim { it <= ' ' }
             }
 
             workingText = ELLIPSIS + workingText
@@ -344,8 +344,8 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
 
             if (fullText is Spanned) {
                 TextUtils.copySpansFrom(
-                        fullText as Spanned?, textLength - workingText.length,
-                        textLength, null, dest, 0
+                    fullText as Spanned?, textLength - workingText.length,
+                    textLength, null, dest, 0
                 )
             }
             return dest
@@ -365,10 +365,10 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
             if (cutOffLength < ELLIPSIS.length) cutOffLength = ELLIPSIS.length
             cutOffLength += cutOffIndex % 2 // Make it even.
             var firstPart = TextUtils.substring(
-                    fullText, 0, textLength / 2 - cutOffLength / 2
+                fullText, 0, textLength / 2 - cutOffLength / 2
             ).trim { it <= ' ' }
             var secondPart = TextUtils.substring(
-                    fullText, textLength / 2 + cutOffLength / 2, textLength
+                fullText, textLength / 2 + cutOffLength / 2, textLength
             ).trim { it <= ' ' }
 
             while (!isInLayout(firstPart + ELLIPSIS + secondPart)) {
@@ -377,7 +377,7 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
                 if (lastSpaceFirstPart == -1 || firstSpaceSecondPart == -1) break
                 firstPart = firstPart.substring(0, lastSpaceFirstPart).trim { it <= ' ' }
                 secondPart =
-                        secondPart.substring(firstSpaceSecondPart, secondPart.length).trim { it <= ' ' }
+                    secondPart.substring(firstSpaceSecondPart, secondPart.length).trim { it <= ' ' }
             }
 
             val firstDest = SpannableStringBuilder(firstPart)
@@ -385,16 +385,16 @@ class EllipsizingCustomFontTextView @JvmOverloads constructor(
 
             if (fullText is Spanned) {
                 TextUtils.copySpansFrom(
-                        fullText as Spanned?,
-                        0,
-                        firstPart.length,
-                        null,
-                        firstDest,
-                        0
+                    fullText as Spanned?,
+                    0,
+                    firstPart.length,
+                    null,
+                    firstDest,
+                    0
                 )
                 TextUtils.copySpansFrom(
-                        fullText as Spanned?, textLength - secondPart.length,
-                        textLength, null, secondDest, 0
+                    fullText as Spanned?, textLength - secondPart.length,
+                    textLength, null, secondDest, 0
                 )
             }
             return TextUtils.concat(firstDest, ELLIPSIS, secondDest)

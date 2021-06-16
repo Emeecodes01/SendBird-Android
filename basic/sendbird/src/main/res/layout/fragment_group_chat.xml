@@ -5,9 +5,9 @@
     android:id="@+id/layout_group_chat_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#E5E5E5"
     android:clickable="true"
     android:focusable="true"
-    android:background="#E5E5E5"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -139,16 +139,16 @@
                 android:id="@+id/record_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="visible"
                 android:clickable="false"
+                android:visibility="visible"
                 app:constraint_referenced_ids="ic_voice, ic_voice1, ic_voice2,cancel_record_txt, chronometer" />
 
             <androidx.constraintlayout.widget.Group
                 android:id="@+id/text_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="invisible"
                 android:clickable="false"
+                android:visibility="invisible"
                 app:constraint_referenced_ids="ic_voice1, edittext_group_chat_message, button_group_chat_upload" />
 
             <Chronometer
@@ -162,7 +162,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/button_voice"
                 app:layout_constraintStart_toStartOf="@id/edittext_group_chat_message"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.ulesson.chat.utils.CustomFontButton
                 android:id="@+id/cancel_record_txt"

@@ -962,7 +962,7 @@ public class GroupChatFragment extends Fragment {
             chronometer.stop();
             chronometer.setBase(SystemClock.elapsedRealtime());
             chronometer.start();
-            chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText()+""));
+            chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText() + ""));
         }
     }
 

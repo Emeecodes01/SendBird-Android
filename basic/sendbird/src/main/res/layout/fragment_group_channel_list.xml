@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
-    android:background="#EDEDEE">
+    android:background="#EDEDEE"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:layout_width="0dp"
@@ -38,11 +39,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
-                app:fontName="ItimRegular"
                 android:letterSpacing="0.0125"
                 android:text="Recent Chats"
                 android:textColor="#313848"
                 android:textSize="24sp"
+                app:fontName="ItimRegular"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -55,9 +56,9 @@
                 android:gravity="center_vertical|end"
                 android:text="@string/see_all"
                 android:textAllCaps="false"
-                app:fontName="ItimRegular"
                 android:textColor="#7B7FDA"
                 android:textSize="15sp"
+                app:fontName="ItimRegular"
                 app:layout_constraintBottom_toBottomOf="@id/recentChatTxt"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/recentChatTxt"
@@ -95,10 +96,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="17dp"
                         android:text="You have no chats"
-                        android:textStyle="bold"
                         android:textColor="#313848"
-                        app:fontName="ItimRegular"
                         android:textSize="24sp"
+                        android:textStyle="bold"
+                        app:fontName="ItimRegular"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/nochatImg" />
@@ -110,8 +111,8 @@
                         android:layout_marginTop="7dp"
                         android:text="Ask a question to start a chat with a tutor"
                         android:textColor="#313848"
-                        app:fontName="MuliRegular"
                         android:textSize="14sp"
+                        app:fontName="MuliRegular"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/noChatTxt" />
@@ -128,7 +129,6 @@
                 android:layout_marginBottom="20dp"
                 android:orientation="vertical"
                 android:scrollbars="vertical"
-                android:visibility="visible"
                 app:layout_constraintTop_toBottomOf="@id/recentChatTxt"
                 tools:listitem="@layout/list_item_group_channel" />
 
