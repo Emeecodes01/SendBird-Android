@@ -1,9 +1,11 @@
 package com.sendbird.android.sample.main.allChat;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -271,7 +274,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         //        memberCountText, topicText
         TextView lastMessageText, unreadCountText, dateText, subjectTv, gradeTv, channelNameTv;
         LinearLayout typingIndicatorContainer;
-        ImageView subjectIcon;
+        ImageView subjectIcon,imageView2;
 
         ChannelHolder(View itemView) {
             super(itemView);
@@ -285,6 +288,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             gradeTv = (TextView) itemView.findViewById(R.id.grade_tv);
             channelNameTv = (TextView) itemView.findViewById(R.id.channel_name_tv);
             subjectIcon = (ImageView) itemView.findViewById(R.id.subjectIcon);
+            imageView2 = (ImageView) itemView.findViewById(R.id.imageView2);
 
 //            memberCountText = (TextView) itemView.findViewById(R.id.text_group_channel_list_member_count);
 
@@ -365,7 +369,13 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             if (!isActive) {
                 //show grey scaled image
                 cm.set(arry);
+                int inActiveGray = ContextCompat.getColor(context, R.color.inactive_grey);
                 subjectIcon.setColorFilter(new ColorMatrixColorFilter(cm));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    imageView2.setImageTintList(ColorStateList.valueOf(inActiveGray));
+                }
+                gradeTv.setTextColor(inActiveGray);
+                subjectTv.setTextColor(inActiveGray);
             }
 
             Glide.with(context).load(subjectIconUrl)

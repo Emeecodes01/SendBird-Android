@@ -77,6 +77,7 @@
     <string name="tutor_is_ready">Your tutor is ready!</string>
     <string name="join_chat">Join the chat session</string>
     <string name="sample_question">Use logarithms to solve the equation 25r = 32 x1, given the answer correct to 3 significant figures.</string>
+    <string name="sample_question2">What is biology</string>
     <string name="join">JOIN</string>
     <string name="no_tutor">No tutor available</string>
     <string name="retry_for_tutor">Retry to get connected to another tutor</string>
@@ -92,6 +93,8 @@
     <string name="quit">QUIT</string>
     <string name="session_over">Session Over</string>
     <string name="back_to_timeline">back to timeline</string>
+
+
 
     <string name="close">CLOSE</string>
     <string name="yes">YES</string>

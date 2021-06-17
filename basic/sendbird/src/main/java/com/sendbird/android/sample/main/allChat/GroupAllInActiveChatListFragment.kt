@@ -23,6 +23,7 @@ import com.sendbird.android.sample.groupchannel.CreateGroupChannelActivity
 import com.sendbird.android.sample.main.ConnectionManager
 
 import com.sendbird.android.sample.R
+import com.sendbird.android.sample.main.chat.LinearLayoutManagerWrapper
 import com.sendbird.android.sample.utils.toMutableMap
 
 class GroupAllInActiveChatListFragment : Fragment() {
@@ -44,7 +45,7 @@ class GroupAllInActiveChatListFragment : Fragment() {
         mSwipeRefresh = rootView.findViewById(R.id.swipe_layout_group_channel_list)
 
         mSwipeRefresh?.setOnRefreshListener(OnRefreshListener {
-            mSwipeRefresh?.setRefreshing(true)
+            mSwipeRefresh?.isRefreshing = true
             refresh()
         })
 
@@ -98,7 +99,7 @@ class GroupAllInActiveChatListFragment : Fragment() {
 
     // Sets up recycler view
     private fun setUpRecyclerView() {
-        mLayoutManager = LinearLayoutManager(context)
+        mLayoutManager = LinearLayoutManagerWrapper(requireContext())
         mRecyclerView!!.layoutManager = mLayoutManager
         mRecyclerView!!.adapter = mChannelListAdapter
         mRecyclerView!!.addItemDecoration(

@@ -22,6 +22,10 @@
         android:name="entryPoint"
         app:argType="string" />
 
+    <argument
+        android:name="startDesId"
+        app:argType="integer"/>
+
     <fragment
         android:id="@+id/groupChatFragment"
         android:name="com.sendbird.android.sample.main.chat.GroupChatFragment"
@@ -56,6 +60,7 @@
         android:name="com.sendbird.android.sample.main.chat.endsession.ChatEndSessionFragment"
         android:label="ChatEndSessionFragment"
         tools:layout="@layout/fragment_chat_session_ended">
+
         <argument
             android:name="deeplinkUrl"
             app:argType="string" />

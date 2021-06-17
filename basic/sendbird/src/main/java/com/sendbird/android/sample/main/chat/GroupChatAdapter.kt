@@ -1,38 +1,44 @@
 package com.sendbird.android.sample.main.chat
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
-import android.util.Base64
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
-
 import com.sendbird.android.sample.utils.*
-import kotlin.jvm.Synchronized
-import com.sendbird.android.sample.widget.MessageStatusView
-import org.json.JSONException
-import java.io.File
-import java.io.IOException
-import java.lang.Exception
-import java.lang.StringBuilder
-import java.util.*
-import kotlin.collections.HashSet
-import com.sendbird.android.sample.utils.SyncManagerUtils
 import com.sendbird.android.sample.utils.SyncManagerUtils.findIndexOfMessage
 import com.sendbird.android.sample.utils.SyncManagerUtils.getIndexOfMessage
+import com.sendbird.android.sample.widget.MessageStatusView
+import org.json.JSONException
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 internal class GroupChatAdapter(private var mContext: Context) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    RecyclerView.Adapter<RecyclerView.ViewHolder>(), AutoUpdateRecyclerView {
+
     private var mChannel: GroupChannel? = null
+
     private var mMessageList: MutableList<BaseMessage> = mutableListOf()
+
+//    private var mMessageList: List<BaseMessage> by Delegates.observable(mutableListOf()) {_, initial, final  ->
+//        autoNotify(initial, final) { old, new ->
+//            old.messageId == new.messageId
+//        }
+//    }
+
+
     private var mItemClickListener: OnItemClickListener? = null
     private var mItemLongClickListener: OnItemLongClickListener? = null
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
@@ -234,6 +240,24 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     )
                 OtherVideoFileMessageHolder(otherVideoFileMsgView)
             }
+
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME -> {
+                val meFileMsgView = LayoutInflater.from (parent.context).inflate(
+                    R.layout.list_item_group_chat_file_audio_me,
+                    parent, false
+                )
+
+                MeAudioFileMessageViewHolder (meFileMsgView)
+            }
+
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER -> {
+                val otherAudioFileMsgView = LayoutInflater.from (parent.context).inflate(
+                    R.layout.list_item_group_chat_file_audio_other,
+                    parent, false
+                )
+                OtherAudioFileMessageViewHolder (otherAudioFileMsgView);
+            }
+
             else -> throw Exception("Class not found")
         }
     }
@@ -342,8 +366,39 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 isContinuous,
                 mItemClickListener
             )
+
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER ->
+                (holder as OtherAudioFileMessageViewHolder).bind(
+                    mContext,
+                    message as FileMessage,
+                    mChannel,
+                    isNewDay,
+                    mItemClickListener
+                )
+
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME ->
+                (holder as MeAudioFileMessageViewHolder).bind(
+                    mContext,
+                    message as FileMessage,
+                    mChannel,
+                    isNewDay,
+                    isTempMessage,
+                    tempFileMessageUri,
+                    isContinuous,
+                    mItemClickListener
+                )
+
             else -> {
             }
+        }
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        if (holder.itemViewType == GroupChatAdapter.VIEW_TYPE_FILE_MESSAGE_AUDIO_ME) {
+            (holder as MeAudioFileMessageViewHolder).cleanUp()
+        }
+        if (holder.itemViewType == GroupChatAdapter.VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER) {
+            (holder as OtherAudioFileMessageViewHolder).cleanUp()
         }
     }
 
@@ -370,6 +425,13 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     VIEW_TYPE_FILE_MESSAGE_IMAGE_ME
                 } else {
                     VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER
+                }
+            } else if (fileMessage.type.toLowerCase().startsWith("video/3gpp")) {
+                //NOTE: THIS IS ACTUALLY AN AUDIO FILE
+                return if (fileMessage.getSender().userId == PreferenceUtils.getUserId()) {
+                    VIEW_TYPE_FILE_MESSAGE_AUDIO_ME
+                } else {
+                    VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER
                 }
             } else if (fileMessage.type.toLowerCase().startsWith("video")) {
                 if (fileMessage.sender.userId == PreferenceUtils.getUserId()) {
@@ -439,7 +501,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
         for (i in mMessageList.indices.reversed()) {
             msg = mMessageList[i]
             if (msg.requestId == message.requestId) {
-                mMessageList[i] = message
+                //mMessageList[i] = message
                 notifyDataSetChanged()
                 return
             }
@@ -448,7 +510,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
     fun removeFailedMessage(message: BaseMessage) {
         mTempFileMessageUriTable.remove((message as FileMessage).requestId)
-        mMessageList.remove(message)
+        //mMessageList.remove(message)
         notifyDataSetChanged()
     }
 
@@ -480,15 +542,15 @@ internal class GroupChatAdapter(private var mContext: Context) :
     }
 
     fun insertSucceededMessages(messages: List<BaseMessage?>) {
+        //mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
         for (message in messages) {
             val index = findIndexOfMessage(
                 mMessageList,
                 message!!
             )
             mMessageList.add(index, message)
-            //notifyItemChanged(index)
+            notifyItemChanged(index)
         }
-        notifyItemChanged(itemCount-1)
     }
 
     fun updateSucceededMessages(messages: List<BaseMessage?>) {
@@ -502,6 +564,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 notifyItemChanged(index)
             }
         }
+        //mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
     }
 
     fun removeSucceededMessages(messages: List<BaseMessage?>) {
@@ -516,6 +579,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
             }
         }
         notifyDataSetChanged()
+        // mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
     }
 
 
@@ -601,11 +665,11 @@ internal class GroupChatAdapter(private var mContext: Context) :
     }
 
     fun getLastReadPosition(lastRead: Long): Int {
-//        for (i in mMessageList.indices) {
-//            if (mMessageList[i].createdAt == lastRead) {
-//                return i + mFailedMessageList.size
-//            }
-//        }
+        for (i in mMessageList.indices) {
+            if (mMessageList[i].createdAt == lastRead) {
+                return i + mFailedMessageList.size
+            }
+        }
         return 0
     }
 
@@ -901,6 +965,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
 //                nicknameText.setVisibility(View.VISIBLE);
                 nicknameText.text = message.sender.nickname
+
             }
             messageText.text = message.message
             timeText.text = DateUtils.formatTime(message.createdAt)
@@ -910,7 +975,20 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 editedText.visibility = View.GONE
             }
             urlPreviewContainer.visibility = View.GONE
-            if (message.customType == URL_PREVIEW_CUSTOM_TYPE) {
+
+
+            if (message.data.isNotEmpty()) {
+                urlPreviewMainImageView.visibility = View.VISIBLE
+                ImageUtils.displayRoundCornerImageFromUrl(
+                    context,
+                    message.data,
+                    urlPreviewMainImageView
+                )
+            } else {
+                urlPreviewMainImageView.visibility = View.GONE
+            }
+
+            /*if (message.customType == URL_PREVIEW_CUSTOM_TYPE) {
                 try {
                     urlPreviewContainer.visibility = View.VISIBLE
                     val previewInfo = UrlPreviewInfo(message.data)
@@ -926,7 +1004,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     urlPreviewContainer.visibility = View.GONE
                     e.printStackTrace()
                 }
-            }
+            }*/
             if (clickListener != null) {
                 itemView.setOnClickListener { clickListener.onUserMessageItemClick(message) }
             }
@@ -1359,6 +1437,239 @@ internal class GroupChatAdapter(private var mContext: Context) :
         }
     }
 
+
+    private class OtherAudioFileMessageViewHolder(itemView: View) :
+        RecyclerView.ViewHolder(itemView) {
+        var btnPlayPause: ImageView? = null
+        var tvDuration: TextView? = null
+        var seekBar: SeekBar? = null
+        var messageStatusView: MessageStatusView? = null
+        var isPlaying = false
+        var player: MediaPlayer? = null
+        private val format = "%02d:%02d"
+
+        private val mSeekbarUpdateHandler = Handler()
+        private val mUpdateSeekbar: Runnable = object : Runnable {
+            override fun run() {
+                val duration = player!!.duration.toDouble()
+                val pos = player!!.currentPosition.toDouble()
+                updateDurationTxt(pos.toInt())
+                val progressPercent = (pos / duration * 100.0).toInt()
+                seekBar?.progress = progressPercent
+                mSeekbarUpdateHandler.postDelayed(this, 1000)
+            }
+        }
+
+        fun bind(
+            context: Context?,
+            message: FileMessage,
+            channel: GroupChannel?,
+            isNewDay: Boolean,
+            listener: OnItemClickListener?
+        ) {
+            messageStatusView?.drawMessageStatus(channel, message)
+            player = MediaPlayer()
+            try {
+                player!!.setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                player!!.setDataSource(message.url)
+                player!!.prepare()
+                updateDurationTxt(player!!.currentPosition)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        player!!.pause()
+                        val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
+                        val hms = String.format(
+                            format,
+                            TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
+                                TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
+                            ),
+                            TimeUnit.MILLISECONDS.toSeconds(
+                                playerPosition.toLong()
+                            ) - TimeUnit.MINUTES.toSeconds(
+                                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
+                            )
+                        )
+                        tvDuration?.text = hms
+                        player!!.seekTo(playerPosition)
+                        player!!.start()
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar) {}
+            })
+            player!!.setOnBufferingUpdateListener { mp, percent ->
+                seekBar?.secondaryProgress = percent
+            }
+            player!!.setOnCompletionListener {
+                mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                btnPlayPause?.setImageResource(R.drawable.ic_play)
+                seekBar?.progress = 100
+            }
+            btnPlayPause?.setOnClickListener {
+                if (!player!!.isPlaying) {
+                    player!!.start()
+                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
+                    btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
+                } else {
+                    player!!.pause()
+                    btnPlayPause?.setImageResource(R.drawable.ic_play)
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                }
+            }
+        }
+
+        private fun updateDurationTxt(playerPosition: Int) {
+            val hms = String.format(
+                format,
+                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
+                    TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
+                ),
+                TimeUnit.MILLISECONDS.toSeconds(
+                    playerPosition.toLong()
+                ) - TimeUnit.MINUTES.toSeconds(
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
+                )
+            )
+            tvDuration?.text = hms
+        }
+
+
+        fun cleanUp() {
+            player!!.release()
+            player = null
+            //mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+        }
+
+        init {
+            btnPlayPause = itemView.findViewById(R.id.mv_play_pause)
+            tvDuration = itemView.findViewById(R.id.tv_duration)
+            seekBar = itemView.findViewById(R.id.seekBar)
+            messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
+        }
+    }
+
+
+    private class MeAudioFileMessageViewHolder(itemView: View) :
+        RecyclerView.ViewHolder(itemView) {
+        var btnPlayPause: ImageView? = null
+        var tvDuration: TextView? = null
+        var seekBar: SeekBar? = null
+        var messageStatusView: MessageStatusView? = null
+        var isPlaying = false
+        var player: MediaPlayer? = null
+        private val format = "%02d:%02d"
+        private val mSeekbarUpdateHandler = Handler()
+        private val mUpdateSeekbar: Runnable = object : Runnable {
+            override fun run() {
+                val duration = player!!.duration.toDouble()
+                val pos = player!!.currentPosition.toDouble()
+                updateDurationTxt(pos.toInt())
+                val progressPercent = (pos / duration * 100.0).toInt()
+                seekBar?.progress = progressPercent
+                mSeekbarUpdateHandler.postDelayed(this, 1000)
+            }
+        }
+
+        fun bind(
+            context: Context?, message: FileMessage, channel: GroupChannel?,
+            isNewDay: Boolean, isTempMessage: Boolean, tempFileMessageUri: Uri?,
+            isContinuous: Boolean,
+            listener: OnItemClickListener?
+        ) {
+            messageStatusView?.drawMessageStatus(channel, message)
+            player = MediaPlayer()
+            try {
+                if (isTempMessage && tempFileMessageUri != null) {
+                    player!!.setDataSource(context, tempFileMessageUri)
+                    player!!.prepare()
+                    updateDurationTxt(player!!.currentPosition)
+                } else {
+                    player!!.setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+                    )
+                    player!!.setDataSource(message.url)
+                    player!!.prepare()
+                    updateDurationTxt(player!!.currentPosition)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        player!!.pause()
+                        val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
+                        updateDurationTxt(playerPosition)
+                        player!!.seekTo(playerPosition)
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar) {}
+            })
+            player!!.setOnBufferingUpdateListener { mp, percent ->
+                seekBar?.secondaryProgress = percent
+            }
+            player!!.setOnCompletionListener {
+                mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                btnPlayPause?.setImageResource(R.drawable.ic_play)
+                seekBar?.progress = 100
+            }
+            btnPlayPause?.setOnClickListener {
+                if (!player!!.isPlaying) {
+                    player!!.start()
+                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
+                    btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
+                } else {
+                    player!!.pause()
+                    btnPlayPause?.setImageResource(R.drawable.ic_play)
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                }
+            }
+        }
+
+        private fun updateDurationTxt(playerPosition: Int) {
+            val hms = String.format(
+                format,
+                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
+                    TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
+                ),
+                TimeUnit.MILLISECONDS.toSeconds(
+                    playerPosition.toLong()
+                ) - TimeUnit.MINUTES.toSeconds(
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
+                )
+            )
+            tvDuration?.text = hms
+        }
+
+        fun cleanUp() {
+            player!!.release()
+            player = null
+            //mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+        }
+
+        init {
+            btnPlayPause = itemView.findViewById(R.id.mv_play_pause)
+            tvDuration = itemView.findViewById(R.id.tv_duration)
+            seekBar = itemView.findViewById(R.id.seekBar)
+            messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
+        }
+    }
+
     companion object {
         const val URL_PREVIEW_CUSTOM_TYPE = "url_preview"
         private const val VIEW_TYPE_USER_MESSAGE_ME = 10
@@ -1369,6 +1680,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
         private const val VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER = 23
         private const val VIEW_TYPE_FILE_MESSAGE_VIDEO_ME = 24
         private const val VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER = 25
+        private const val VIEW_TYPE_FILE_MESSAGE_AUDIO_ME = 26
+        private const val VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER = 27
         private const val VIEW_TYPE_ADMIN_MESSAGE = 30
     }
 

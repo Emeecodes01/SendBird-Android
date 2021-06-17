@@ -1,5 +1,6 @@
 package com.sendbird.android.sample.network
 
+
 import com.sendbird.android.sample.utils.PreferenceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -51,4 +52,49 @@ class RetrofitInstance {
         return retrofit
 
     }
+}
+
+
+class UlessonRetrofitInstance {
+
+    private val deviceId: String by lazy {
+        PreferenceUtils.getDeviceId()
+    }
+
+    private val ulessonApiToken: String by lazy {
+        PreferenceUtils.getUlessonApiToken()
+    }
+
+    private val baseUrl = "http://dev-tutorbackend.ulesson.com"
+
+    fun getClient(): Retrofit {
+
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        val client = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .addInterceptor(object : Interceptor {
+                override fun intercept(chain: Interceptor.Chain): Response {
+
+                    val original = chain.request()
+
+                    val request = original.newBuilder()
+                        .header("Content-Type", "application/json; charset=utf8")
+                        .addHeader("device-uuid", deviceId)
+                        .addHeader("Authorization", "Bearer $ulessonApiToken")
+
+                        .method(original.method, original.body)
+                        .build()
+
+                    return chain.proceed(request)
+                }
+            }).build()
+
+        return Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
 }

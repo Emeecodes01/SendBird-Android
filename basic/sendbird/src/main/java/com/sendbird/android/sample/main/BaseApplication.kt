@@ -17,6 +17,7 @@ abstract class BaseApplication : MultiDexApplication() {
         PreferenceUtils.init(applicationContext)
         PreferenceUtils.saveSendBirdId(sendBirdAppId)
         PreferenceUtils.saveSendbirdAPIToken(apiToken)
+
         SendBird.init(sendBirdAppId, applicationContext)
         PushUtils.registerPushHandler(MyFirebaseMessagingService())
     }

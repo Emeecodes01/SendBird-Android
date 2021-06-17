@@ -17,6 +17,8 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_DISTINCT = "channelDistinct";
     private static final String SENDBIRD_APP_ID = "sendbird-app-id";
     private static final String SENDBIRD_API_TOKEN = "sendbird-api-token";
+    private static final String ULESSON_API_TOKEN = "ulesson-api-token";
+    private static final String DEVICE_TOKEN = "android-device-token";
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ = "last_read";
 
     private static Context mAppContext;
@@ -54,6 +56,26 @@ public class PreferenceUtils {
 
     public static String getSendbirdApiToken() {
         return getSharedPreferences().getString(SENDBIRD_API_TOKEN, "");
+    }
+
+    public static String getUlessonApiToken() {
+        return getSharedPreferences().getString(ULESSON_API_TOKEN, "");
+    }
+
+
+    public static String getDeviceId() {
+        return getSharedPreferences().getString(DEVICE_TOKEN, "");
+    }
+
+
+    public static void saveUlessonApiToken(String apiToken) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(ULESSON_API_TOKEN, apiToken).apply();
+    }
+
+    public static void saveDeviceId(String deviceId) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(DEVICE_TOKEN, deviceId).apply();
     }
 
     public static String getUserId() {

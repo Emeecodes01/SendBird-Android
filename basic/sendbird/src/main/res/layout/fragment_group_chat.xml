@@ -53,10 +53,10 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginRight="8dp"
-                    android:textColor="#313848"
-                    android:textStyle="bold"
                     android:ellipsize="end"
                     android:maxLines="2"
+                    android:textColor="#313848"
+                    android:textStyle="bold"
                     app:fontFamily="@font/muli_regular"
                     app:layout_constraintBottom_toBottomOf="@id/profile_image"
                     app:layout_constraintEnd_toStartOf="@+id/endChatTv"
@@ -81,17 +81,17 @@
                     android:layout_marginEnd="19dp"
                     android:layout_marginRight="19dp"
                     android:background="@drawable/ic_countdown"
-                    android:textAllCaps="true"
-                    app:fontFamily="@font/muli_regular"
                     android:drawablePadding="4dp"
                     android:letterSpacing="0.1"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="5dp"
                     android:text="end session"
+                    android:textAllCaps="true"
                     android:textColor="@color/color_white"
                     android:textFontWeight="700"
                     android:textSize="12sp"
                     android:visibility="visible"
+                    app:fontFamily="@font/muli_regular"
                     app:layout_constraintBottom_toBottomOf="@id/profile_image"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/profile_image" />
@@ -103,12 +103,12 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:fitsSystemWindows="true"
         android:id="@+id/recycler_group_chat"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
+        android:fitsSystemWindows="true"
         android:paddingVertical="7dp"
         android:paddingStart="20dp"
         android:paddingLeft="20dp"
@@ -147,7 +147,6 @@
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:fitsSystemWindows="true"
         android:id="@+id/layout_group_chat_chatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -174,6 +173,81 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/record_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:clickable="false"
+                app:constraint_referenced_ids="ic_voice, ic_voice1, ic_voice2,cancel_record_txt, chronometer, button_voice" />
+
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/text_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                android:clickable="false"
+                app:constraint_referenced_ids="edittext_group_chat_message, button_group_chat_upload" />
+
+            <ImageView
+                android:id="@+id/ic_voice1"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                app:srcCompat="@drawable/ic_voice1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ic_voice"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                app:srcCompat="@drawable/ic_voice"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ic_voice2"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                app:srcCompat="@drawable/ic_voice2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/button_voice"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/button_voice"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="22dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/upload_file"
+                android:padding="10dp"
+                app:srcCompat="@drawable/ic_just_mic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Chronometer
+                android:id="@+id/chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:alpha="0.3"
+                android:textColor="#434958"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/button_voice"
+                app:layout_constraintStart_toStartOf="@id/edittext_group_chat_message"
+                app:layout_constraintTop_toTopOf="parent"/>
+
             <EditText
                 android:id="@+id/edittext_group_chat_message"
                 android:layout_width="0dp"
@@ -193,24 +267,10 @@
                 app:fontFamily="@font/muli_regular"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/button_group_chat_upload"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/ic_voice1"
                 app:layout_constraintTop_toTopOf="parent" />
 
-<!--            <ImageButton-->
-<!--                android:id="@+id/button_emoji"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginStart="16dp"-->
-<!--                android:layout_marginLeft="16dp"-->
-<!--                android:layout_marginEnd="22dp"-->
-<!--                android:layout_marginRight="22dp"-->
-<!--                android:background="@android:color/transparent"-->
-<!--                android:contentDescription="@string/upload_file"-->
-<!--                android:padding="5dp"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintTop_toTopOf="parent"-->
-<!--                app:srcCompat="@drawable/ic_emoji" />-->
+
 
             <ImageButton
                 android:id="@+id/button_group_chat_upload"
@@ -225,6 +285,23 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_attach" />
 
+            <TextView
+                android:id="@+id/cancel_record_txt"
+                android:layout_width="64dp"
+                android:layout_height="25dp"
+                android:layout_marginVertical="10dp"
+                android:background="@drawable/shape_red_rounded"
+                android:text="Cancel"
+                android:gravity="center"
+                android:textColor="@color/color_white"
+                android:textAllCaps="true"
+                android:textSize="12sp"
+                app:fontFamily="@font/itim_regular"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/edittext_group_chat_message"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
@@ -234,7 +311,7 @@
             android:layout_gravity="bottom"
             android:layout_marginStart="11dp"
             android:layout_marginLeft="11dp"
-            android:background="@drawable/ic_voice"
+            android:background="@drawable/ic_mic"
             android:gravity="center"
             android:textColor="@drawable/selector_btn_send"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -243,6 +320,17 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar3"
+        android:visibility="gone"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/recycler_group_chat"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/recycler_group_chat"
+        app:layout_constraintTop_toBottomOf="@+id/app_bar_layout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

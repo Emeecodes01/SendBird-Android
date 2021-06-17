@@ -30,4 +30,49 @@ class NetworkRequest {
 
         })
     }
+
+
+
+
+    fun endChat(questionId: Int, endTime: String, channelUrl: String, success: () -> Unit, error: (String?) -> Unit) {
+        val req = hashMapOf (
+            "session_end" to endTime,
+            "channel_url" to channelUrl
+        )
+
+        api = UlessonRetrofitInstance().getClient().create(Api::class.java)
+
+        api.endChat(questionId, req).enqueue(object: Callback<Any> {
+            override fun onResponse(call: Call<Any>, response: Response<Any>) {
+
+                if (response.isSuccessful) {
+                    success.invoke()
+                }else {
+                    error.invoke(response.errorBody()?.string())
+                }
+
+            }
+            override fun onFailure(call: Call<Any>, t: Throwable) {
+                t.printStackTrace()
+                error.invoke(t.message)
+            }
+        })
+
+    }
+
+
+    /**
+     * Ensure you run this on a background thread
+     */
+    fun endChat(questionId: Int, endTime: String, channelUrl: String): Response<Any> {
+        val req = hashMapOf (
+            "session_end" to endTime,
+            "channel_url" to channelUrl
+        )
+
+        api = UlessonRetrofitInstance().getClient().create(Api::class.java)
+
+        return api.endChat(questionId,req).execute()
+    }
+
 }
