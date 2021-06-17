@@ -53,7 +53,7 @@
             android:layout_height="148dp"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_play" />
+            android:src="@drawable/ic_plays" />
 
     </androidx.cardview.widget.CardView>
 

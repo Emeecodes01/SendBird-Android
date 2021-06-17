@@ -5,11 +5,16 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission
         android:name="android.permission.VIBRATE"
         android:maxSdkVersion="18" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:name="com.ulesson.chat.main.BaseApplication"
@@ -20,17 +25,18 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
+        android:requestLegacyExternalStorage="true"
         tools:replace="android:allowBackup">
 
-        <activity
-            android:name="com.ulesson.chat.groupchannel.GroupChannelActivity"
-            android:label="@string/app_name"
-            android:windowSoftInputMode="stateHidden">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+<!--        <activity-->
+<!--            android:name="com.ulesson.chat.groupchannel.GroupChannelActivity"-->
+<!--            android:label="@string/app_name"-->
+<!--            android:windowSoftInputMode="stateHidden">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
         <activity
             android:name="com.ulesson.chat.utils.PhotoViewerActivity"
@@ -62,16 +68,16 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
-        <!--                <provider-->
-        <!--                    android:name="androidx.core.content.FileProvider"-->
-        <!--                    android:authorities="${applicationId}.theprovider"-->
-        <!--                    android:exported="false"-->
-        <!--                    android:grantUriPermissions="true"-->
-        <!--                    tools:replace="android:authorities">-->
-        <!--                    <meta-data-->
-        <!--                        android:name="android.support.FILE_PROVIDER_PATHS"-->
-        <!--                        android:resource="@xml/file_paths" />-->
-        <!--                </provider>-->
+<!--        <provider-->
+<!--            android:name="androidx.core.content.FileProvider"-->
+<!--            android:authorities="${applicationId}.theprovider"-->
+<!--            android:exported="false"-->
+<!--            android:grantUriPermissions="true"-->
+<!--            tools:replace="android:authorities">-->
+<!--            <meta-data-->
+<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
+<!--                android:resource="@xml/file_paths" />-->
+<!--        </provider>-->
 
     </application>
 

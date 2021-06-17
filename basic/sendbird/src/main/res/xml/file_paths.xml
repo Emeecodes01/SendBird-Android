@@ -4,4 +4,9 @@
     <external-files-path
         name="pictures"
         path="/" />
+
+    <external-cache-path
+        name="recordings"
+        path="voice_chats/"/>
+
 </paths>
