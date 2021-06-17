@@ -44,7 +44,7 @@ class TimerUtils {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
 
-        val countTime = 1
+        val countTime = 10
 
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
