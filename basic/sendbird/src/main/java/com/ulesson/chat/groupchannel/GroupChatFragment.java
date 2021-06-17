@@ -1036,17 +1036,7 @@ public class GroupChatFragment extends Fragment {
 
         File dir = new File(getContext().getExternalCacheDir().getAbsolutePath()+"/voice_chats");
         if (!dir.exists()) {
-            if (dir.mkdir()) {
-                Toast.makeText(getContext(), "dfjhgjkuhgjkhg", Toast.LENGTH_LONG).show();
-            }
-        }else {
-//            File[] files = dir.listFiles();
-//            Toast.makeText(getContext(), "File Count"+ dir.listFiles().length, Toast.LENGTH_LONG).show();
-//
-//            for (int i = 0; i < files.length - 1; i ++) {
-//                File f = files[i];
-//                Toast.makeText(getContext(), "File Name "+ (i+1) +f.getName(), Toast.LENGTH_LONG).show();
-//            }
+            dir.mkdir();
         }
 
 
