@@ -1271,7 +1271,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (!player.isPlaying()) {
                         player.start();
                         mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
-                        btnPlayPause.setImageResource(R.drawable.ic_btn_pause_maths);
+                        btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
                     } else  {
                         player.pause();
                         btnPlayPause.setImageResource(R.drawable.ic_play);
@@ -1403,7 +1403,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (!player.isPlaying()) {
                         player.start();
                         mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
-                        btnPlayPause.setImageResource(R.drawable.ic_btn_pause_maths);
+                        btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
                     } else {
                         player.pause();
                         btnPlayPause.setImageResource(R.drawable.ic_play);
