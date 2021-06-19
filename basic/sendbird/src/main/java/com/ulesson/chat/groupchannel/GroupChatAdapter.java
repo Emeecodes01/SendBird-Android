@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -1165,6 +1166,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView tvDuration;
         SeekBar seekBar;
         MessageStatusView messageStatusView;
+        ProgressBar progressBar;
         boolean isPlaying = false;
         MediaPlayer player;
         final private String format = "%02d:%02d";
@@ -1177,15 +1179,11 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 double duration = player.getDuration();
                 double pos = player.getCurrentPosition();
 
-                String hms = String.format(format,
-                        TimeUnit.MILLISECONDS.toMinutes((int)pos) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((int)pos)),
-                        TimeUnit.MILLISECONDS.toSeconds((int)pos) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((int)pos)));
-
-                tvDuration.setText(hms);
+                updateDurationTxt((int) pos);
 
                 int progressPercent = (int) ((pos/duration)*100.0);
                 seekBar.setProgress(progressPercent);
-                mSeekbarUpdateHandler.postDelayed(this, 1000);
+                mSeekbarUpdateHandler.postDelayed(this, 50);
             }
         };
 
@@ -1197,6 +1195,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvDuration = itemView.findViewById(R.id.tv_duration);
             seekBar = itemView.findViewById(R.id.seekBar);
             messageStatusView = itemView.findViewById(R.id.message_status_group_chat);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
 
         void bind(Context context, final FileMessage message, GroupChannel channel,
@@ -1212,8 +1211,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 .build()
                 );
                 player.setDataSource(message.getUrl());
-                player.prepare();
-
+                player.prepareAsync();
+                showLoaderProgress();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1225,14 +1224,10 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         player.pause();
                         int playerPosition = (int) (player.getDuration() * (progress/100.0));
 
-                        String hms = String.format(format,
-                                TimeUnit.MILLISECONDS.toMinutes(playerPosition) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((int)playerPosition)),
-                                TimeUnit.MILLISECONDS.toSeconds((int)playerPosition) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((int)playerPosition)));
-
-                        tvDuration.setText(hms);
+                        updateDurationTxt(playerPosition);
 
                         player.seekTo(playerPosition);
-                        player.start();
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
                     }
                 }
 
@@ -1261,6 +1256,16 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
                     btnPlayPause.setImageResource(R.drawable.ic_play);
                     seekBar.setProgress(100);
+                }
+            });
+
+            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    hideLoaderProgress();
+                    updateDurationTxt(mp.getDuration());
+                    seekBar.setProgress(0);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
                 }
             });
 
@@ -1283,6 +1288,25 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         }
 
+
+        private void hideLoaderProgress() {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvDuration.setVisibility(View.VISIBLE);
+        }
+
+        private void showLoaderProgress() {
+            progressBar.setVisibility(View.VISIBLE);
+            tvDuration.setVisibility(View.INVISIBLE);
+        }
+
+        private void updateDurationTxt(int playerPosition){
+            String hms = String.format(format,
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((int)playerPosition)),
+                    TimeUnit.MILLISECONDS.toSeconds((int)playerPosition) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((int)playerPosition)));
+
+            tvDuration.setText(hms);
+        }
+
         private void cleanUp() {
             player.release();
             player = null;
@@ -1297,6 +1321,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView tvDuration;
         SeekBar seekBar;
         MessageStatusView messageStatusView;
+        ProgressBar progressBar;
         boolean isPlaying = false;
         MediaPlayer player;
         final private String format = "%02d:%02d";
@@ -1313,7 +1338,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                 int progressPercent = (int) ((pos / duration) * 100.0);
                 seekBar.setProgress(progressPercent);
-                mSeekbarUpdateHandler.postDelayed(this, 1000);
+                mSeekbarUpdateHandler.postDelayed(this, 50);
             }
         };
 
@@ -1324,6 +1349,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvDuration = itemView.findViewById(R.id.tv_duration);
             seekBar = itemView.findViewById(R.id.seekBar);
             messageStatusView = itemView.findViewById(R.id.message_status_group_chat);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
 
         void bind(Context context, final FileMessage message, GroupChannel channel,
@@ -1336,8 +1362,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             try {
                 if (isTempMessage && tempFileMessageUri != null) {
                     player.setDataSource(context, tempFileMessageUri);
-                    player.prepare();
-                    updateDurationTxt(player.getCurrentPosition());
+                    player.prepareAsync();
+                    showLoaderProgress();
                 } else {
                     player.setAudioAttributes(
                             new AudioAttributes.Builder()
@@ -1346,8 +1372,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                     .build()
                     );
                     player.setDataSource(message.getUrl());
-                    player.prepare();
-                    updateDurationTxt(player.getCurrentPosition());
+                    player.prepareAsync();
+                    showLoaderProgress();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1363,7 +1389,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         updateDurationTxt(playerPosition);
 
                         player.seekTo(playerPosition);
-                        player.start();
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
                     }
                 }
 
@@ -1396,6 +1422,16 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             });
 
+            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    hideLoaderProgress();
+                    updateDurationTxt(mp.getDuration());
+                    seekBar.setProgress(0);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                }
+            });
+
             btnPlayPause.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -1413,6 +1449,16 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             });
 
+        }
+
+        private void hideLoaderProgress() {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvDuration.setVisibility(View.VISIBLE);
+        }
+
+        private void showLoaderProgress() {
+            progressBar.setVisibility(View.VISIBLE);
+            tvDuration.setVisibility(View.INVISIBLE);
         }
 
         private void updateDurationTxt(int playerPosition) {
