@@ -6,13 +6,16 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.RequiresApi
+import androidx.asynclayoutinflater.view.AsyncLayoutInflater
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
@@ -24,26 +27,32 @@ import org.json.JSONException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+class ChatDiffUtil : DiffUtil.ItemCallback<BaseMessage>() {
+    override fun areItemsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
+        return oldItem.requestId == newItem.requestId
+    }
+
+    override fun areContentsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
+        return oldItem == newItem
+    }
+
+}
 
 internal class GroupChatAdapter(private var mContext: Context) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>(), AutoUpdateRecyclerView {
+    ListAdapter<BaseMessage, RecyclerView.ViewHolder>(ChatDiffUtil()) {
 
     private var mChannel: GroupChannel? = null
 
     private var mMessageList: MutableList<BaseMessage> = mutableListOf()
 
-//    private var mMessageList: List<BaseMessage> by Delegates.observable(mutableListOf()) {_, initial, final  ->
-//        autoNotify(initial, final) { old, new ->
-//            old.messageId == new.messageId
-//        }
-//    }
-
-
     private var mItemClickListener: OnItemClickListener? = null
     private var mItemLongClickListener: OnItemLongClickListener? = null
+    private var timerProgressListener: Progress? = null
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
     private var mFailedMessageList: MutableList<BaseMessage> = mutableListOf()
     private var mResendingMessageSet: MutableSet<String> = mutableSetOf()
+    private var currentPlayingPosition: Int = -1
+    private var isPlaying: Boolean = false
 
     @get:Synchronized
     @set:Synchronized
@@ -60,97 +69,13 @@ internal class GroupChatAdapter(private var mContext: Context) :
         fun onFileMessageItemClick(message: FileMessage?)
     }
 
+    internal interface Progress {
+        fun onProgressChange(position: Int)
+    }
+
     fun setContext(context: Context) {
         mContext = context
     }
-
-//    fun load(channelUrl: String) {
-//        try {
-//            val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
-//            appDir.mkdirs()
-//            val dataFile = File(
-//                appDir,
-//                TextUtils.generateMD5(PreferenceUtils.getUserId() + channelUrl) + ".data"
-//            )
-//            val content = FileUtils.loadFromFile(dataFile)
-//            val dataArray = content.split("\n".toRegex()).toTypedArray()
-//            mChannel = GroupChannel.buildFromSerializedData(
-//                Base64.decode(
-//                    dataArray[0], Base64.DEFAULT or Base64.NO_WRAP
-//                )
-//            ) as GroupChannel
-//
-//            // Reset message list, then add cached messages.
-//            mMessageList.clear()
-//            for (i in 1 until dataArray.size) {
-//                mMessageList.add(
-//                    BaseMessage.buildFromSerializedData(
-//                        Base64.decode(
-//                            dataArray[i], Base64.DEFAULT or Base64.NO_WRAP
-//                        )
-//                    )
-//                )
-//            }
-//            notifyDataSetChanged()
-//        } catch (e: Exception) {
-//            // Nothing to load.
-//        }
-//    }
-
-//    fun save() {
-//        try {
-//            val sb = StringBuilder()
-//            if (mChannel != null) {
-//                // Convert current data into string.
-//                sb.append(
-//                    Base64.encodeToString(
-//                        mChannel!!.serialize(),
-//                        Base64.DEFAULT or Base64.NO_WRAP
-//                    )
-//                )
-//                var message: BaseMessage? = null
-//                for (i in 0 until Math.min(mMessageList.size, 100)) {
-//                    message = mMessageList[i]
-//                    if (!isTempMessage(message)) {
-//                        sb.append("\n")
-//                        sb.append(
-//                            Base64.encodeToString(
-//                                message.serialize(),
-//                                Base64.DEFAULT or Base64.NO_WRAP
-//                            )
-//                        )
-//                    }
-//                }
-//                val data = sb.toString()
-//                val md5 = TextUtils.generateMD5(data)
-//
-//                // Save the data into file.
-//                val appDir = File(mContext.cacheDir, SendBird.getApplicationId())
-//                appDir.mkdirs()
-//                val hashFile = File(
-//                    appDir,
-//                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".hash"
-//                )
-//                val dataFile = File(
-//                    appDir,
-//                    TextUtils.generateMD5(PreferenceUtils.getUserId() + mChannel!!.url) + ".data"
-//                )
-//                try {
-//                    val content = FileUtils.loadFromFile(hashFile)
-//                    // If data has not been changed, do not save.
-//                    if (md5 == content) {
-//                        return
-//                    }
-//                } catch (e: IOException) {
-//                    // File not found. Save the data.
-//                }
-//                FileUtils.saveToFile(dataFile, data)
-//                FileUtils.saveToFile(hashFile, md5)
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//    }
 
     /**
      * Inflates the correct layout according to the View Type.
@@ -242,20 +167,20 @@ internal class GroupChatAdapter(private var mContext: Context) :
             }
 
             VIEW_TYPE_FILE_MESSAGE_AUDIO_ME -> {
-                val meFileMsgView = LayoutInflater.from (parent.context).inflate(
+                val meFileMsgView = LayoutInflater.from(parent.context).inflate(
                     R.layout.list_item_group_chat_file_audio_me,
                     parent, false
                 )
 
-                MeAudioFileMessageViewHolder (meFileMsgView)
+                MeAudioFileMessageViewHolder(meFileMsgView)
             }
 
             VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER -> {
-                val otherAudioFileMsgView = LayoutInflater.from (parent.context).inflate(
+                val otherAudioFileMsgView = LayoutInflater.from(parent.context).inflate(
                     R.layout.list_item_group_chat_file_audio_other,
                     parent, false
                 )
-                OtherAudioFileMessageViewHolder (otherAudioFileMsgView);
+                OtherAudioFileMessageViewHolder(otherAudioFileMsgView)
             }
 
             else -> throw Exception("Class not found")
@@ -376,7 +301,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     mItemClickListener
                 )
 
-            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME ->
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME -> {
+                //create the player and player runnable
                 (holder as MeAudioFileMessageViewHolder).bind(
                     mContext,
                     message as FileMessage,
@@ -387,6 +313,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     isContinuous,
                     mItemClickListener
                 )
+            }
+
 
             else -> {
             }
@@ -502,7 +430,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
             msg = mMessageList[i]
             if (msg.requestId == message.requestId) {
                 //mMessageList[i] = message
-                notifyDataSetChanged()
+                //notifyDataSetChanged()
+                submitList(mMessageList)
                 return
             }
         }
@@ -510,8 +439,9 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
     fun removeFailedMessage(message: BaseMessage) {
         mTempFileMessageUriTable.remove((message as FileMessage).requestId)
-        //mMessageList.remove(message)
-        notifyDataSetChanged()
+        mMessageList.remove(message)
+        //notifyDataSetChanged()
+        submitList(mMessageList)
     }
 
     fun markMessageSent(message: BaseMessage?) {
@@ -521,7 +451,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
             if (message is UserMessage && msg is UserMessage) {
                 if (msg.requestId == message.requestId) {
                     mMessageList[i] = message
-                    notifyDataSetChanged()
+                    submitList(mMessageList)
+                    // notifyDataSetChanged()
                     //notifyItemChanged(i)
                     return
                 }
@@ -530,7 +461,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     mTempFileMessageUriTable.remove(message.requestId)
                     mMessageList[i] = message
                     //notifyItemChanged(i)
-                    notifyDataSetChanged()
+                    //notifyDataSetChanged()
+                    submitList(mMessageList)
                     return
                 }
             }
@@ -578,7 +510,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 //notifyItemChanged(index)
             }
         }
-        notifyDataSetChanged()
+        submitList(mMessageList)
+        //notifyDataSetChanged()
         // mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
     }
 
@@ -600,7 +533,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 if (x < y) 1 else if (x == y) 0 else -1
             })
         }
-        notifyDataSetChanged()
+        updateFailedMessage()
     }
 
     fun updateFailedMessages(messages: List<BaseMessage?>) {
@@ -613,7 +546,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 mResendingMessageSet.remove(requestId)
             }
         }
-        notifyDataSetChanged()
+        updateFailedMessage()
     }
 
     fun removeFailedMessages(messages: List<BaseMessage?>) {
@@ -624,7 +557,15 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 mFailedMessageList.remove(message)
             }
         }
-        notifyDataSetChanged()
+        updateFailedMessage()
+    }
+
+    fun updateFailedMessage() {
+        val tempList = mMessageList
+        mMessageList.clear()
+        mMessageList = tempList
+        //notifyDataSetChanged()
+        submitList(mMessageList)
     }
 
     fun failedMessageListContains(message: BaseMessage?): Boolean {
@@ -649,7 +590,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
     fun clear() {
         mMessageList.clear()
         mFailedMessageList.clear()
-        notifyDataSetChanged()
+        submitList(mMessageList)
+        //notifyDataSetChanged()
     }
 
     /**
@@ -661,7 +603,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
         if (mChannel != null) {
             mChannel!!.markAsRead()
         }
-        notifyDataSetChanged()
+        //notifyDataSetChanged()
+        submitList(mMessageList)
     }
 
     fun getLastReadPosition(lastRead: Long): Int {
@@ -673,97 +616,16 @@ internal class GroupChatAdapter(private var mContext: Context) :
         return 0
     }
 
-    /**
-     * Load old message list.
-     *
-     * @param limit
-     * @param handler
-     */
-//    fun loadPreviousMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
-//        if (mChannel == null) {
-//            return
-//        }
-//        if (isMessageListLoading) {
-//            return
-//        }
-//        var oldestMessageCreatedAt = Long.MAX_VALUE
-//        if (mMessageList.size > 0) {
-//            oldestMessageCreatedAt = mMessageList[mMessageList.size - 1].createdAt
-//        }
-//        isMessageListLoading = true
-//        mChannel!!.getPreviousMessagesByTimestamp(
-//            oldestMessageCreatedAt,
-//            false,
-//            limit,
-//            true,
-//            BaseChannel.MessageTypeFilter.ALL,
-//            null,
-//            object : BaseChannel.GetMessagesHandler {
-//                override fun onResult(list: List<BaseMessage>, e: SendBirdException?) {
-//                    handler?.onResult(list, e)
-//                    isMessageListLoading = false
-//                    if (e != null) {
-//                        e.printStackTrace()
-//                        return
-//                    }
-//                    for (message in list) {
-//                        mMessageList.add(message)
-//                    }
-//                    notifyDataSetChanged()
-//                }
-//            })
-//    }
-//
-//    /**
-//     * Replaces current message list with new list.
-//     * Should be used only on initial load or refresh.
-//     */
-//    fun loadLatestMessages(limit: Int, handler: BaseChannel.GetMessagesHandler?) {
-//        if (mChannel == null) {
-//            return
-//        }
-//        if (isMessageListLoading) {
-//            return
-//        }
-//        isMessageListLoading = true
-//        mChannel!!.getPreviousMessagesByTimestamp(
-//            Long.MAX_VALUE,
-//            true,
-//            limit,
-//            true,
-//            BaseChannel.MessageTypeFilter.ALL,
-//            null,
-//            object : BaseChannel.GetMessagesHandler {
-//                override fun onResult(list: MutableList<BaseMessage>, e: SendBirdException?) {
-//                    handler?.onResult(list, e)
-//                    isMessageListLoading = false
-//                    if (e != null) {
-//                        e.printStackTrace()
-//                        return
-//                    }
-//                    if (list.size <= 0) {
-//                        return
-//                    }
-//                    for (message in mMessageList) {
-//                        if (isTempMessage(message) || isFailedMessage(message)) {
-//                            list.add(0, message)
-//                        }
-//                    }
-//                    mMessageList.clear()
-//                    for (message in list) {
-//                        mMessageList.add(message)
-//                    }
-//                    notifyDataSetChanged()
-//                }
-//            })
-//    }
-
     fun setItemLongClickListener(listener: OnItemLongClickListener?) {
         mItemLongClickListener = null
     }
 
     fun setItemClickListener(listener: OnItemClickListener?) {
         mItemClickListener = listener
+    }
+
+    fun setProgressListener(listener: Progress?) {
+        timerProgressListener = listener
     }
 
     /**
@@ -1443,6 +1305,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
         var btnPlayPause: ImageView? = null
         var tvDuration: TextView? = null
         var seekBar: SeekBar? = null
+        var progressBar: ProgressBar? = null
         var messageStatusView: MessageStatusView? = null
         var isPlaying = false
         var player: MediaPlayer? = null
@@ -1456,7 +1319,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 updateDurationTxt(pos.toInt())
                 val progressPercent = (pos / duration * 100.0).toInt()
                 seekBar?.progress = progressPercent
-                mSeekbarUpdateHandler.postDelayed(this, 1000)
+                mSeekbarUpdateHandler.postDelayed(this, 50)
             }
         }
 
@@ -1477,133 +1340,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                         .build()
                 )
                 player!!.setDataSource(message.url)
-                player!!.prepare()
-                updateDurationTxt(player!!.currentPosition)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        player!!.pause()
-                        val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
-                        val hms = String.format(
-                            format,
-                            TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
-                                TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
-                            ),
-                            TimeUnit.MILLISECONDS.toSeconds(
-                                playerPosition.toLong()
-                            ) - TimeUnit.MINUTES.toSeconds(
-                                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
-                            )
-                        )
-                        tvDuration?.text = hms
-                        player!!.seekTo(playerPosition)
-                        player!!.start()
-                    }
-                }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar) {}
-                override fun onStopTrackingTouch(seekBar: SeekBar) {}
-            })
-            player!!.setOnBufferingUpdateListener { mp, percent ->
-                seekBar?.secondaryProgress = percent
-            }
-            player!!.setOnCompletionListener {
-                mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
-                btnPlayPause?.setImageResource(R.drawable.ic_play)
-                seekBar?.progress = 100
-            }
-            btnPlayPause?.setOnClickListener {
-                if (!player!!.isPlaying) {
-                    player!!.start()
-                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
-                    btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
-                } else {
-                    player!!.pause()
-                    btnPlayPause?.setImageResource(R.drawable.ic_play)
-                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
-                }
-            }
-        }
-
-        private fun updateDurationTxt(playerPosition: Int) {
-            val hms = String.format(
-                format,
-                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
-                    TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
-                ),
-                TimeUnit.MILLISECONDS.toSeconds(
-                    playerPosition.toLong()
-                ) - TimeUnit.MINUTES.toSeconds(
-                    TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
-                )
-            )
-            tvDuration?.text = hms
-        }
-
-
-        fun cleanUp() {
-            player!!.release()
-            player = null
-            //mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
-        }
-
-        init {
-            btnPlayPause = itemView.findViewById(R.id.mv_play_pause)
-            tvDuration = itemView.findViewById(R.id.tv_duration)
-            seekBar = itemView.findViewById(R.id.seekBar)
-            messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
-        }
-    }
-
-
-    private class MeAudioFileMessageViewHolder(itemView: View) :
-        RecyclerView.ViewHolder(itemView) {
-        var btnPlayPause: ImageView? = null
-        var tvDuration: TextView? = null
-        var seekBar: SeekBar? = null
-        var messageStatusView: MessageStatusView? = null
-        var isPlaying = false
-        var player: MediaPlayer? = null
-        private val format = "%02d:%02d"
-        private val mSeekbarUpdateHandler = Handler()
-        private val mUpdateSeekbar: Runnable = object : Runnable {
-            override fun run() {
-                val duration = player!!.duration.toDouble()
-                val pos = player!!.currentPosition.toDouble()
-                updateDurationTxt(pos.toInt())
-                val progressPercent = (pos / duration * 100.0).toInt()
-                seekBar?.progress = progressPercent
-                mSeekbarUpdateHandler.postDelayed(this, 1000)
-            }
-        }
-
-        fun bind(
-            context: Context?, message: FileMessage, channel: GroupChannel?,
-            isNewDay: Boolean, isTempMessage: Boolean, tempFileMessageUri: Uri?,
-            isContinuous: Boolean,
-            listener: OnItemClickListener?
-        ) {
-            messageStatusView?.drawMessageStatus(channel, message)
-            player = MediaPlayer()
-            try {
-                if (isTempMessage && tempFileMessageUri != null) {
-                    player!!.setDataSource(context, tempFileMessageUri)
-                    player!!.prepare()
-                    updateDurationTxt(player!!.currentPosition)
-                } else {
-                    player!!.setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .build()
-                    )
-                    player!!.setDataSource(message.url)
-                    player!!.prepare()
-                    updateDurationTxt(player!!.currentPosition)
-                }
+                player!!.prepareAsync()
+                showLoaderProgress()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -1614,6 +1352,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                         val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
                         updateDurationTxt(playerPosition)
                         player!!.seekTo(playerPosition)
+                        btnPlayPause?.setImageResource(R.drawable.ic_play)
                     }
                 }
 
@@ -1628,6 +1367,16 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 btnPlayPause?.setImageResource(R.drawable.ic_play)
                 seekBar?.progress = 100
             }
+
+
+            player!!.setOnPreparedListener {
+                hideLoaderProgress()
+                updateDurationTxt(player!!.duration)
+                seekBar?.progress = 0
+                btnPlayPause?.setImageResource(R.drawable.ic_play)
+            }
+
+
             btnPlayPause?.setOnClickListener {
                 if (!player!!.isPlaying) {
                     player!!.start()
@@ -1656,10 +1405,21 @@ internal class GroupChatAdapter(private var mContext: Context) :
             tvDuration?.text = hms
         }
 
+        private fun showLoaderProgress() {
+            progressBar?.visibility = View.VISIBLE
+            tvDuration?.visibility = View.INVISIBLE
+        }
+
+        private fun hideLoaderProgress() {
+            progressBar?.visibility = View.INVISIBLE
+            tvDuration?.visibility = View.VISIBLE
+        }
+
+
         fun cleanUp() {
             player!!.release()
             player = null
-            //mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
         }
 
         init {
@@ -1667,6 +1427,148 @@ internal class GroupChatAdapter(private var mContext: Context) :
             tvDuration = itemView.findViewById(R.id.tv_duration)
             seekBar = itemView.findViewById(R.id.seekBar)
             messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
+            progressBar = itemView.findViewById(R.id.player_loader)
+        }
+    }
+
+    private class MeAudioFileMessageViewHolder(itemView: View) :
+        RecyclerView.ViewHolder(itemView) {
+        var btnPlayPause: ImageView? = null
+        var tvDuration: TextView? = null
+        var seekBar: SeekBar? = null
+        var messageStatusView: MessageStatusView? = null
+        var progressBar: ProgressBar? = null
+        var isPlaying = false
+        var progress: Progress? = null
+        var player: MediaPlayer? = null
+        private val format = "%02d:%02d"
+        private val mSeekbarUpdateHandler = Handler()
+        private val mUpdateSeekbar: Runnable = object : Runnable {
+            override fun run() {
+                val duration = player!!.duration.toDouble()
+                val pos = player!!.currentPosition.toDouble()
+                updateDurationTxt(pos.toInt())
+                val progressPercent = (pos / duration * 100.0).toInt()
+                seekBar?.progress = progressPercent
+                mSeekbarUpdateHandler.postDelayed(this, 50)
+            }
+        }
+
+        fun bind(
+            context: Context?, message: FileMessage, channel: GroupChannel?,
+            isNewDay: Boolean, isTempMessage: Boolean, tempFileMessageUri: Uri?,
+            isContinuous: Boolean,
+            listener: OnItemClickListener?
+        ) {
+            this.progress = progress
+            messageStatusView?.drawMessageStatus(channel, message)
+            player = MediaPlayer()
+
+            try {
+                if (isTempMessage && tempFileMessageUri != null) {
+                    player!!.setDataSource(context, tempFileMessageUri)
+                    player!!.prepareAsync()
+                    updateDurationTxt(player!!.duration)
+                } else {
+                    player!!.setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+                    )
+                    player!!.setDataSource(message.url)
+                    player!!.prepareAsync()
+                    showLoaderProgress()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        player!!.pause()
+                        btnPlayPause?.setImageResource(R.drawable.ic_play)
+                        val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
+                        updateDurationTxt(playerPosition)
+                        player!!.seekTo(playerPosition)
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar) {}
+            })
+
+            player!!.setOnBufferingUpdateListener { mp, percent ->
+                seekBar?.secondaryProgress = percent
+            }
+
+
+            player!!.setOnCompletionListener {
+                mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                btnPlayPause?.setImageResource(R.drawable.ic_play)
+                seekBar?.progress = 100
+            }
+
+            player!!.setOnPreparedListener {
+                //reset
+                hideLoaderProgress()
+                updateDurationTxt(player!!.duration)
+                seekBar?.progress = 0
+                btnPlayPause?.setImageResource(R.drawable.ic_play)
+            }
+
+            btnPlayPause?.setOnClickListener {
+                if (!player!!.isPlaying) {
+                    player!!.start()
+                    btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
+                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
+                } else {
+                    player!!.pause()
+                    btnPlayPause?.setImageResource(R.drawable.ic_play)
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                }
+
+            }
+        }
+
+        private fun showLoaderProgress() {
+            progressBar?.visibility = View.VISIBLE
+            tvDuration?.visibility = View.INVISIBLE
+        }
+
+        private fun hideLoaderProgress() {
+            progressBar?.visibility = View.INVISIBLE
+            tvDuration?.visibility = View.VISIBLE
+        }
+
+        private fun updateDurationTxt(playerPosition: Int) {
+            val hms = String.format(
+                format,
+                TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong()) - TimeUnit.HOURS.toMinutes(
+                    TimeUnit.MILLISECONDS.toHours(playerPosition.toLong())
+                ),
+                TimeUnit.MILLISECONDS.toSeconds(
+                    playerPosition.toLong()
+                ) - TimeUnit.MINUTES.toSeconds(
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition.toLong())
+                )
+            )
+            tvDuration?.text = hms
+        }
+
+        fun cleanUp() {
+            player!!.release()
+            player = null
+            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+        }
+
+        init {
+            btnPlayPause = itemView.findViewById(R.id.mv_play_pause)
+            tvDuration = itemView.findViewById(R.id.tv_duration)
+            seekBar = itemView.findViewById(R.id.seekBar)
+            messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
+            progressBar = itemView.findViewById(R.id.player_loader)
         }
     }
 

@@ -543,7 +543,7 @@ class GroupChatFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        startChatTimer()
+        //startChatTimer()
 
         //ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) { refresh() }
         mChatAdapter!!.setContext(requireContext()) // Glide bug fix (java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity)
@@ -658,18 +658,12 @@ class GroupChatFragment : Fragment() {
 
     private fun setUpRecyclerView() {
         if (activity != null) {
-            mLayoutManager = LinearLayoutManager(activity)
+            mLayoutManager = LinearLayoutManager(requireContext())
             mLayoutManager!!.reverseLayout = true
+            mLayoutManager?.stackFromEnd = true
             mRecyclerView!!.layoutManager = mLayoutManager
             //mRecyclerView!!.setItemViewCacheSize(50)
             mRecyclerView!!.adapter = mChatAdapter
-//            mRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-//                    if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
-//                        mChatAdapter!!.loadPreviousMessages(CHANNEL_LIST_LIMIT, null)
-//                    }
-//                }
-//            })
 
             mRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -689,8 +683,6 @@ class GroupChatFragment : Fragment() {
                     }
                 }
             })
-
-
         }
     }
 
@@ -760,6 +752,15 @@ class GroupChatFragment : Fragment() {
             override fun onFileMessageItemLongClick(message: FileMessage?) {}
             override fun onAdminMessageItemLongClick(message: AdminMessage?) {}
         })
+
+        //mChatAdapter?.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+
+        mChatAdapter?.setProgressListener(object: GroupChatAdapter.Progress{
+            override fun onProgressChange(position: Int) {
+                mRecyclerView?.scrollToPosition(position)
+            }
+
+        })
     }
 
     private fun showMessageOptionsDialog(message: BaseMessage, position: Int) {
@@ -810,29 +811,33 @@ class GroupChatFragment : Fragment() {
         if (mMessageCollection == null) {
             return
         }
+
+        //Fetch succeeded past messages
         mMessageCollection!!.fetchSucceededMessages(
             MessageCollection.Direction.PREVIOUS
         ) { hasMore, e ->
-            mMessageCollection!!.fetchSucceededMessages(
-                MessageCollection.Direction.NEXT
-            ) { hasMore, e ->
-                mMessageCollection!!.fetchFailedMessages(object : CompletionHandler {
-                    override fun onCompleted(e: SendBirdException?) {
-                        if (activity == null) {
-                            return
-                        }
-                        activity!!.runOnUiThread {
-                            mChatAdapter!!.markAllMessagesAsRead()
-                            smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(
-                                mLastRead
-                            )
 
-                            mLayoutManager?.startSmoothScroll(smoothScroller)
-                        }
-                    }
-                })
-            }
         }
+
+        mMessageCollection!!.fetchSucceededMessages(
+            MessageCollection.Direction.NEXT
+        ) { hasMore, e ->
+
+        }
+
+        mMessageCollection!!.fetchFailedMessages(object : CompletionHandler {
+            override fun onCompleted(e: SendBirdException?) {
+                if (activity == null) {
+                    return
+                }
+                activity!!.runOnUiThread {
+                    mChatAdapter!!.markAllMessagesAsRead()
+                    smoothScroller.targetPosition = 0
+
+                    mLayoutManager?.startSmoothScroll(smoothScroller)
+                }
+            }
+        })
     }
 
     private fun createMessageCollection(channelUrl: String) {
@@ -852,7 +857,7 @@ class GroupChatFragment : Fragment() {
 
 
                 if (e != null) {
-                    MessageCollection.create(channelUrl, mMessageFilter, mLastRead,
+                    MessageCollection.create(channelUrl, mMessageFilter, Long.MAX_VALUE,
                         MessageCollectionCreateHandler { messageCollection, e ->
                             if (e == null) {
                                 if (mMessageCollection != null) {
@@ -868,7 +873,7 @@ class GroupChatFragment : Fragment() {
                                 activity!!.runOnUiThread {
                                     mChatAdapter?.clear()
                                     setUpUIChannelElements()
-                                    retrieveSessionTimeCounter(mChannel)
+                                    //retrieveSessionTimeCounter(mChannel)
                                 }
                                 fetchInitialMessages()
                             } else {
@@ -892,7 +897,7 @@ class GroupChatFragment : Fragment() {
                     mChatAdapter?.clear()
                     updateActionBarTitle()
                     fetchInitialMessages()
-                    retrieveSessionTimeCounter(mChannel)
+                    //retrieveSessionTimeCounter(mChannel)
                 }
             }
         })
@@ -938,8 +943,9 @@ class GroupChatFragment : Fragment() {
                         MessageEventAction.INSERT -> {
                             mChatAdapter?.insertSucceededMessages(messages)
                             mChatAdapter!!.markAllMessagesAsRead()
-                            smoothScroller.targetPosition =
-                                mChatAdapter!!.getLastReadPosition(mLastRead)
+                            val lastReadPos = mChatAdapter!!.itemCount
+                            smoothScroller.targetPosition = 0
+                                //mChatAdapter!!.getLastReadPosition(mLastRead)
                             mLayoutManager?.startSmoothScroll(smoothScroller)
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
@@ -973,8 +979,8 @@ class GroupChatFragment : Fragment() {
                                 }
                             }
                             mChatAdapter?.insertSucceededMessages(pendingMessages)
-                            smoothScroller.targetPosition =
-                                mChatAdapter!!.getLastReadPosition(mLastRead);
+                            smoothScroller.targetPosition = 0
+                                //mChatAdapter!!.getLastReadPosition(mLastRead);
                             mLayoutManager?.startSmoothScroll(smoothScroller);
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
@@ -988,6 +994,7 @@ class GroupChatFragment : Fragment() {
                 action: MessageEventAction,
                 reason: FailedMessageEventActionReason
             ) {
+
                 Log.d(
                     "SyncManager",
                     "onFailedMessageEvent: size = " + messages.size + ", action = " + action
@@ -1004,6 +1011,7 @@ class GroupChatFragment : Fragment() {
                         }
                     }
                 }
+
             }
 
             override fun onNewMessage(collection: MessageCollection?, message: BaseMessage) {
@@ -1403,8 +1411,8 @@ class GroupChatFragment : Fragment() {
         }
 
         // Display a user message to RecyclerView
-        smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(mLastRead)
-        mLayoutManager?.startSmoothScroll(smoothScroller)
+//        smoothScroller.targetPosition = mChatAdapter!!.getLastReadPosition(mLastRead)
+//        mLayoutManager?.startSmoothScroll(smoothScroller)
     }
 
     /**

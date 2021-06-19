@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
     >
 
 
@@ -27,20 +29,22 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            tools:progress="50"
             android:progressTint="#7B7FDA"
+            android:progressTintMode="src_in"
+            android:secondaryProgress="80"
+            android:secondaryProgressTint="@android:color/holo_red_dark"
+            android:secondaryProgressTintMode="src_in"
             android:thumbTint="#7B7FDA"
             android:thumbTintMode="src_in"
-            android:progressTintMode="src_in"
-            android:secondaryProgressTint="@android:color/holo_red_dark"
-            android:secondaryProgress="80"
-            android:secondaryProgressTintMode="src_in"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/tv_duration"
             app:layout_constraintStart_toEndOf="@+id/mv_play_pause"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:progress="50" />
 
         <ImageView
+            android:focusableInTouchMode="false"
+            android:focusable="false"
             android:id="@+id/mv_play_pause"
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -63,7 +67,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="3:45"
+            android:visibility="invisible"
             android:layout_marginRight="16dp" />
+
+
+        <ProgressBar
+            android:id="@+id/player_loader"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/seekBar"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

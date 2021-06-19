@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     android:background="#E5E5E5"
     android:fitsSystemWindows="true"
+    android:focusableInTouchMode="false"
+    android:focusable="false"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -103,6 +105,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:focusable="false"
         android:id="@+id/recycler_group_chat"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -115,7 +118,9 @@
         android:paddingEnd="12dp"
         android:paddingRight="12dp"
         android:paddingBottom="4dp"
+        android:overScrollMode="never"
         android:scrollbars="none"
+        android:focusableInTouchMode="false"
         app:layout_constraintBottom_toTopOf="@+id/end_timer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/app_bar_layout"
