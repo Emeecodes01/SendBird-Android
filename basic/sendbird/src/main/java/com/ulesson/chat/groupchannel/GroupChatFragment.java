@@ -489,12 +489,12 @@ public class GroupChatFragment extends Fragment {
     private void chatStatus(boolean enable) {
         mMessageEditText.setEnabled(enable);
         mUploadFileButton.setEnabled(enable);
-//        button_voice.setEnabled(enable);
+        button_voice.setEnabled(enable);
         if (enable) {
             mchatBoxLayout.setAlpha(1.0F);
             countdownTxt.setVisibility(View.VISIBLE);
         } else {
-//            mchatBoxLayout.setAlpha(0.5F);
+            mchatBoxLayout.setAlpha(0.5F);
             countdownTxt.setVisibility(View.GONE);
         }
     }
