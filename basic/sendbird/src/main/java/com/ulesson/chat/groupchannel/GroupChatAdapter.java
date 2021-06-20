@@ -219,63 +219,67 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-
     @Override
     public int getItemViewType(int position) {
-
         BaseMessage message = getMessage(position);
+        boolean isMyMessage = false;
 
         if (message instanceof UserMessage) {
-            UserMessage userMessage = (UserMessage) message;
-            // If the sender is current user
-            if (userMessage.getSender() != null && userMessage.getSender().getUserId() != null) {
-                if (userMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                    return VIEW_TYPE_USER_MESSAGE_ME;
-                } else {
-                    return VIEW_TYPE_USER_MESSAGE_OTHER;
-                }
+            UserMessage.RequestState requestState = ((UserMessage) message).getRequestState();
+            if (requestState == UserMessage.RequestState.PENDING
+                    || requestState == UserMessage.RequestState.FAILED
+                    || ((UserMessage) message).getSender().getUserId().equals(getMyUserId())) {
+                isMyMessage = true;
             }
+        } else if (message instanceof FileMessage) {
+            FileMessage.RequestState requestState = ((FileMessage) message).getRequestState();
+            if (requestState == FileMessage.RequestState.PENDING
+                    || requestState == FileMessage.RequestState.FAILED
+                    || ((FileMessage) message).getSender().getUserId().equals(getMyUserId())) {
+                isMyMessage = true;
+            }
+        }
 
+        if (message instanceof UserMessage) {
+            if (isMyMessage) {
+                return VIEW_TYPE_USER_MESSAGE_ME;
+            } else {
+                return VIEW_TYPE_USER_MESSAGE_OTHER;
+            }
         } else if (message instanceof FileMessage) {
             FileMessage fileMessage = (FileMessage) message;
-
-            if (fileMessage.getSender() != null && fileMessage.getSender().getUserId() != null) {
-
-                if (fileMessage.getType().toLowerCase().startsWith("image")) {
-                    // If the sender is current user
-                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                        return VIEW_TYPE_FILE_MESSAGE_IMAGE_ME;
-                    } else {
-                        return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
-                    }
-
-                } else if(fileMessage.getType().toLowerCase().startsWith("video/3gpp")) {
-                    //NOTE: THIS IS ACTUALLY AN AUDIO FILE
-                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                        return VIEW_TYPE_FILE_MESSAGE_AUDIO_ME;
-                    } else {
-                        return VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER;
-                    }
-                } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
-                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                        return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
-                    } else {
-                        return VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER;
-                    }
+            if (fileMessage.getType().toLowerCase().startsWith("image")) {
+                // If the sender is current user
+                if (isMyMessage) {
+                    return VIEW_TYPE_FILE_MESSAGE_IMAGE_ME;
                 } else {
-                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
-                        return VIEW_TYPE_FILE_MESSAGE_ME;
-                    } else {
-                        return VIEW_TYPE_FILE_MESSAGE_OTHER;
-                    }
+                    return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
+                }
+            }  else if(fileMessage.getType().toLowerCase().startsWith("video/3gpp")) {
+                //NOTE: THIS IS ACTUALLY AN AUDIO FILE
+                if (isMyMessage) {
+                    return VIEW_TYPE_FILE_MESSAGE_AUDIO_ME;
+                } else {
+                    return VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER;
+                }
+            } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
+                if (isMyMessage) {
+                    return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
+                } else {
+                    return VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER;
+                }
+            } else {
+                if (isMyMessage) {
+                    return VIEW_TYPE_FILE_MESSAGE_ME;
+                } else {
+                    return VIEW_TYPE_FILE_MESSAGE_OTHER;
                 }
             }
-
         } else if (message instanceof AdminMessage) {
             return VIEW_TYPE_ADMIN_MESSAGE;
         }
 
-        return VIEW_TYPE_USER_MESSAGE_ME;
+        return -1;
     }
 
     @Override
@@ -291,6 +295,14 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else {
             return null;
         }
+    }
+
+    public static String getMyUserId() {
+        if (SendBird.getCurrentUser() == null) {
+            return PreferenceUtils.getUserId();
+        }
+
+        return SendBird.getCurrentUser().getUserId();
     }
 
     void setChannel(GroupChannel channel) {
@@ -1090,12 +1102,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             if (listener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFileMessageItemClick(message);
-                    }
-                });
+                itemView.setOnClickListener(v -> listener.onFileMessageItemClick(message));
             }
 
             messageStatusView.drawMessageStatus(channel, message);

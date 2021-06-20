@@ -7,7 +7,6 @@
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -30,7 +29,7 @@
         android:layout_height="148dp"
         android:layout_below="@id/text_group_chat_date"
         android:layout_marginTop="5dp"
-        android:layout_toLeftOf="@id/message_status_group_chat"
+        android:layout_toStartOf="@id/message_status_group_chat"
         android:adjustViewBounds="true"
         android:background="@drawable/me_message_shape"
         android:padding="2dp"
@@ -38,12 +37,11 @@
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/image_group_chat_file_thumbnail"
         android:layout_marginBottom="8dp"
-        android:layout_toLeftOf="@id/image_group_chat_file_thumbnail"
+        android:layout_toStartOf="@id/image_group_chat_file_thumbnail"
         android:text="21:27"
         android:textColor="#8e8e8e"
         android:textSize="10sp"
@@ -54,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/image_group_chat_file_thumbnail"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="5dp" />
 
 </RelativeLayout>

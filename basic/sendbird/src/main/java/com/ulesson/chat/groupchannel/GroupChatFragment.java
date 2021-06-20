@@ -738,7 +738,7 @@ public class GroupChatFragment extends Fragment {
 
             mLayoutManager = new LinearLayoutManager(getActivity());
             mLayoutManager.setReverseLayout(true);
-            mLayoutManager.setStackFromEnd(true);
+//            mLayoutManager.setStackFromEnd(true);
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setAdapter(mChatAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
