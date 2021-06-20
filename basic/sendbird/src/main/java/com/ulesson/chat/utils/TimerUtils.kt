@@ -40,6 +40,7 @@ class TimerUtils {
 
     fun getTime(
         channelUrl: String,
+        chatDuration: Int,
         isChannelCreate: Boolean,
         countDownTime: (Int) -> Unit,
         timeOut: () -> Unit
@@ -49,16 +50,14 @@ class TimerUtils {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
 
-        val countTime = 1
-
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
         val currentSeconds = calendar.get(Calendar.SECOND)
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-        val endHour = currentHour + ((currentMinutes + countTime) / 60)
-        val endMinutes = (currentMinutes + countTime) % 60
+        val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
+        val endMinutes = (currentMinutes + chatDuration) % 60
         val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
 
         when {

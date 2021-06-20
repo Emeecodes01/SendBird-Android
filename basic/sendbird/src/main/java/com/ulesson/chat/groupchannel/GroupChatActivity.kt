@@ -17,7 +17,7 @@ class GroupChatActivity : AppCompatActivity() {
 
             val fragment = tutorActions?.let { tutor ->
                 chatActions?.let { chat ->
-                    GroupChatFragment.newInstance(it, true, true, tutor, chat)
+                    GroupChatFragment.newInstance(it, createChat, true, tutor, chat)
                 }
             }
 
@@ -34,10 +34,12 @@ class GroupChatActivity : AppCompatActivity() {
 
         private var tutorActions: TutorActions? = null
         private var chatActions: ChatActions? = null
+        private var createChat: Boolean = false
 
-        fun setActions(tutorActions: TutorActions, chatActions: ChatActions) {
+        fun setActions(tutorActions: TutorActions, chatActions: ChatActions, createChat : Boolean) {
             this.tutorActions = tutorActions
             this.chatActions = chatActions
+            this.createChat = createChat
         }
 
     }

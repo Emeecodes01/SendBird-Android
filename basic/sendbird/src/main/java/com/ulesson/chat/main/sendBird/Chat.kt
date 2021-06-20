@@ -57,7 +57,7 @@ class Chat {
 
                     channelUrl(groupChannel.url)
 
-                    gotoChat(groupChannel, activity, toFinish, object : TutorActions {
+                    gotoChat(groupChannel.url, activity, toFinish, true, object : TutorActions {
 
                         override fun showTutorProfile(members: List<Member>) {
                             tutorActions.showTutorProfile(members)
@@ -93,8 +93,9 @@ class Chat {
                             channelUrl(it)
 
                             gotoChat(
-                                updatedGroupChannel,
+                                updatedGroupChannel.url,
                                 activity,
+                                true,
                                 toFinish,
                                 object : TutorActions {
                                     override fun showTutorProfile(members: List<Member>) {
@@ -127,10 +128,11 @@ class Chat {
         }
     }
 
-    private fun gotoChat(
-        groupChannel: GroupChannel,
+    fun gotoChat(
+        groupChannelUrl: String,
         activity: FragmentActivity?,
         fromActivity: Boolean,
+        createChat: Boolean,
         tutorActions: TutorActions,
         chatActions: ChatActions
     ) {
@@ -161,17 +163,17 @@ class Chat {
                         chatActions.getPendingQuestions()
                     }
 
-                })
+                }, createChat)
 
                 val intent = Intent(activity.baseContext, GroupChatActivity::class.java)
-                intent.putExtra("channelUrl", groupChannel.url)
+                intent.putExtra("channelUrl", groupChannelUrl)
                 activity.startActivity(intent)
 
             } else {
 
                 val fragment = GroupChatFragment.newInstance(
-                    groupChannel.url,
-                    true,
+                    groupChannelUrl,
+                    createChat,
                     fromActivity,
                     object : TutorActions {
 

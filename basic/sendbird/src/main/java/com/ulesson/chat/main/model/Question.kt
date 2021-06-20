@@ -5,6 +5,6 @@ data class Question(
     val questionUrl: String,
     val questionText: String,
     val subjectName: String,
-    val subjectIcon: String,
+    val subjectIcon: Int,
     val date: String
 )

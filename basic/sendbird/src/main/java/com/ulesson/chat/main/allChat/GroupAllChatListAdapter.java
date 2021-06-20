@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseChannel;
@@ -27,6 +26,7 @@ import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
 import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.utils.DateUtils;
+import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.utils.StringUtils;
 import com.ulesson.chat.utils.TypingIndicator;
@@ -341,8 +341,20 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
             String subjectName = questionMap.get("subjectName") + "";
             subjectText.setText(subjectName);
-            Glide.with(mContext).load(questionMap.get("subjectAvatar"))
-                    .into(subjectIcon);
+
+            String subjectAvatar = (String) questionMap.get("subjectAvatar");
+            try {
+                if (subjectAvatar != null) {
+                    Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, Integer.parseInt(subjectAvatar));
+                    if (icon != null) {
+                        subjectIcon.setVisibility(View.VISIBLE);
+                        subjectIcon.setImageBitmap(icon);
+                    } else {
+                        subjectIcon.setVisibility(View.INVISIBLE);
+                    }
+                }
+            } catch (Exception ignore) {
+            }
 
             if (!new StringUtils().isActive(channel.getData())) {
                 subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
@@ -428,8 +440,18 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                   @Nullable final OnQuestionLongClickListener questionLongClickListener) {
 
             subjectText.setText(question.getSubjectName());
-            Glide.with(mContext).load(question.getQuestionUrl())
-                    .into(subjectIcon);
+
+            try {
+                Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, question.getSubjectIcon());
+                if (icon != null) {
+                    subjectIcon.setVisibility(View.VISIBLE);
+                    subjectIcon.setImageBitmap(icon);
+                } else {
+                    subjectIcon.setVisibility(View.INVISIBLE);
+                }
+
+            } catch (Exception ignore) {
+            }
 
             unreadCountText.setVisibility(View.GONE);
             typingIndicatorContainer.setVisibility(View.GONE);
