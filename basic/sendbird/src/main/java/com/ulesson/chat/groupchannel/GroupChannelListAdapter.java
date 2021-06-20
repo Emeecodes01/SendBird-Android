@@ -2,6 +2,7 @@ package com.ulesson.chat.groupchannel;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.utils.DateUtils;
+import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.StringUtils;
 import com.ulesson.chat.utils.TypingIndicator;
 
@@ -203,7 +205,19 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
             subjectText.setText((String) questionMap.get("subjectName"));
-            Glide.with(mContext).load(questionMap.get("subjectAvatar")).into(subjectIcon);
+            String subjectAvatar = (String) questionMap.get("subjectAvatar");
+            try {
+                if (subjectAvatar != null) {
+                    Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, Integer.parseInt(subjectAvatar));
+                    if (icon != null){
+                        subjectIcon.setVisibility(View.VISIBLE);
+                        subjectIcon.setImageBitmap(icon);
+                    }else{
+                        subjectIcon.setVisibility(View.INVISIBLE);
+                    }
+                }
+            } catch (Exception ignore) {
+            }
 
             if (!new StringUtils().isActive(channel.getData())) {
                 subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);

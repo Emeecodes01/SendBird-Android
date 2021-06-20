@@ -7,14 +7,17 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.ulesson.chat.main.model.Question;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 
 public class PreferenceUtils {
 
     private static final String PREFERENCE_KEY_USER_ID = "userId";
     private static final String PREFERENCE_KEY_ACCESS_TOKEN = "accessToken";
+    private static final String PENDING_QUESTIONS = "pendingQuestions";
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
@@ -70,6 +73,17 @@ public class PreferenceUtils {
     public static void setAccessToken(String accessToken) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(PREFERENCE_KEY_ACCESS_TOKEN, accessToken).apply();
+    }
+
+    public static List<Question> getPendingQuestions() {
+        Type type = new TypeToken<List<Question>>() {
+        }.getType();
+        return gson.fromJson(getSharedPreferences().getString(PENDING_QUESTIONS, ""), type);
+    }
+
+    public static void setPendingQuestions(String pendingQuestions) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PENDING_QUESTIONS, pendingQuestions).apply();
     }
 
     public static String getNickname() {

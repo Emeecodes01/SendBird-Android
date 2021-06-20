@@ -18,7 +18,7 @@ import kotlin.math.max
 class DialogBackgroundView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     // path data
     private val pathData =
-            "M108.695 655.791C356.562 675.209 437.551 495.554 436.974 311.143C436.076 24.0533 110.318 -61.5805 -35.2249 43.5488C-185.445 152.686 -96.0858 640.002 108.695 655.791Z"
+        "M108.695 655.791C356.562 675.209 437.551 495.554 436.974 311.143C436.076 24.0533 110.318 -61.5805 -35.2249 43.5488C-185.445 152.686 -96.0858 640.002 108.695 655.791Z"
     private val bgHeight = 322f
     private val bgWidth = 360f
 
@@ -49,8 +49,8 @@ class DialogBackgroundView(context: Context, attrs: AttributeSet?) : View(contex
         get() = tm.apply {
             reset()
             tm.postScale(
-                    max(scaleFactorAsPerHeight * aspectRatio, scaleFactorAsPerWidth),
-                    scaleFactorAsPerHeight
+                max(scaleFactorAsPerHeight * aspectRatio, scaleFactorAsPerWidth),
+                scaleFactorAsPerHeight
             )
             tm.postTranslate(0f, currentYPos)
         }
@@ -86,8 +86,8 @@ class DialogBackgroundView(context: Context, attrs: AttributeSet?) : View(contex
         if (Build.VERSION.SDK_INT >= 23) {
             tempPath2.apply { reset(); set(bg1Path) }
             canvas.drawPath(
-                    tempPath2.apply { op(tempPath2, visibleAreaPath, Path.Op.INTERSECT) },
-                    paint
+                tempPath2.apply { op(tempPath2, visibleAreaPath, Path.Op.INTERSECT) },
+                paint
             )
         } else {
             canvas.drawPath(bg1Path, paint)
@@ -128,7 +128,7 @@ class DialogBackgroundView(context: Context, attrs: AttributeSet?) : View(contex
         val endColor = ContextCompat.getColor(context, endColorResId)
 
         val colorAnimator =
-                ObjectAnimator.ofObject(paint, "color", ArgbEvaluator(), startColor, endColor)
+            ObjectAnimator.ofObject(paint, "color", ArgbEvaluator(), startColor, endColor)
         colorAnimator.duration = scaleAnimator.duration
         colorAnimator.startDelay = scaleAnimator.startDelay
 

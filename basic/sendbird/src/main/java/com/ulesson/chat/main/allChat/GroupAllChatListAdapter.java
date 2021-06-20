@@ -3,7 +3,6 @@ package com.ulesson.chat.main.allChat;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseChannel;
@@ -26,7 +24,10 @@ import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.UserMessage;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
+import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.utils.DateUtils;
+import com.ulesson.chat.utils.ImageUtils;
+import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.utils.StringUtils;
 import com.ulesson.chat.utils.TypingIndicator;
 
@@ -37,33 +38,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private static final int VIEW_TYPE_GROUP_CHANNELS = 1;
+    private static final int VIEW_TYPE_PENDING_QUESTION = 2;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, Integer> mSimpleTargetIndexMap;
     private final ConcurrentHashMap<SimpleTarget<Bitmap>, GroupChannel> mSimpleTargetGroupChannelMap;
     private final ConcurrentHashMap<String, Integer> mChannelImageNumMap;
     private final ConcurrentHashMap<String, ImageView> mChannelImageViewMap;
     private final ConcurrentHashMap<String, SparseArray<Bitmap>> mChannelBitmapMap;
     private final Context mContext;
-    private final List<GroupChannel> mChannelList;
+    private final List<Question> questionList;
     private final List<GroupChannel> isActiveChannel;
+    private final List<GroupChannel> isPendingChannel;
     private final List<GroupChannel> isPastChannel;
     private OnItemClickListener mItemClickListener;
     private OnItemLongClickListener mItemLongClickListener;
+    private OnQuestionClickListener onQuestionClickListener;
+    private OnQuestionLongClickListener onQuestionLongClickListener;
+    private String chatType = "pending";
 
     GroupAllChatListAdapter(Context context) {
         mContext = context;
-
         mSimpleTargetIndexMap = new ConcurrentHashMap<>();
         mSimpleTargetGroupChannelMap = new ConcurrentHashMap<>();
         mChannelImageNumMap = new ConcurrentHashMap<>();
         mChannelImageViewMap = new ConcurrentHashMap<>();
         mChannelBitmapMap = new ConcurrentHashMap<>();
-        mChannelList = new ArrayList<>();
+        questionList = new ArrayList<>();
+        isPendingChannel = new ArrayList<>();
         isActiveChannel = new ArrayList<>();
         isPastChannel = new ArrayList<>();
     }
 
     void clearChannelList() {
-        mChannelList.clear();
+        questionList.clear();
+        isPendingChannel.clear();
         isActiveChannel.clear();
         isPastChannel.clear();
         notifyDataSetChanged();
@@ -79,41 +87,90 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_all_chat_channel, parent, false);
-        return new ChannelHolder(view);
+        switch (viewType) {
+
+            case VIEW_TYPE_GROUP_CHANNELS:
+                View groupChannelView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.list_item_all_chat_channel, parent, false);
+                return new ChannelHolder(groupChannelView);
+
+            case VIEW_TYPE_PENDING_QUESTION:
+                View pendingQuestionView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.list_item_all_chat_channel, parent, false);
+                return new QuestionHolder(pendingQuestionView);
+
+            default:
+                return null;
+
+        }
+
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+
+        if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
+            return VIEW_TYPE_PENDING_QUESTION;
+        } else {
+            return VIEW_TYPE_GROUP_CHANNELS;
+        }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ((ChannelHolder) holder).bind(mContext, position, mChannelList.get(position), mItemClickListener, mItemLongClickListener);
+
+        switch (holder.getItemViewType()) {
+            case VIEW_TYPE_GROUP_CHANNELS:
+                if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
+                    ((ChannelHolder) holder).bind(mContext, position, isActiveChannel.get(position), mItemClickListener, mItemLongClickListener);
+                } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Past.name())) {
+                    ((ChannelHolder) holder).bind(mContext, position, isPastChannel.get(position), mItemClickListener, mItemLongClickListener);
+                }
+                break;
+            case VIEW_TYPE_PENDING_QUESTION:
+                ((QuestionHolder) holder).bind(position, PreferenceUtils.getPendingQuestions().get(position), onQuestionClickListener, onQuestionLongClickListener);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mChannelList.size();
+
+        if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
+            return isPendingChannel.size();
+        } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
+            return isActiveChannel.size();
+        } else {
+            return isPastChannel.size();
+        }
     }
 
-    List<GroupChannel> insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order, Boolean isActive) {
+    List<GroupChannel> insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order, String chatType) {
 
-        for (GroupChannel newChannel : channels) {
-            int activeIndex = SyncManagerUtils.findIndexOfChannel(isActiveChannel, newChannel, order);
-            int pastIndex = SyncManagerUtils.findIndexOfChannel(isPastChannel, newChannel, order);
+        this.chatType = chatType;
 
-            if (new StringUtils().isActive(newChannel.getData())) {
-                isActiveChannel.add(activeIndex, newChannel);
-            } else {
-                isPastChannel.add(pastIndex, newChannel);
-            }
+        //set pending questions list
+        List<Question> pendingQuestions = PreferenceUtils.getPendingQuestions();
 
+        for (Question question : pendingQuestions) {
+            isPendingChannel.add(null);
+            questionList.add(question);
         }
 
-        if (isActive) {
-            mChannelList.addAll(isActiveChannel);
+        for (GroupChannel newChannel : channels) {
+            if (new StringUtils().isActive(newChannel.getData())) {
+                isActiveChannel.add(newChannel);
+            } else {
+                isPastChannel.add(newChannel);
+            }
+        }
+
+        if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
+            notifyDataSetChanged();
+            return isPendingChannel;
+        } else if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Active.name())) {
             notifyDataSetChanged();
             return isActiveChannel;
         } else {
-            mChannelList.addAll(isPastChannel);
             notifyDataSetChanged();
             return isPastChannel;
         }
@@ -121,40 +178,71 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     void updateChannels(List<GroupChannel> channels) {
         for (GroupChannel updatedChannel : channels) {
-            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, updatedChannel);
-            if (index != -1) {
-                mChannelList.set(index, updatedChannel);
-                notifyItemChanged(index);
+
+            if (new StringUtils().isActive(updatedChannel.getData())) {
+                int index = SyncManagerUtils.getIndexOfChannel(isActiveChannel, updatedChannel);
+                if (index != -1) {
+                    isActiveChannel.set(index, updatedChannel);
+                    notifyItemChanged(index);
+                }
+            } else {
+                int index = SyncManagerUtils.getIndexOfChannel(isPastChannel, updatedChannel);
+                if (index != -1) {
+                    isPastChannel.set(index, updatedChannel);
+                    notifyItemChanged(index);
+                }
             }
+
+
         }
     }
 
     void moveChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order) {
         for (GroupChannel movedChannel : channels) {
-            int fromIndex = SyncManagerUtils.getIndexOfChannel(mChannelList, movedChannel);
-            int toIndex = SyncManagerUtils.findIndexOfChannel(mChannelList, movedChannel, order);
-            if (fromIndex != -1) {
-                mChannelList.remove(fromIndex);
-                mChannelList.add(toIndex, movedChannel);
-                notifyItemMoved(fromIndex, toIndex);
-                notifyItemChanged(toIndex);
+
+            if (new StringUtils().isActive(movedChannel.getData())) {
+
+                int fromIndex = SyncManagerUtils.getIndexOfChannel(isActiveChannel, movedChannel);
+                int toIndex = SyncManagerUtils.findIndexOfChannel(isActiveChannel, movedChannel, order);
+                if (fromIndex != -1) {
+                    isActiveChannel.remove(fromIndex);
+                    isActiveChannel.add(toIndex, movedChannel);
+                    notifyItemMoved(fromIndex, toIndex);
+                    notifyItemChanged(toIndex);
+                }
+            } else {
+
+                int fromIndex = SyncManagerUtils.getIndexOfChannel(isPastChannel, movedChannel);
+                int toIndex = SyncManagerUtils.findIndexOfChannel(isPastChannel, movedChannel, order);
+                if (fromIndex != -1) {
+                    isPastChannel.remove(fromIndex);
+                    isPastChannel.add(toIndex, movedChannel);
+                    notifyItemMoved(fromIndex, toIndex);
+                    notifyItemChanged(toIndex);
+                }
             }
+
         }
     }
 
     void removeChannels(List<GroupChannel> channels) {
         for (GroupChannel removedChannel : channels) {
-            int index = SyncManagerUtils.getIndexOfChannel(mChannelList, removedChannel);
-            if (index != -1) {
-                mChannelList.remove(index);
-                notifyItemRemoved(index);
-            }
-        }
-    }
 
-    void addLast(List<GroupChannel> channel) {
-        mChannelList.addAll(channel);
-        notifyItemInserted(mChannelList.size() - 1);
+            if (new StringUtils().isActive(removedChannel.getData())) {
+                int index = SyncManagerUtils.getIndexOfChannel(isActiveChannel, removedChannel);
+                if (index != -1) {
+                    isActiveChannel.remove(index);
+                    notifyItemRemoved(index);
+                }
+            } else {
+                int index = SyncManagerUtils.getIndexOfChannel(isPastChannel, removedChannel);
+                if (index != -1) {
+                    isPastChannel.remove(index);
+                    notifyItemRemoved(index);
+                }
+            }
+
+        }
     }
 
     void updateOrInsert(BaseChannel channel) {
@@ -164,26 +252,39 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         GroupChannel groupChannel = (GroupChannel) channel;
 
-        for (int i = 0; i < mChannelList.size(); i++) {
-            if (mChannelList.get(i).getUrl().equals(groupChannel.getUrl())) {
-                mChannelList.remove(mChannelList.get(i));
-                mChannelList.add(0, groupChannel);
-                notifyDataSetChanged();
-                Log.v(GroupAllChatListAdapter.class.getSimpleName(), "Channel replaced.");
-                return;
+        if (new StringUtils().isActive(groupChannel.getData())) {
+
+            for (int i = 0; i < isActiveChannel.size(); i++) {
+                if (isActiveChannel.get(i).getUrl().equals(groupChannel.getUrl())) {
+                    isActiveChannel.remove(isActiveChannel.get(i));
+                    isActiveChannel.add(0, groupChannel);
+                    notifyDataSetChanged();
+                    return;
+                }
             }
+            isActiveChannel.add(0, groupChannel);
+
+        } else {
+
+            for (int i = 0; i < isPastChannel.size(); i++) {
+                if (isPastChannel.get(i).getUrl().equals(groupChannel.getUrl())) {
+                    isPastChannel.remove(isPastChannel.get(i));
+                    isPastChannel.add(0, groupChannel);
+                    notifyDataSetChanged();
+                    return;
+                }
+            }
+
+            isPastChannel.add(0, groupChannel);
+
         }
 
-        mChannelList.add(0, groupChannel);
         notifyDataSetChanged();
     }
 
-    void setOnItemClickListener(OnItemClickListener listener) {
+    void setOnItemClickListener(OnItemClickListener listener, OnQuestionClickListener questionListener) {
         mItemClickListener = listener;
-    }
-
-    void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        mItemLongClickListener = listener;
+        onQuestionClickListener = questionListener;
     }
 
     interface OnItemClickListener {
@@ -192,6 +293,14 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     interface OnItemLongClickListener {
         void onItemLongClick(GroupChannel channel);
+    }
+
+    interface OnQuestionClickListener {
+        void onItemClick(Question question);
+    }
+
+    interface OnQuestionLongClickListener {
+        void onItemLongClick(Question question);
     }
 
     /**
@@ -232,8 +341,20 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
             String subjectName = questionMap.get("subjectName") + "";
             subjectText.setText(subjectName);
-            Glide.with(mContext).load(questionMap.get("subjectAvatar"))
-                    .into(subjectIcon);
+
+            String subjectAvatar = (String) questionMap.get("subjectAvatar");
+            try {
+                if (subjectAvatar != null) {
+                    Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, Integer.parseInt(subjectAvatar));
+                    if (icon != null) {
+                        subjectIcon.setVisibility(View.VISIBLE);
+                        subjectIcon.setImageBitmap(icon);
+                    } else {
+                        subjectIcon.setVisibility(View.INVISIBLE);
+                    }
+                }
+            } catch (Exception ignore) {
+            }
 
             if (!new StringUtils().isActive(channel.getData())) {
                 subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
@@ -264,11 +385,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 lastMessageText.setVisibility(View.INVISIBLE);
             }
 
-            /*
-             * Set up the typing indicator.
-             * A typing indicator is basically just three dots contained within the layout
-             * that animates. The animation is implemented in the {@link TypingIndicator#animate() class}
-             */
             ArrayList<ImageView> indicatorImages = new ArrayList<>();
             indicatorImages.add(typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_1));
             indicatorImages.add(typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_2));
@@ -277,11 +393,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
             indicator.animate();
 
-            // debug
-//            typingIndicatorContainer.setVisibility(View.VISIBLE);
-//            lastMessageText.setText(("Someone is typing"));
-
-            // If someone in the channel is typing, display the typing indicator.
             if (channel.isTyping()) {
                 typingIndicatorContainer.setVisibility(View.VISIBLE);
                 lastMessageText.setText(("typing..."));
@@ -292,18 +403,81 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // Set an OnClickListener to this item.
             if (clickListener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        clickListener.onItemClick(channel);
-                    }
-                });
+                itemView.setOnClickListener(v -> clickListener.onItemClick(channel));
             }
 
             // Set an OnLongClickListener to this item.
             if (longClickListener != null) {
                 itemView.setOnLongClickListener(v -> {
                     longClickListener.onItemLongClick(channel);
+                    return true;
+                });
+            }
+        }
+
+    }
+
+    private class QuestionHolder extends RecyclerView.ViewHolder {
+
+        TextView subjectText, lastMessageText, unreadCountText, dateText;
+        LinearLayout typingIndicatorContainer;
+        ImageView subjectIcon;
+
+        QuestionHolder(View itemView) {
+            super(itemView);
+
+            subjectText = itemView.findViewById(R.id.text_group_channel_list_subject);
+            lastMessageText = itemView.findViewById(R.id.text_group_channel_list_message);
+            unreadCountText = itemView.findViewById(R.id.text_group_channel_list_unread_count);
+            dateText = itemView.findViewById(R.id.text_group_channel_list_date);
+            subjectIcon = itemView.findViewById(R.id.subjectIcon);
+
+            typingIndicatorContainer = itemView.findViewById(R.id.container_group_channel_list_typing_indicator);
+        }
+
+        void bind(int position, final Question question,
+                  @Nullable final OnQuestionClickListener questionClickListener,
+                  @Nullable final OnQuestionLongClickListener questionLongClickListener) {
+
+            subjectText.setText(question.getSubjectName());
+
+            try {
+                Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, question.getSubjectIcon());
+                if (icon != null) {
+                    subjectIcon.setVisibility(View.VISIBLE);
+                    subjectIcon.setImageBitmap(icon);
+                } else {
+                    subjectIcon.setVisibility(View.INVISIBLE);
+                }
+
+            } catch (Exception ignore) {
+            }
+
+            unreadCountText.setVisibility(View.GONE);
+            typingIndicatorContainer.setVisibility(View.GONE);
+
+            if (question.getQuestionText() != null) {
+                dateText.setVisibility(View.VISIBLE);
+                lastMessageText.setVisibility(View.VISIBLE);
+
+                // Display information about the most recently sent message in the channel.
+                dateText.setText(question.getDate());
+                lastMessageText.setText(question.getQuestionText());
+
+            } else {
+                dateText.setVisibility(View.INVISIBLE);
+                lastMessageText.setVisibility(View.INVISIBLE);
+            }
+
+            // Set an OnClickListener to this item.
+            if (questionClickListener != null) {
+                itemView.setOnClickListener(v -> questionClickListener.onItemClick(question));
+            }
+
+            // Set an OnLongClickListener to this item.
+            if (questionLongClickListener != null) {
+                itemView.setOnLongClickListener(v -> {
+                    questionLongClickListener.onItemLongClick(question);
                     return true;
                 });
             }

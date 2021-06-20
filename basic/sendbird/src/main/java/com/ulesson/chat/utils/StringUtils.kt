@@ -6,10 +6,10 @@ class StringUtils {
         @JvmStatic
         fun String.toMutableMap(): MutableMap<String, Any?> {
             return this.replace("{", "").replace("}", "")
-                    .split(",")
-                    .map { it.split("=") }
-                    .map { it.first().trim() to it.last().trim() }
-                    .toMap().toMutableMap()
+                .split(",")
+                .map { it.split("=") }
+                .map { it.first().trim() to it.last().trim() }
+                .toMap().toMutableMap()
         }
 
         fun String.isActive(): Boolean {

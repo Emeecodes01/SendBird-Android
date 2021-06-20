@@ -46,6 +46,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.sendbird.android.AdminMessage;
@@ -447,7 +448,7 @@ public class GroupChatFragment extends Fragment {
         Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
         String tutorProfileUrl = (String) questionMap.get("tutorUrl");
 
-        RequestOptions options = new RequestOptions()
+        RequestOptions options = new RequestOptions().transforms(new CircleCrop())
                 .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 .placeholder(R.drawable.profile_thumbnail)
                 .error(R.drawable.profile_thumbnail);
@@ -466,7 +467,18 @@ public class GroupChatFragment extends Fragment {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            new TimerUtils().getTime(mChannelUrl, channelCreate, (countDownTime) -> {
+            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+
+            int chatDuration = 0;
+            try {
+                String chatDurationString = (String) questionMap.get("chatDuration");
+                if (chatDurationString != null) {
+                    chatDuration = Integer.parseInt(chatDurationString);
+                }
+            } catch (Exception ignore) {
+            }
+
+            new TimerUtils().getTime(mChannelUrl, chatDuration, channelCreate, (countDownTime) -> {
 
                 chatStatus(true);
 
@@ -1012,7 +1024,7 @@ public class GroupChatFragment extends Fragment {
             chronometer.stop();
             chronometer.setBase(SystemClock.elapsedRealtime());
             chronometer.start();
-            chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText()+""));
+            chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText() + ""));
         }
     }
 

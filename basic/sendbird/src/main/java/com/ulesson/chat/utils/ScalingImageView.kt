@@ -113,7 +113,7 @@ class ScalingImageView : AppCompatImageView {
             if (desiredAspect != 0.0f) {
                 // See what our actual aspect ratio is
                 val actualAspect =
-                        (widthSize - pleft - pright).toFloat() / (heightSize - ptop - pbottom)
+                    (widthSize - pleft - pright).toFloat() / (heightSize - ptop - pbottom)
 
                 if (Math.abs(actualAspect - desiredAspect) > 0.0000001) {
 
@@ -155,16 +155,16 @@ class ScalingImageView : AppCompatImageView {
         }
 
         Log.i(
-                "F&C",
-                "Setting dimen $widthSize x $heightSize for $id Adjusted w/h:$resizeWidth/$resizeHeight"
+            "F&C",
+            "Setting dimen $widthSize x $heightSize for $id Adjusted w/h:$resizeWidth/$resizeHeight"
         )
         setMeasuredDimension(widthSize, heightSize)
     }
 
     private fun resolveAdjustedSize(
-            desiredSize: Int,
-            maxSize: Int,
-            measureSpec: Int
+        desiredSize: Int,
+        maxSize: Int,
+        measureSpec: Int
     ): Int {
         var result = desiredSize
         val specMode = MeasureSpec.getMode(measureSpec)

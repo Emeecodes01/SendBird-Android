@@ -11,7 +11,7 @@ class TimerUtils {
     private val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
 
     private var countdownTimer: CountDownTimer? = null
-    private var chronometer : Chronometer? = null
+    private var chronometer: Chronometer? = null
 
     fun timer(seconds: Long, onTick: (Long) -> Unit, finished: () -> Unit) {
 
@@ -28,7 +28,7 @@ class TimerUtils {
         }.start()
     }
 
-    fun countTime(context : Context, time : (Long) -> Unit){
+    fun countTime(context: Context, time: (Long) -> Unit) {
         chronometer = Chronometer(context)
         chronometer?.stop()
         chronometer?.base = SystemClock.elapsedRealtime()
@@ -38,13 +38,17 @@ class TimerUtils {
         }
     }
 
-    fun getTime(channelUrl: String, isChannelCreate: Boolean, countDownTime: (Int) -> Unit, timeOut: () -> Unit) {
+    fun getTime(
+        channelUrl: String,
+        chatDuration: Int,
+        isChannelCreate: Boolean,
+        countDownTime: (Int) -> Unit,
+        timeOut: () -> Unit
+    ) {
 
         if (isChannelCreate && PreferenceUtils.getEndTime()?.get(channelUrl) == -1) {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
-
-        val countTime = 10
 
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
@@ -52,8 +56,8 @@ class TimerUtils {
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-        val endHour = currentHour + ((currentMinutes + countTime) / 60)
-        val endMinutes = (currentMinutes + countTime) % 60
+        val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
+        val endMinutes = (currentMinutes + chatDuration) % 60
         val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
 
         when {
@@ -85,7 +89,7 @@ class TimerUtils {
 
     }
 
-    fun updateChannelData(channelUrl : String){
+    fun updateChannelData(channelUrl: String) {
         PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
     }
 

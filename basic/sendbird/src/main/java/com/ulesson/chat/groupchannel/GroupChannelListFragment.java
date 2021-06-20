@@ -23,6 +23,7 @@ import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.BaseFragment;
+import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.model.UserData;
 import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
@@ -56,11 +57,11 @@ public class GroupChannelListFragment extends BaseFragment {
         @Override
         public void onChannelEvent(final ChannelCollection channelCollection, final List<GroupChannel> list, final ChannelEventAction channelEventAction) {
 
-            groupChannelEmpty = false;
-
             if (getActivity() == null) {
                 return;
             }
+
+            groupChannelEmpty = false;
 
             getActivity().runOnUiThread(() -> {
                 if (mSwipeRefresh.isRefreshing()) {
@@ -76,9 +77,25 @@ public class GroupChannelListFragment extends BaseFragment {
                 }
 
                 switch (channelEventAction) {
+
                     case INSERT:
                         mChannelListAdapter.clearMap();
-                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), () -> chatActionsChannel.chatReceived());
+                        mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), new ChatActions() {
+                            @Override
+                            public void getPendingQuestions() {
+                                chatActionsChannel.getPendingQuestions();
+                            }
+
+                            @Override
+                            public void chatReceived() {
+                                chatActionsChannel.chatReceived();
+                            }
+
+                            @Override
+                            public void showDummyChat(@NotNull Question question) {
+                                chatActionsChannel.showDummyChat(question);
+                            }
+                        });
 
                         groupChannelEmpty = list.isEmpty();
 
@@ -149,7 +166,7 @@ public class GroupChannelListFragment extends BaseFragment {
         });
 
         if (getActivity() != null) {
-            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData));
+            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData, tutorActionsChannel, chatActionsChannel));
             mChannelListAdapter = new GroupChannelListAdapter(getActivity());
         }
 
@@ -248,8 +265,21 @@ public class GroupChannelListFragment extends BaseFragment {
             public void showTutorProfile(List<? extends Member> members) {
                 tutorActionsChannel.showTutorProfile(members);
             }
-        }, () -> {
+        }, new ChatActions() {
+            @Override
+            public void getPendingQuestions() {
+                chatActionsChannel.getPendingQuestions();
+            }
 
+            @Override
+            public void chatReceived() {
+                chatActionsChannel.chatReceived();
+            }
+
+            @Override
+            public void showDummyChat(@NotNull Question question) {
+                chatActionsChannel.showDummyChat(question);
+            }
         });
 
         if (getActivity() != null && !fragment.isAdded()) {
@@ -282,12 +312,12 @@ public class GroupChannelListFragment extends BaseFragment {
 
                 if (groupChannelEmpty) {
                     mRecyclerView.setVisibility(View.GONE);
-                    seeAllBtn.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);
                 } else {
                     noChatCard.setVisibility(View.GONE);
-                    mRecyclerView.setVisibility(View.VISIBLE);
                     seeAllBtn.setVisibility(View.VISIBLE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                    mRecyclerView.smoothScrollToPosition(0);
                 }
                 chatActionsChannel.chatReceived();
 

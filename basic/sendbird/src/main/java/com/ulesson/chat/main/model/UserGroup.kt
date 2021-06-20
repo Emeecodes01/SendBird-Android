@@ -6,4 +6,5 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 
 @Parcelize
-data class UserGroup(val channelUrl: String, val groupChannelParams: @RawValue GroupChannelParams) : Parcelable
+data class UserGroup(val channelUrl: String, val groupChannelParams: @RawValue GroupChannelParams) :
+    Parcelable

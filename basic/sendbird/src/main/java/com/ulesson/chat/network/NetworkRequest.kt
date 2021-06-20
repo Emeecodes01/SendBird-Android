@@ -11,7 +11,11 @@ class NetworkRequest {
 
     private var api = RetrofitInstance().getClient().create(Api::class.java)
 
-    fun createUser(userData: ConnectUserRequest, createUserResponse: (UserResponse) -> Unit, error: (String) -> Unit) {
+    fun createUser(
+        userData: ConnectUserRequest,
+        createUserResponse: (UserResponse) -> Unit,
+        error: (String) -> Unit
+    ) {
 
         api.createUser(userData).enqueue(object : Callback<UserResponse> {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
@@ -30,7 +34,11 @@ class NetworkRequest {
         })
     }
 
-    fun updateUser(userData: UpdateUserRequest, createUserResponse: (UserResponse) -> Unit, error: (String) -> Unit) {
+    fun updateUser(
+        userData: UpdateUserRequest,
+        createUserResponse: (UserResponse) -> Unit,
+        error: (String) -> Unit
+    ) {
 
         api.updateUser(userData.user_id, userData).enqueue(object : Callback<UserResponse> {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {

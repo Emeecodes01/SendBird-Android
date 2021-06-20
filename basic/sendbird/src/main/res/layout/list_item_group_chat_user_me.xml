@@ -53,8 +53,8 @@
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
             android:scaleType="centerInside"
-            tools:src="@drawable/bg_btn_next_lesson"
             android:visibility="gone"
+            tools:src="@drawable/bg_btn_next_lesson"
             tools:visibility="visible" />
 
         <com.ulesson.chat.utils.CustomFontTextView
