@@ -39,6 +39,9 @@ public class FileUtils {
     public static Hashtable<String, Object> getFileInfo(Context context, Uri uri) {
         try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
             String mime = context.getContentResolver().getType(uri);
+//            if (mime == "video/3gpp") {
+//                mime = "audio/3gpp";
+//            }
             if (cursor != null) {
                 int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                 int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);

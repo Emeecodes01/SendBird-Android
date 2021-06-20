@@ -63,7 +63,8 @@ public class MediaUtils extends Activity {
             File tempFile = File.createTempFile("SendBird_" + System.currentTimeMillis(), ".jpg", imagePath);
 
             if (Build.VERSION.SDK_INT >= 24) {
-                mTempPhotoUri = FileProvider.getUriForFile(this, "com.ulesson.debug.theprovider", tempFile);
+                mTempPhotoUri = FileProvider.getUriForFile(this, "com.ulesson.chat.theprovider", tempFile);
+//                mTempPhotoUri = FileProvider.getUriForFile(this, "com.ulesson.debug.theprovider", tempFile);
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 

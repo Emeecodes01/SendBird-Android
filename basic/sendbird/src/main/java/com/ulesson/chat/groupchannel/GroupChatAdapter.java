@@ -1,13 +1,20 @@
 package com.ulesson.chat.groupchannel;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sendbird.android.AdminMessage;
@@ -15,6 +22,7 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FileMessage;
 import com.sendbird.android.GroupChannel;
+import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.UserMessage;
@@ -25,6 +33,8 @@ import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.widget.MessageStatusView;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,6 +42,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final String URL_PREVIEW_CUSTOM_TYPE = "url_preview";
@@ -44,6 +55,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER = 23;
     private static final int VIEW_TYPE_FILE_MESSAGE_VIDEO_ME = 24;
     private static final int VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER = 25;
+    private static final int VIEW_TYPE_FILE_MESSAGE_AUDIO_ME = 26;
+    private static final int VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER = 27;
     private static final int VIEW_TYPE_ADMIN_MESSAGE = 30;
     private final List<BaseMessage> mFailedMessageList;
     private final List<BaseMessage> mMessageList;
@@ -107,6 +120,17 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         .inflate(R.layout.list_item_group_chat_file_video_other, parent, false);
                 return new OtherVideoFileMessageHolder(otherVideoFileMsgView);
 
+
+            case VIEW_TYPE_FILE_MESSAGE_AUDIO_ME:
+                View meFileMsgView =  LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_group_chat_file_audio_me,
+                        parent, false);;
+                return new MeAudioFileMessageViewHolder(meFileMsgView);
+
+            case VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER:
+                View otherAudioFileMsgView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_group_chat_file_audio_other,
+                        parent, false);
+                return new OtherAudioFileMessageViewHolder(otherAudioFileMsgView);
+
             default:
                 return null;
 
@@ -169,8 +193,29 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
                 ((OtherVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
                 break;
+
+            case VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER:
+                ((OtherAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, mItemClickListener);
+                break;
+
+            case VIEW_TYPE_FILE_MESSAGE_AUDIO_ME:
+                ((MeAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, isContinuous, mItemClickListener);
+                break;
             default:
                 break;
+        }
+
+    }
+
+
+    @Override
+    public void onViewRecycled(@NonNull @NotNull RecyclerView.ViewHolder holder) {
+        if (holder.getItemViewType() == VIEW_TYPE_FILE_MESSAGE_AUDIO_ME) {
+            ((MeAudioFileMessageViewHolder) holder).cleanUp();
+        }
+
+        if (holder.getItemViewType() == VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER) {
+            ((OtherAudioFileMessageViewHolder) holder).cleanUp();
         }
     }
 
@@ -204,6 +249,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
                     }
 
+                } else if(fileMessage.getType().toLowerCase().startsWith("video/3gpp")) {
+                    //NOTE: THIS IS ACTUALLY AN AUDIO FILE
+                    if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
+                        return VIEW_TYPE_FILE_MESSAGE_AUDIO_ME;
+                    } else {
+                        return VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER;
+                    }
                 } else if (fileMessage.getType().toLowerCase().startsWith("video")) {
                     if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                         return VIEW_TYPE_FILE_MESSAGE_VIDEO_ME;
@@ -1106,6 +1158,325 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 });
             }
         }
+    }
+
+
+
+    private class OtherAudioFileMessageViewHolder extends RecyclerView.ViewHolder {
+        ImageView btnPlayPause;
+        TextView tvDuration;
+        SeekBar seekBar;
+        MessageStatusView messageStatusView;
+        ProgressBar progressBar;
+        boolean isPlaying = false;
+        MediaPlayer player;
+        final private String format = "%02d:%02d";
+
+
+        private Handler mSeekbarUpdateHandler = new Handler();
+        private Runnable mUpdateSeekbar = new Runnable() {
+            @Override
+            public void run() {
+                double duration = player.getDuration();
+                double pos = player.getCurrentPosition();
+
+                updateDurationTxt((int) pos);
+
+                int progressPercent = (int) ((pos/duration)*100.0);
+                seekBar.setProgress(progressPercent);
+                mSeekbarUpdateHandler.postDelayed(this, 50);
+            }
+        };
+
+
+        public OtherAudioFileMessageViewHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+
+            btnPlayPause = itemView.findViewById(R.id.mv_play_pause);
+            tvDuration = itemView.findViewById(R.id.tv_duration);
+            seekBar = itemView.findViewById(R.id.seekBar);
+            messageStatusView = itemView.findViewById(R.id.message_status_group_chat);
+            progressBar = itemView.findViewById(R.id.progressBar);
+        }
+
+        void bind(Context context, final FileMessage message, GroupChannel channel,
+                  boolean isNewDay, final OnItemClickListener listener) {
+
+            messageStatusView.drawMessageStatus(channel, message);
+            player = new MediaPlayer();
+            try {
+                player.setAudioAttributes(
+                        new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .build()
+                );
+                player.setDataSource(message.getUrl());
+                player.prepareAsync();
+                showLoaderProgress();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        player.pause();
+                        int playerPosition = (int) (player.getDuration() * (progress/100.0));
+
+                        updateDurationTxt(playerPosition);
+
+                        player.seekTo(playerPosition);
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
+
+            player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+                @Override
+                public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                    seekBar.setSecondaryProgress(percent);
+                }
+            });
+
+
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                    seekBar.setProgress(100);
+                }
+            });
+
+            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    hideLoaderProgress();
+                    updateDurationTxt(mp.getDuration());
+                    seekBar.setProgress(0);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                }
+            });
+
+            btnPlayPause.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    if (!player.isPlaying()) {
+                        player.start();
+                        mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
+                        btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
+                    } else  {
+                        player.pause();
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+                    }
+                }
+
+            });
+
+        }
+
+
+        private void hideLoaderProgress() {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvDuration.setVisibility(View.VISIBLE);
+        }
+
+        private void showLoaderProgress() {
+            progressBar.setVisibility(View.VISIBLE);
+            tvDuration.setVisibility(View.INVISIBLE);
+        }
+
+        private void updateDurationTxt(int playerPosition){
+            String hms = String.format(format,
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((int)playerPosition)),
+                    TimeUnit.MILLISECONDS.toSeconds((int)playerPosition) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((int)playerPosition)));
+
+            tvDuration.setText(hms);
+        }
+
+        private void cleanUp() {
+            player.release();
+            player = null;
+            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+        }
+
+    }
+
+
+    private class MeAudioFileMessageViewHolder extends RecyclerView.ViewHolder {
+        ImageView btnPlayPause;
+        TextView tvDuration;
+        SeekBar seekBar;
+        MessageStatusView messageStatusView;
+        ProgressBar progressBar;
+        boolean isPlaying = false;
+        MediaPlayer player;
+        final private String format = "%02d:%02d";
+
+
+        private Handler mSeekbarUpdateHandler = new Handler();
+        private Runnable mUpdateSeekbar = new Runnable() {
+            @Override
+            public void run() {
+                double duration = player.getDuration();
+                double pos = player.getCurrentPosition();
+
+                updateDurationTxt((int) pos);
+
+                int progressPercent = (int) ((pos / duration) * 100.0);
+                seekBar.setProgress(progressPercent);
+                mSeekbarUpdateHandler.postDelayed(this, 50);
+            }
+        };
+
+        public MeAudioFileMessageViewHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+
+            btnPlayPause = itemView.findViewById(R.id.mv_play_pause);
+            tvDuration = itemView.findViewById(R.id.tv_duration);
+            seekBar = itemView.findViewById(R.id.seekBar);
+            messageStatusView = itemView.findViewById(R.id.message_status_group_chat);
+            progressBar = itemView.findViewById(R.id.progressBar);
+        }
+
+        void bind(Context context, final FileMessage message, GroupChannel channel,
+                  boolean isNewDay, boolean isTempMessage, Uri tempFileMessageUri,
+                  boolean isContinuous,
+                  final OnItemClickListener listener) {
+            messageStatusView.drawMessageStatus(channel, message);
+            player = new MediaPlayer();
+
+            try {
+                if (isTempMessage && tempFileMessageUri != null) {
+                    player.setDataSource(context, tempFileMessageUri);
+                    player.prepareAsync();
+                    showLoaderProgress();
+                } else {
+                    player.setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .build()
+                    );
+                    player.setDataSource(message.getUrl());
+                    player.prepareAsync();
+                    showLoaderProgress();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        player.pause();
+                        int playerPosition = (int) (player.getDuration() * (progress / 100.0));
+
+                        updateDurationTxt(playerPosition);
+
+                        player.seekTo(playerPosition);
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                    }
+                }
+
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
+
+            player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+                @Override
+                public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                    seekBar.setSecondaryProgress(percent);
+                }
+            });
+
+
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                    seekBar.setProgress(100);
+                }
+            });
+
+            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    hideLoaderProgress();
+                    updateDurationTxt(mp.getDuration());
+                    seekBar.setProgress(0);
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                }
+            });
+
+            btnPlayPause.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    if (!player.isPlaying()) {
+                        player.start();
+                        mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
+                        btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
+                    } else {
+                        player.pause();
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+                    }
+                }
+
+            });
+
+        }
+
+        private void hideLoaderProgress() {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvDuration.setVisibility(View.VISIBLE);
+        }
+
+        private void showLoaderProgress() {
+            progressBar.setVisibility(View.VISIBLE);
+            tvDuration.setVisibility(View.INVISIBLE);
+        }
+
+        private void updateDurationTxt(int playerPosition) {
+            String hms = String.format(format,
+                    TimeUnit.MILLISECONDS.toMinutes(playerPosition) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours((int) playerPosition)),
+                    TimeUnit.MILLISECONDS.toSeconds((int) playerPosition) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((int) playerPosition)));
+
+            tvDuration.setText(hms);
+        }
+
+
+        private void cleanUp() {
+            player.release();
+            player = null;
+            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
+        }
+
     }
 }
 
