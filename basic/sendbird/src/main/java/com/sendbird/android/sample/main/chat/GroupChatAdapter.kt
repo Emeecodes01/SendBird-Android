@@ -33,10 +33,33 @@ class ChatDiffUtil : DiffUtil.ItemCallback<BaseMessage>() {
     }
 
     override fun areContentsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
-        return oldItem == newItem
+        return isItemTheSame(oldItem, newItem)
+    }
+
+    private fun isItemTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
+        return when(oldItem) {
+            is FileMessage -> {
+                (newItem as FileMessage)
+                if (oldItem.type.startsWith("image")
+                    || newItem.type.startsWith("image")) {
+                    return (oldItem.thumbnails[0].url == newItem.thumbnails[0].url)
+                            && (oldItem.sendingStatus == newItem.sendingStatus)
+                } else if (oldItem.type.startsWith("video/3gpp") || newItem.type.startsWith("video/3gpp")) {
+                    return oldItem.url == newItem.url &&
+                            oldItem.sendingStatus == newItem.sendingStatus
+                }
+                return false
+            }
+            is UserMessage -> {
+                oldItem.message == newItem.message
+                        && oldItem.sendingStatus == newItem.sendingStatus
+            }
+            else -> oldItem.toString() == newItem.toString()
+        }
     }
 
 }
+
 
 internal class GroupChatAdapter(private var mContext: Context) :
     ListAdapter<BaseMessage, RecyclerView.ViewHolder>(ChatDiffUtil()) {
@@ -513,6 +536,11 @@ internal class GroupChatAdapter(private var mContext: Context) :
         submitList(mMessageList)
         //notifyDataSetChanged()
         // mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
+    }
+
+    //this correspond to onDataSetChange
+    fun resubmitList() {
+        submitList(mMessageList)
     }
 
 
@@ -1306,7 +1334,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
         var tvDuration: TextView? = null
         var seekBar: SeekBar? = null
         var progressBar: ProgressBar? = null
-        var messageStatusView: MessageStatusView? = null
+        //var messageStatusView: MessageStatusView? = null
         var isPlaying = false
         var player: MediaPlayer? = null
         private val format = "%02d:%02d"
@@ -1330,7 +1358,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
             isNewDay: Boolean,
             listener: OnItemClickListener?
         ) {
-            messageStatusView?.drawMessageStatus(channel, message)
+            //messageStatusView?.drawMessageStatus(channel, message)
             player = MediaPlayer()
             try {
                 player!!.setAudioAttributes(
@@ -1426,7 +1454,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
             btnPlayPause = itemView.findViewById(R.id.mv_play_pause)
             tvDuration = itemView.findViewById(R.id.tv_duration)
             seekBar = itemView.findViewById(R.id.seekBar)
-            messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
+            //messageStatusView = itemView.findViewById(R.id.message_status_group_chat)
             progressBar = itemView.findViewById(R.id.player_loader)
         }
     }

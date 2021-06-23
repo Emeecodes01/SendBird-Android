@@ -117,6 +117,7 @@ class GroupChatFragment : Fragment() {
     private var icVoice2: ImageView? = null
     private var cancelRecordTv: TextView? = null
     private var newFile: File? = null
+    private var timerStarted: Boolean = false
 
     val mMessageFilter = MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null)
 
@@ -250,7 +251,7 @@ class GroupChatFragment : Fragment() {
             if (recordVoice) {
                 if (!isRecording) {
                     recordVoice()
-                    mRecordVoiceButton?.setImageResource(R.drawable.ic_send_btn)
+
                 } else {
                     voiceView(false)
                     isRecording = false
@@ -395,19 +396,26 @@ class GroupChatFragment : Fragment() {
         findNavController().navigate(direction)
     }
 
-    private fun countTime(minute: Long) {
+    private fun countTime(minute: Long, timerMillis: Long) {
         if (minute != 0L) {
-            timer(minute)
+            timer(minute, timerMillis)
         } else {
             requireActivity().finish()
         }
+
+        timerFrame!!.visibility = View.VISIBLE
         if (minute == 5L && !viewOnly) {
             timerFrame!!.visibility = View.VISIBLE
         }
     }
 
-    private fun timer(minute: Long) {
-        countDownTimer = object : CountDownTimer(minute * 60 * 1000, 1000) {
+    private fun timer(minute: Long, millis: Long) {
+        if (countDownTimer != null) {
+            countDownTimer?.cancel()
+        }
+
+
+        countDownTimer = object : CountDownTimer(millis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
 
                 val mins = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
@@ -484,11 +492,6 @@ class GroupChatFragment : Fragment() {
         }
     }
 
-
-    private fun retrieveSessionTimeCounter(groupChannel: GroupChannel?) {
-        startChatTimer()
-    }
-
     private fun extractAndStartTimer() {
         mChannel?.let { channel ->
 
@@ -516,15 +519,19 @@ class GroupChatFragment : Fragment() {
             val dateNow = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
                 .format(System.currentTimeMillis())
 
-            val nowMillis =  SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+            val nowMillis = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
                 .parse(dateNow)
 
             val elapse = nowMillis.time - date.time
             val elapseMins = TimeUnit.MILLISECONDS.toMinutes(elapse)
-            val countDown = CHAT_SESSION_DURATION - abs(elapseMins)
+            val chatDuration = map["chatDuration"].toString().toInt()
+            val countDown = chatDuration - abs(elapseMins)
 
             val countDownMillis = TimeUnit.MINUTES.toMillis(countDown)
-            countTime(countDown)
+
+            //use this value for the timer
+            val timerMillis = TimeUnit.MINUTES.toMillis(chatDuration.toLong()) - elapse
+            countTime(countDown, timerMillis)
 
             if (countDownMillis > 0) {
                 shMgr.scheduleEndChat(countDownMillis)
@@ -543,8 +550,22 @@ class GroupChatFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        //startChatTimer()
 
+        if (mChannel != null) {
+            startChatTimer()
+        } else {
+            GroupChannel.getChannel(groupChatFragmentArgs.channelUrl) { channel: GroupChannel?, error: SendBirdException? ->
+                if (error != null) {
+                    error.printStackTrace()
+                    return@getChannel
+                }
+
+                mChannel = channel
+                startChatTimer()
+            }
+        }
+
+        fetchInitialMessages()
         //ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) { refresh() }
         mChatAdapter!!.setContext(requireContext()) // Glide bug fix (java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity)
 
@@ -554,7 +575,10 @@ class GroupChatFragment : Fragment() {
 
 
         SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, object : SendBird.ConnectionHandler {
-            override fun onReconnectStarted() {}
+            override fun onReconnectStarted() {
+                //Toast.makeText(requireContext(), "-- RECONNECTED --", Toast.LENGTH_SHORT).show()
+            }
+
             override fun onReconnectSucceeded() {
                 if (mMessageCollection != null) {
                     if (mLayoutManager!!.findFirstVisibleItemPosition() <= 0) {
@@ -568,7 +592,9 @@ class GroupChatFragment : Fragment() {
                 }
             }
 
-            override fun onReconnectFailed() {}
+            override fun onReconnectFailed() {
+                //Toast.makeText(requireContext(), "-- FAILED --", Toast.LENGTH_SHORT).show()
+            }
         })
 
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, object : SendBird.ChannelHandler() {
@@ -662,7 +688,7 @@ class GroupChatFragment : Fragment() {
             mLayoutManager!!.reverseLayout = true
             mLayoutManager?.stackFromEnd = true
             mRecyclerView!!.layoutManager = mLayoutManager
-            //mRecyclerView!!.setItemViewCacheSize(50)
+            mRecyclerView!!.setItemViewCacheSize(30)
             mRecyclerView!!.adapter = mChatAdapter
 
             mRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -708,7 +734,7 @@ class GroupChatFragment : Fragment() {
                 if (message!!.data.isNotEmpty()) {
                     val i = Intent(activity, PhotoViewerActivity::class.java)
                     i.putExtra("url", message.data)
-                    i.putExtra("type","network")
+                    i.putExtra("type", "network")
                     startActivity(i)
                     return
                 }
@@ -755,7 +781,7 @@ class GroupChatFragment : Fragment() {
 
         //mChatAdapter?.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
-        mChatAdapter?.setProgressListener(object: GroupChatAdapter.Progress{
+        mChatAdapter?.setProgressListener(object : GroupChatAdapter.Progress {
             override fun onProgressChange(position: Int) {
                 mRecyclerView?.scrollToPosition(position)
             }
@@ -873,7 +899,6 @@ class GroupChatFragment : Fragment() {
                                 activity!!.runOnUiThread {
                                     mChatAdapter?.clear()
                                     setUpUIChannelElements()
-                                    //retrieveSessionTimeCounter(mChannel)
                                 }
                                 fetchInitialMessages()
                             } else {
@@ -897,7 +922,6 @@ class GroupChatFragment : Fragment() {
                     mChatAdapter?.clear()
                     updateActionBarTitle()
                     fetchInitialMessages()
-                    //retrieveSessionTimeCounter(mChannel)
                 }
             }
         })
@@ -945,7 +969,7 @@ class GroupChatFragment : Fragment() {
                             mChatAdapter!!.markAllMessagesAsRead()
                             val lastReadPos = mChatAdapter!!.itemCount
                             smoothScroller.targetPosition = 0
-                                //mChatAdapter!!.getLastReadPosition(mLastRead)
+                            //mChatAdapter!!.getLastReadPosition(mLastRead)
                             mLayoutManager?.startSmoothScroll(smoothScroller)
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
@@ -980,7 +1004,7 @@ class GroupChatFragment : Fragment() {
                             }
                             mChatAdapter?.insertSucceededMessages(pendingMessages)
                             smoothScroller.targetPosition = 0
-                                //mChatAdapter!!.getLastReadPosition(mLastRead);
+                            //mChatAdapter!!.getLastReadPosition(mLastRead);
                             mLayoutManager?.startSmoothScroll(smoothScroller);
                         }
                         MessageEventAction.REMOVE -> mChatAdapter?.removeSucceededMessages(messages)
@@ -1128,12 +1152,17 @@ class GroupChatFragment : Fragment() {
         }
 
         //We need this to set the file output type
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             != PackageManager.PERMISSION_GRANTED
         ) {
             requestStoragePermissions()
             return
         }
+
+
         if (isRecording) {
             voiceView(false)
             isRecording = false
@@ -1162,11 +1191,13 @@ class GroupChatFragment : Fragment() {
         if (show) {
             textGroup?.visibility = View.INVISIBLE
             recordGroup?.visibility = View.VISIBLE
+            mRecordVoiceButton?.setImageResource(R.drawable.ic_send_btn)
 //            icVoice?.setImageResource(R.drawable.ic_voice)
 //            icVoice1?.setImageResource(R.drawable.ic_voice1)
         } else {
             recordGroup?.visibility = View.GONE
             textGroup?.visibility = View.VISIBLE
+            mRecordVoiceButton?.setImageResource(R.drawable.ic_mic)
 //            icVoice1?.setImageResource(R.drawable.ic_voice)
 //            icVoice1?.visibility = View.VISIBLE
         }
@@ -1476,7 +1507,8 @@ class GroupChatFragment : Fragment() {
                     Log.d("MyTag", "onSent: " + getActivity());
                     if (getActivity() != null) {
                         Toast.makeText(activity, "" + e.code + ":" + e.message, Toast.LENGTH_SHORT)
-                            .show()                    }
+                            .show()
+                    }
                 }
 
 //                if (e != null) {

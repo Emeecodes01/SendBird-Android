@@ -65,7 +65,8 @@ class UlessonRetrofitInstance {
         PreferenceUtils.getUlessonApiToken()
     }
 
-    private val baseUrl = "http://dev-tutorbackend.ulesson.com"
+    private val baseUrl = "https://staging-tutor-backend.ulesson.com"
+    private val baseUrlUAT = "https://uat-tutor-backend.ulesson.com/"
 
     fun getClient(): Retrofit {
 
@@ -91,7 +92,7 @@ class UlessonRetrofitInstance {
             }).build()
 
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(baseUrlUAT)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
