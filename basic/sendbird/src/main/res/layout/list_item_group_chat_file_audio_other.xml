@@ -60,10 +60,12 @@
 
         <ProgressBar
             android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_marginStart="8dp"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/audio_progress_other"
+            android:visibility="gone"
             android:layout_marginEnd="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

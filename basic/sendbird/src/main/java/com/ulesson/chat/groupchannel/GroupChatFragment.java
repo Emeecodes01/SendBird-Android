@@ -580,7 +580,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void sendAudio() {
-        Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".theprovider", newFile);
+        Uri uri = FileProvider.getUriForFile(getContext(), "com.ulesson.debug.theprovider", newFile);
         sendFileWithThumbnail(uri);
     }
 

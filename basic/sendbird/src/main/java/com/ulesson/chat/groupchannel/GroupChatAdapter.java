@@ -32,7 +32,6 @@ import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.widget.MessageStatusView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1154,7 +1153,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         MediaPlayer player;
         MessageStatusView messageStatusView;
         ProgressBar progressBar;
-        boolean isPlaying = false;
         boolean isAudioLoaded = false;
 
         final private String format = "%02d:%02d";
@@ -1240,7 +1238,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             player.setOnCompletionListener(mp -> {
                 mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
-                btnPlayPause.setImageResource(R.drawable.ic_play);
+                btnPlayPause.setImageResource(R.drawable.ic_audio_play_me);
                 seekBar.setProgress(100);
             });
 
@@ -1249,27 +1247,26 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 isAudioLoaded = true;
                 updateDurationTxt(mp.getDuration());
                 seekBar.setProgress(0);
-                btnPlayPause.setImageResource(R.drawable.ic_play);
+                btnPlayPause.setImageResource(R.drawable.ic_audio_play_me);
             });
 
             btnPlayPause.setOnClickListener(v -> {
 
                 if (!isAudioLoaded) {
                     progressBar.setVisibility(View.VISIBLE);
-                    showLoaderProgress();
                     try {
                         player.prepareAsync();
                     } catch (Exception ignore) {
                     }
-
+                    showLoaderProgress();
                 } else {
                     if (!player.isPlaying()) {
                         player.start();
                         mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
-                        btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
+                        btnPlayPause.setImageResource(R.drawable.ic_audio_pause_me);
                     } else {
                         player.pause();
-                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                        btnPlayPause.setImageResource(R.drawable.ic_audio_play_me);
                         mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
                     }
 
@@ -1314,7 +1311,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         MessageStatusView messageStatusView;
         ProgressBar progressBar;
         MediaPlayer player;
-        boolean isPlaying = false;
         boolean isAudioLoaded = false;
         final private String format = "%02d:%02d";
 
@@ -1351,6 +1347,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             try {
                 player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                player.setDataSource(message.getUrl());
                 player.setAudioAttributes(
                         new AudioAttributes.Builder()
                                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -1403,26 +1400,25 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             });
 
             btnPlayPause.setOnClickListener(v -> {
-                if (!player.isPlaying()) {
 
-                    if (!isAudioLoaded) {
-                        try {
-                            player.setDataSource(message.getUrl());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        showLoaderProgress();
+                if (!isAudioLoaded) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    try {
                         player.prepareAsync();
-                    } else {
+                    } catch (Exception ignore) {
+                    }
+                    showLoaderProgress();
+                } else {
+                    if (!player.isPlaying()) {
                         player.start();
                         mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0);
                         btnPlayPause.setImageResource(R.drawable.ic_pause_btn);
+                    } else {
+                        player.pause();
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                        mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
                     }
 
-                } else {
-                    player.pause();
-                    btnPlayPause.setImageResource(R.drawable.ic_play);
-                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
                 }
             });
 
@@ -1449,6 +1445,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private void cleanUp() {
             player.release();
             player = null;
+            isAudioLoaded = false;
+            tvDuration.setVisibility(View.GONE);
             mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
         }
 

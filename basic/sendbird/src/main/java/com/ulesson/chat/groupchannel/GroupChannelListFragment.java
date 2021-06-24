@@ -27,6 +27,7 @@ import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.model.UserData;
 import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
+import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.utils.CustomFontButton;
 
@@ -34,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+
+import kotlin.Unit;
 
 public class GroupChannelListFragment extends BaseFragment {
 
@@ -325,7 +328,13 @@ public class GroupChannelListFragment extends BaseFragment {
 
         } catch (Exception e) {
             if (getContext() != null) {
-                Toast.makeText(getContext(), "Please refresh your dashboard to display your chats", Toast.LENGTH_LONG).show();
+                if (getContext() != null) {
+                    new Connect().refreshChannel(() -> {
+                        refresh();
+                        return Unit.INSTANCE;
+                    }, () -> Unit.INSTANCE);
+                    Toast.makeText(getContext(), "Please refresh app to show your chats", Toast.LENGTH_LONG).show();
+                }
             }
         }
 

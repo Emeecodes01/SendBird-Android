@@ -27,6 +27,7 @@ import com.ulesson.chat.R;
 import com.ulesson.chat.groupchannel.GroupChatFragment;
 import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.sendBird.ChatActions;
+import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.utils.CustomFontTextView;
 
@@ -34,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+
+import kotlin.Unit;
 
 public class GroupAllChatListFragment extends Fragment {
 
@@ -272,7 +275,7 @@ public class GroupAllChatListFragment extends Fragment {
             mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
             mChannelCollection.fetch(e -> {
 
-                if (getArguments() != null){
+                if (getArguments() != null) {
                     String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
                     List<GroupChannel> groupChannelList = mChannelListAdapter.insertChannels(null, mChannelCollection.getQuery().getOrder(), chatType);
                     groupChannelEmpty = groupChannelList.isEmpty();
@@ -299,8 +302,14 @@ public class GroupAllChatListFragment extends Fragment {
             }
 
         } catch (Exception e) {
+
             if (getContext() != null) {
-                Toast.makeText(getContext(), "Please refresh your dashboard to display your chats", Toast.LENGTH_LONG).show();
+                new Connect().refreshChannel(() -> {
+                    refresh();
+                    return Unit.INSTANCE;
+                }, () -> Unit.INSTANCE);
+
+                Toast.makeText(getContext(), "Please refresh app to show your chats", Toast.LENGTH_LONG).show();
             }
         }
 

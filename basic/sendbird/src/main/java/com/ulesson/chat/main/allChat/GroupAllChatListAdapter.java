@@ -150,6 +150,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         //set pending questions list
         List<Question> pendingQuestions = PreferenceUtils.getPendingQuestions();
+        isPendingChannel.clear();
         questionList.clear();
 
         for (Question question : pendingQuestions) {

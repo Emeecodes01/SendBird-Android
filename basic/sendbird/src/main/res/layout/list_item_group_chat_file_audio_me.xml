@@ -24,12 +24,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:progressTint="#7B7FDA"
+            android:progressTint="#FFFFFF"
             android:progressTintMode="src_in"
             android:secondaryProgress="80"
-            android:secondaryProgressTint="@android:color/holo_red_dark"
+            android:secondaryProgressTint="#4DFFFFFF"
             android:secondaryProgressTintMode="src_in"
-            android:thumbTint="#7B7FDA"
+            android:thumbTint="#FFFFFF"
             android:thumbTintMode="src_in"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/tv_duration"
@@ -45,7 +45,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_play" />
+            app:srcCompat="@drawable/ic_audio_play_me" />
 
         <TextView
             android:id="@+id/tv_duration"
@@ -53,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:visibility="invisible"
+            android:textColor="#FFFFFF"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -60,9 +61,10 @@
 
         <ProgressBar
             android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/audio_progress_me"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:visibility="gone"
