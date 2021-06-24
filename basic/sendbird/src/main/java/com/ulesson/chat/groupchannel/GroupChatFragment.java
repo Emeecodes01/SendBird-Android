@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -35,6 +36,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Group;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
@@ -63,6 +65,7 @@ import com.sendbird.syncmanager.handler.MessageCollectionHandler;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
+import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.utils.ChatGenericDialog;
 import com.ulesson.chat.utils.CustomFontButton;
@@ -79,7 +82,9 @@ import com.ulesson.chat.utils.WebUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -136,6 +141,11 @@ public class GroupChatFragment extends Fragment {
     private MessageCollection mMessageCollection;
     private RecyclerView.SmoothScroller smoothScroller;
     private long mLastRead;
+
+    final private String[] recordPermission = {Manifest.permission.RECORD_AUDIO};
+    final private int RECORD_AUDIO_REQUEST_CODE = 1000;
+    private MediaRecorder mMediaRecorder;
+
     private final MessageCollectionHandler mMessageCollectionHandler = new MessageCollectionHandler() {
         @Override
         public void onMessageEvent(MessageCollection collection, final List<BaseMessage> messages, final MessageEventAction action) {
@@ -190,7 +200,7 @@ public class GroupChatFragment extends Fragment {
                                 pendingMessages.add(message);
                             }
                         }
-                        mChatAdapter.insertSucceededMessages(pendingMessages);
+//                        mChatAdapter.insertSucceededMessages(pendingMessages);
                         smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
                         mLayoutManager.startSmoothScroll(smoothScroller);
                         break;
@@ -233,6 +243,7 @@ public class GroupChatFragment extends Fragment {
     };
 
     private View rootView;
+    private File newFile;
 
     public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
         GroupChatFragment groupChatFragment = new GroupChatFragment();
@@ -315,7 +326,12 @@ public class GroupChatFragment extends Fragment {
 
             mUploadFileButton.setOnClickListener(v -> pickMedia());
             button_voice.setOnClickListener(v -> recordVoice());
-            cancelRecord.setOnClickListener(v -> recordVoice());
+            cancelRecord.setOnClickListener(v -> {
+                recordVoice();
+                if (newFile != null) {
+                    newFile.delete();
+                }
+            });
 
             mIsTyping = false;
 
@@ -480,7 +496,7 @@ public class GroupChatFragment extends Fragment {
                 return Unit.INSTANCE;
             });
         } else {
-            chatStatus(false);
+//            chatStatus(false);
             updateChat();
         }
 
@@ -532,6 +548,20 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void sendTextMessage(GroupChannel groupChannel) {
+
+        if (isRecording) {
+            voiceView(false);
+            isRecording = false;
+            animateVoice(false);
+            //stop recording
+            mMediaRecorder.stop();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+
+            sendAudio();
+            return;
+        }
+
         String userInput = mMessageEditText.getText().toString();
         if (mCurrentState == STATE_EDIT) {
             if (userInput.length() > 0) {
@@ -546,6 +576,46 @@ public class GroupChatFragment extends Fragment {
                 mMessageEditText.setText("");
             }
         }
+
+    }
+
+    private void sendAudio() {
+        Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".theprovider", newFile);
+        sendFileWithThumbnail(uri);
+    }
+
+    private void initVoiceRecorder() {
+        SimpleDateFormat simpleDateFormat =
+                new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss", Locale.getDefault());
+
+        Date date = new Date();
+        date.setTime(System.currentTimeMillis());
+
+        String dateStr = simpleDateFormat.format(date);
+
+        String fileName = mChannel.getName().replace(" ",
+                "_") + dateStr + ".3gp";
+
+        File dir = new File(getContext().getExternalCacheDir().getAbsolutePath() + "/voice_chats");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
+
+        newFile = new File(dir, fileName);
+
+        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mMediaRecorder.setOutputFile(newFile.getAbsolutePath());
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            mMediaRecorder.prepare();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void fetchInitialMessages() {
@@ -690,6 +760,7 @@ public class GroupChatFragment extends Fragment {
             uploadFileDialog.dismiss();
         }
 
+
         if (requestCode == INTENT_REQUEST_CHOOSE_MEDIA && resultCode == Activity.RESULT_OK) {
             // If user has successfully chosen the image, show a dialog to confirm upload.
             if (data == null) {
@@ -707,6 +778,7 @@ public class GroupChatFragment extends Fragment {
 
             mLayoutManager = new LinearLayoutManager(getActivity());
             mLayoutManager.setReverseLayout(true);
+            mLayoutManager.setStackFromEnd(true);
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setAdapter(mChatAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -960,21 +1032,55 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void recordVoice() {
+
+        if (getContext() != null) {
+
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestAudioRecordPermission();
+                return;
+            }
+
+            //We need this to set the file output type
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestStoragePermissions();
+                return;
+            }
+        }
+
         if (isRecording) {
             voiceView(false);
             isRecording = false;
             animateVoice(false);
             //stop recording
-
+            mMediaRecorder.stop();
         } else {
+            initVoiceRecorder();
             voiceView(true);
             isRecording = true;
             animateVoice(true);
             //start recording
+            mMediaRecorder.start();
             chronometer.stop();
             chronometer.setBase(SystemClock.elapsedRealtime());
             chronometer.start();
             chronometer.setOnChronometerTickListener(chronometer -> chronometer.setText(chronometer.getText() + ""));
+        }
+    }
+
+    private void requestAudioRecordPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                Manifest.permission.RECORD_AUDIO)) {
+
+            Snackbar.make(mRootLayout, "Micro phone access permissions are required to record audio.",
+                    Snackbar.LENGTH_LONG)
+                    .setAction("Okay", view -> requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
+                            RECORD_AUDIO_REQUEST_CODE))
+                    .show();
+        } else {
+            requestPermissions(recordPermission,
+                    RECORD_AUDIO_REQUEST_CODE);
         }
     }
 
@@ -1102,6 +1208,14 @@ public class GroupChatFragment extends Fragment {
                     }
                     mChatAdapter.markMessageFailed(userMessage);
                     return;
+                } else {
+                    new Connect().refreshChannel(() -> {
+                        sendUserMessageWithImageUrl(text, url, groupChannel);
+                        return Unit.INSTANCE;
+                    }, () -> {
+                        return Unit.INSTANCE;
+                    });
+
                 }
 
                 mMessageCollection.handleSendMessageResponse(userMessage, e);
@@ -1121,6 +1235,14 @@ public class GroupChatFragment extends Fragment {
 
     }
 
+    private void refresh(GroupChannel groupChannel, String text) {
+        if (groupChannel != null) {
+
+        } else {
+            Log.d("okh", "no channel");
+        }
+    }
+
     private void sendUserMessage(String text, GroupChannel groupChannel) {
         if (groupChannel == null) {
             return;
@@ -1133,10 +1255,23 @@ public class GroupChatFragment extends Fragment {
         }
 
         final UserMessage pendingMessage = groupChannel.sendUserMessage(text, (userMessage, e) -> {
-            if (mMessageCollection != null) {
-                mMessageCollection.handleSendMessageResponse(userMessage, e);
-                mMessageCollection.fetchAllNextMessages(null);
+
+            if (e == null) {
+                if (mMessageCollection != null) {
+                    mMessageCollection.handleSendMessageResponse(userMessage, e);
+                    mMessageCollection.fetchAllNextMessages(null);
+                }
+            } else {
+                new Connect().refreshChannel(() -> {
+                    sendUserMessage(text, groupChannel);
+                    return Unit.INSTANCE;
+                }, () -> {
+
+                    return Unit.INSTANCE;
+                });
+
             }
+
         });
 
         // Display a user message to RecyclerView
@@ -1176,7 +1311,7 @@ public class GroupChatFragment extends Fragment {
         Hashtable<String, Object> info = FileUtils.getFileInfo(getActivity(), uri);
 
         if (info == null || info.isEmpty()) {
-            Toast.makeText(getActivity(), "Extracting file information failed.", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getActivity(), "Extracting file information failed.", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -1199,9 +1334,11 @@ public class GroupChatFragment extends Fragment {
                 mMessageCollection.fetchAllNextMessages(null);
 
                 if (e != null) {
-                    if (getActivity() != null) {
-                        Toast.makeText(getActivity(), "" + e.getCode() + ":" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                    new Connect().refreshChannel(() -> {
+                        sendFileWithThumbnail(uri);
+                        return Unit.INSTANCE;
+                    }, () -> Unit.INSTANCE);
+
                     mChatAdapter.markMessageFailed(fileMessage);
                     return;
                 }

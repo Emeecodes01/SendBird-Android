@@ -272,6 +272,12 @@ public class GroupAllChatListFragment extends Fragment {
             mChannelCollection.setCollectionHandler(mChannelCollectionHandler);
             mChannelCollection.fetch(e -> {
 
+                if (getArguments() != null){
+                    String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
+                    List<GroupChannel> groupChannelList = mChannelListAdapter.insertChannels(null, mChannelCollection.getQuery().getOrder(), chatType);
+                    groupChannelEmpty = groupChannelList.isEmpty();
+                }
+
                 setUpChatView(groupChannelEmpty);
 
                 if (getActivity() != null) {

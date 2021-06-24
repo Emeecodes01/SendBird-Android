@@ -150,17 +150,20 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         //set pending questions list
         List<Question> pendingQuestions = PreferenceUtils.getPendingQuestions();
+        questionList.clear();
 
         for (Question question : pendingQuestions) {
             isPendingChannel.add(null);
             questionList.add(question);
         }
 
-        for (GroupChannel newChannel : channels) {
-            if (new StringUtils().isActive(newChannel.getData())) {
-                isActiveChannel.add(newChannel);
-            } else {
-                isPastChannel.add(newChannel);
+        if (channels != null) {
+            for (GroupChannel newChannel : channels) {
+                if (new StringUtils().isActive(newChannel.getData())) {
+                    isActiveChannel.add(newChannel);
+                } else {
+                    isPastChannel.add(newChannel);
+                }
             }
         }
 
