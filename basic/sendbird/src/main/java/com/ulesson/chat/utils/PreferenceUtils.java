@@ -22,6 +22,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
     private static final String PREFERENCE_MASTER_TOKEN = "masterToken";
+    private static final String PREFERENCE_PACKAGE_NAME = "packageName";
 
     private static final String PREFERENCE_KEY_NOTIFICATIONS = "notifications";
     private static final String PREFERENCE_KEY_NOTIFICATIONS_SHOW_PREVIEWS = "notificationsShowPreviews";
@@ -38,9 +39,10 @@ public class PreferenceUtils {
     private PreferenceUtils() {
     }
 
-    public static void init(Context appContext, String masterToken) {
+    public static void init(Context appContext, String masterToken, String packageName) {
         mAppContext = appContext;
         setMasterToken(masterToken);
+        setPackageName(packageName);
     }
 
     public static Context getContext() {
@@ -69,6 +71,14 @@ public class PreferenceUtils {
         editor.putString(PREFERENCE_MASTER_TOKEN, masterToken).apply();
     }
 
+    public static String getPackageName() {
+        return getSharedPreferences().getString(PREFERENCE_PACKAGE_NAME, "");
+    }
+
+    public static void setPackageName(String packageName) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PREFERENCE_PACKAGE_NAME, packageName).apply();
+    }
 
     public static void setLastRead(String groupChannelUrl, long ts) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
