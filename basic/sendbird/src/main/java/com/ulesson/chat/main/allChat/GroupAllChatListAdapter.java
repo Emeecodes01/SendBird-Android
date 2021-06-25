@@ -154,9 +154,11 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         isPendingChannel.clear();
         questionList.clear();
 
-        for (Question question : pendingQuestions) {
-            isPendingChannel.add(null);
-            questionList.add(question);
+        if (pendingQuestions != null){
+            for (Question question : pendingQuestions) {
+                isPendingChannel.add(null);
+                questionList.add(question);
+            }
         }
 
         if (channels != null) {
