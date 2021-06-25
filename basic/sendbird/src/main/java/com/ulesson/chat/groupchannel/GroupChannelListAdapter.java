@@ -2,8 +2,6 @@ package com.ulesson.chat.groupchannel;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.PorterDuff;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sendbird.android.AdminMessage;
 import com.sendbird.android.BaseChannel;
@@ -33,6 +29,7 @@ import com.ulesson.chat.utils.StringUtils;
 import com.ulesson.chat.utils.TypingIndicator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -205,22 +202,27 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
             subjectText.setText((String) questionMap.get("subjectName"));
-            String subjectAvatar = (String) questionMap.get("subjectAvatar");
-            try {
-                if (subjectAvatar != null) {
-                    Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, Integer.parseInt(subjectAvatar));
-                    if (icon != null){
-                        subjectIcon.setVisibility(View.VISIBLE);
-                        subjectIcon.setImageBitmap(icon);
-                    }else{
-                        subjectIcon.setVisibility(View.INVISIBLE);
-                    }
-                }
-            } catch (Exception ignore) {
-            }
+
+            String subjectThemeKey = (String) questionMap.get("subjectThemeKey");
+            HashMap<String, ImageUtils.Theme> subjectThemeMap = ImageUtils.getThemeMap();
+            ImageUtils.Theme theme = subjectThemeMap.get(subjectThemeKey);
 
             if (!new StringUtils().isActive(channel.getData())) {
-                subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
+
+                int pastIcon = R.drawable.ic_maths_grey_fill;
+                if (theme != null) {
+                    pastIcon = theme.pastIcon;
+                }
+
+                subjectIcon.setImageResource(pastIcon);
+            } else {
+
+                int activeIcon = R.drawable.ic_maths_fill;
+                if (theme != null) {
+                    activeIcon = theme.pastIcon;
+                }
+
+                subjectIcon.setImageResource(activeIcon);
             }
 
             BaseMessage lastMessage = channel.getLastMessage();

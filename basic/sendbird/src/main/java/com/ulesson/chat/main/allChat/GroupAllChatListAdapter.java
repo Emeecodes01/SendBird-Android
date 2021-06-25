@@ -32,6 +32,7 @@ import com.ulesson.chat.utils.StringUtils;
 import com.ulesson.chat.utils.TypingIndicator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -346,22 +347,26 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String subjectName = questionMap.get("subjectName") + "";
             subjectText.setText(subjectName);
 
-            String subjectAvatar = (String) questionMap.get("subjectAvatar");
-            try {
-                if (subjectAvatar != null) {
-                    Bitmap icon = ImageUtils.getBitmapFromVectorDrawable(mContext, Integer.parseInt(subjectAvatar));
-                    if (icon != null) {
-                        subjectIcon.setVisibility(View.VISIBLE);
-                        subjectIcon.setImageBitmap(icon);
-                    } else {
-                        subjectIcon.setVisibility(View.INVISIBLE);
-                    }
-                }
-            } catch (Exception ignore) {
-            }
+            String subjectThemeKey = (String) questionMap.get("subjectThemeKey");
+            HashMap<String, ImageUtils.Theme> subjectThemeMap = ImageUtils.getThemeMap();
+            ImageUtils.Theme theme = subjectThemeMap.get(subjectThemeKey);
 
             if (!new StringUtils().isActive(channel.getData())) {
-                subjectIcon.setColorFilter(ContextCompat.getColor(mContext, R.color.fade), PorterDuff.Mode.MULTIPLY);
+
+                int pastIcon = R.drawable.ic_maths_grey_fill;
+                if (theme != null) {
+                    pastIcon = theme.pastIcon;
+                }
+
+                subjectIcon.setImageResource(pastIcon);
+            } else {
+
+                int activeIcon = R.drawable.ic_maths_fill;
+                if (theme != null) {
+                    activeIcon = theme.pastIcon;
+                }
+
+                subjectIcon.setImageResource(activeIcon);
             }
 
             BaseMessage lastMessage = channel.getLastMessage();

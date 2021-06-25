@@ -14,7 +14,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.ulesson.chat.R
-import com.ulesson.chat.utils.TextUtils.THEME_MATH
 import kotlin.math.hypot
 
 abstract class BaseBottomSheetDialog : DialogFragment() {
@@ -34,7 +33,7 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
         isBadgeAnimationOnGoing = false
     }
 
-    var subjectThemeKey: String = THEME_MATH
+    var subjectThemeKey: String = "THEME_MATH";
     lateinit var theme: Theme
 
     private val animationListener by lazy {
@@ -107,7 +106,7 @@ abstract class BaseBottomSheetDialog : DialogFragment() {
     fun getThemeMap(): HashMap<String, Theme> {
         if (themeMap.isEmpty()) {
 
-            themeMap[THEME_MATH] = Theme(
+            themeMap[subjectThemeKey] = Theme(
                 R.string.mathematics,
                 R.color.colorMaths,
                 R.color.colorMathsDark,

@@ -4,11 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.widget.ImageView;
 
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
@@ -17,9 +15,61 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.ulesson.chat.R;
+
+import java.util.HashMap;
 
 
 public class ImageUtils {
+
+    static String THEME_MATH = "mathematics_english";
+    static String THEME_PHYSICS = "physics_english";
+    static String THEME_CHEMISTRY = "chemistry_english";
+    static String THEME_BIOLOGY = "biology_english";
+    static String THEME_MATH_JS = "mathematics_english_jss";
+    static String THEME_BASIC_TECHNOLOGY = "basic_technology_english";
+    static String THEME_BASIC_SCIENCE = "basic_science_english";
+    static String THEME_BUSINESS_STUDIES = "business_studies_english";
+    static String THEME_ENGLISH = "english_english";
+    static String THEME_ENGLISH_JSS = "english_english_jss";
+    static String THEME_ENGLISH_PRIMARY = "primary_english_english";
+    static String THEME_MATHS_PRIMARY = "primary_mathematics_english";
+    static String THEME_BASIC_SCIENCE_PRIMARY = "basic_science_english";
+
+    private static HashMap<String, Theme> themeMap = new HashMap<String, Theme>();
+
+    public static HashMap<String, Theme> getThemeMap() {
+
+        if (themeMap.isEmpty()) {
+            themeMap.put(THEME_MATH, new Theme(R.drawable.ic_maths_fill, R.drawable.ic_maths_grey_fill));
+            themeMap.put(THEME_PHYSICS, new Theme(R.drawable.ic_physics_fill, R.drawable.ic_physics_grey_fill));
+            themeMap.put(THEME_CHEMISTRY, new Theme(R.drawable.ic_chemistry_fill, R.drawable.ic_chemistry_grey_fill));
+            themeMap.put(THEME_BIOLOGY, new Theme(R.drawable.ic_biology_fill, R.drawable.ic_biology_grey_fill));
+            themeMap.put(THEME_MATH_JS, new Theme(R.drawable.ic_maths_js_fill, R.drawable.ic_maths_js_grey_fill));
+            themeMap.put(THEME_BASIC_TECHNOLOGY, new Theme(R.drawable.ic_basic_tech_fill, R.drawable.ic_basic_tech_grey_fill));
+            themeMap.put(THEME_BASIC_SCIENCE, new Theme(R.drawable.ic_basic_science_fill, R.drawable.ic_basic_science_grey_fill));
+            themeMap.put(THEME_BUSINESS_STUDIES, new Theme(R.drawable.ic_business_studies_fill, R.drawable.ic_business_studies_grey_fill));
+            themeMap.put(THEME_ENGLISH, new Theme(R.drawable.ic_english_fill, R.drawable.ic_english_grey_fill));
+            themeMap.put(THEME_ENGLISH_JSS, new Theme(R.drawable.ic_english_fill, R.drawable.ic_english_grey_fill));
+            themeMap.put(THEME_ENGLISH_PRIMARY, new Theme(R.drawable.ic_english_primary_fill, R.drawable.ic_english_primary_grey_fill));
+            themeMap.put(THEME_MATHS_PRIMARY, new Theme(R.drawable.ic_maths_primary_fill, R.drawable.ic_maths_primary_grey_fill));
+            themeMap.put(THEME_BASIC_SCIENCE_PRIMARY, new Theme(R.drawable.ic_basic_science_primary_fill, R.drawable.ic_basic_science_primary_grey_fill));
+
+        }
+
+        return themeMap;
+    }
+
+    public static class Theme {
+        public int activeIcon;
+        public int pastIcon;
+
+        public Theme(int activeIcon, int pastIcon) {
+            this.activeIcon = activeIcon;
+            this.pastIcon = pastIcon;
+        }
+
+    }
 
     // Prevent instantiation
     private ImageUtils() {
@@ -214,7 +264,7 @@ public class ImageUtils {
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Bitmap bitmap = null;
         Drawable drawable = ContextCompat.getDrawable(context, drawableId);
-        if (drawable != null ){
+        if (drawable != null) {
             bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
                     drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
