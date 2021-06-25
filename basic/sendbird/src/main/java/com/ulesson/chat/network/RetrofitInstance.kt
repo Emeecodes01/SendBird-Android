@@ -1,7 +1,7 @@
 package com.ulesson.chat.network
 
 import com.ulesson.chat.main.BaseApplication
-import com.ulesson.chat.main.BaseApplication.MASTER_TOKEN
+import com.ulesson.chat.utils.PreferenceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -25,9 +25,10 @@ class RetrofitInstance {
 
                     val original = chain.request()
 
+
                     val request = original.newBuilder()
                         .header("Content-Type", "application/json; charset=utf8")
-                        .header("Api-Token", MASTER_TOKEN)
+                        .header("Api-Token", PreferenceUtils.getMasterToken())
                         .method(original.method, original.body)
                         .build()
 

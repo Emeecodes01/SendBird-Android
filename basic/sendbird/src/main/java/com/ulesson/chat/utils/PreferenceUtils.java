@@ -21,6 +21,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
+    private static final String PREFERENCE_MASTER_TOKEN = "masterToken";
 
     private static final String PREFERENCE_KEY_NOTIFICATIONS = "notifications";
     private static final String PREFERENCE_KEY_NOTIFICATIONS_SHOW_PREVIEWS = "notificationsShowPreviews";
@@ -31,13 +32,15 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ = "last_read";
     private static final Gson gson = new Gson();
     private static Context mAppContext;
+    static String masterToken;
 
     // Prevent instantiation
     private PreferenceUtils() {
     }
 
-    public static void init(Context appContext) {
+    public static void init(Context appContext, String masterToken) {
         mAppContext = appContext;
+        setMasterToken(masterToken);
     }
 
     public static Context getContext() {
@@ -56,6 +59,16 @@ public class PreferenceUtils {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(PREFERENCE_KEY_USER_ID, userId).apply();
     }
+
+    public static String getMasterToken() {
+        return getSharedPreferences().getString(PREFERENCE_MASTER_TOKEN, "");
+    }
+
+    public static void setMasterToken(String masterToken) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PREFERENCE_MASTER_TOKEN, masterToken).apply();
+    }
+
 
     public static void setLastRead(String groupChannelUrl, long ts) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();

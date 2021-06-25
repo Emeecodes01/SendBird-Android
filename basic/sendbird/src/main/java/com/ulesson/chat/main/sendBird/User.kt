@@ -1,5 +1,6 @@
 package com.ulesson.chat.main.sendBird
 
+import android.util.Log
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.ulesson.chat.main.ConnectionManager
 import com.ulesson.chat.main.SyncManagerUtils
