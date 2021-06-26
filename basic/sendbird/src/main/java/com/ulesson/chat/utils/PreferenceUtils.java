@@ -23,6 +23,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
     private static final String PREFERENCE_MASTER_TOKEN = "masterToken";
     private static final String PREFERENCE_PACKAGE_NAME = "packageName";
+    private static final String PREFERENCE_APP_ID = "appId";
 
     private static final String PREFERENCE_KEY_NOTIFICATIONS = "notifications";
     private static final String PREFERENCE_KEY_NOTIFICATIONS_SHOW_PREVIEWS = "notificationsShowPreviews";
@@ -39,10 +40,11 @@ public class PreferenceUtils {
     private PreferenceUtils() {
     }
 
-    public static void init(Context appContext, String masterToken, String packageName) {
+    public static void init(Context appContext, String masterToken, String packageName, String appId) {
         mAppContext = appContext;
         setMasterToken(masterToken);
         setPackageName(packageName);
+        setAppId(appId);
     }
 
     public static Context getContext() {
@@ -78,6 +80,15 @@ public class PreferenceUtils {
     public static void setPackageName(String packageName) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(PREFERENCE_PACKAGE_NAME, packageName).apply();
+    }
+
+    public static String getAppId() {
+        return getSharedPreferences().getString(PREFERENCE_APP_ID, "");
+    }
+
+    public static void setAppId(String appId) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PREFERENCE_APP_ID, appId).apply();
     }
 
     public static void setLastRead(String groupChannelUrl, long ts) {

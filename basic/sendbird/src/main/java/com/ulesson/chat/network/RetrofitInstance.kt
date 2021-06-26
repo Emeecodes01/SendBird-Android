@@ -9,10 +9,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
 class RetrofitInstance {
 
-    private val baseUrl = "https://api-${BaseApplication.APP_ID}.sendbird.com"
+    private val baseUrl = "https://api-${PreferenceUtils.getAppId()}.sendbird.com"
 
     fun getClient(): Retrofit {
 

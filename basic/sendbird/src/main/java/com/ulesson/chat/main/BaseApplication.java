@@ -22,7 +22,7 @@ public class BaseApplication extends MultiDexApplication {
 
         MultiDex.install(this);
 
-        PreferenceUtils.init(getApplicationContext(), MASTER_TOKEN, PACKAGE_NAME);
+        PreferenceUtils.init(getApplicationContext(), MASTER_TOKEN, PACKAGE_NAME, APP_ID);
 
         SendBird.init(APP_ID, getApplicationContext());
     }
