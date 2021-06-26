@@ -62,7 +62,6 @@
             android:id="@+id/progressBar"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_marginStart="8dp"
             android:indeterminate="true"
             android:indeterminateDrawable="@drawable/audio_progress_other"
             android:visibility="gone"
