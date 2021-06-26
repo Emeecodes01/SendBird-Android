@@ -2,7 +2,6 @@ package com.ulesson.chat.main.allChat;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -154,7 +152,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         isPendingChannel.clear();
         questionList.clear();
 
-        if (pendingQuestions != null){
+        if (pendingQuestions != null) {
             for (Question question : pendingQuestions) {
                 isPendingChannel.add(null);
                 questionList.add(question);
@@ -473,7 +471,11 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
                 // Display information about the most recently sent message in the channel.
                 dateText.setText(question.getDate());
-                lastMessageText.setText(question.getQuestionText());
+                String questionText = (String) question.getQuestionText();
+
+                if (questionText != null) {
+                    lastMessageText.setText(question.getQuestionText());
+                }
 
             } else {
                 dateText.setVisibility(View.INVISIBLE);
