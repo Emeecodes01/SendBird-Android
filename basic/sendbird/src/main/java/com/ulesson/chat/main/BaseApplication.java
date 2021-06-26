@@ -14,7 +14,7 @@ public class BaseApplication extends MultiDexApplication {
     public static final String APP_ID = "74FBB89C-C9B6-4E15-99E6-1AF8E67CEFFC";
     public static final String MASTER_TOKEN = "2b6e9d6693e2e402ee84f5306206dc0b638bb6dc";
     public static final String VERSION = "3.0.40";
-    public static final String PACKAGE_NAME = "com.ulesson.debug";
+    public static final String PACKAGE_NAME = "com.ulesson.chat";
 
     @Override
     public void onCreate() {

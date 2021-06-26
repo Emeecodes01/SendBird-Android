@@ -108,19 +108,19 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 //
-//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
-//                @Override
-//                public void chatReceived() { }
-//                @Override
-//                public void showDummyChat(@NotNull Question question) { }
-//                @Override
-//                public void getPendingQuestions() { }
-//            }, new TutorActions() {
-//                @Override
-//                public void showTutorProfile(@NotNull List<? extends Member> members) { }
-//                @Override
-//                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
-//            });
+            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
+                @Override
+                public void chatReceived() { }
+                @Override
+                public void showDummyChat(@NotNull Question question) { }
+                @Override
+                public void getPendingQuestions() { }
+            }, new TutorActions() {
+                @Override
+                public void showTutorProfile(@NotNull List<? extends Member> members) { }
+                @Override
+                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
+            });
 
             List<Question> questionList = new ArrayList<>();
             questionList.add(new Question(1,

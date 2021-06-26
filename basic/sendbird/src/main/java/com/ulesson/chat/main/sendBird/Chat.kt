@@ -1,7 +1,7 @@
 package com.ulesson.chat.main.sendBird
 
 import android.content.Intent
-import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -24,7 +24,6 @@ import com.ulesson.chat.main.model.Question
 import com.ulesson.chat.main.model.UserData
 import com.ulesson.chat.main.model.UserGroup
 import com.ulesson.chat.network.ChannelWorker
-import com.ulesson.chat.network.userModel.ConnectUserRequest
 import com.ulesson.chat.utils.PreferenceUtils
 import com.ulesson.chat.utils.StringUtils.Companion.isActive
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
@@ -232,27 +231,26 @@ class Chat {
 
             if (error == null) {
                 groupChannelCreateHandler.onResult(groupChannel, error)
-                return@createChannelWithUserIds
             } else {
                 Connect().refreshActivity({
-
                     createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
                 }, {
-                    val connectUserRequest =
-                        ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
-                    User().connectUser(connectUserRequest, "", {
-                        hostUserData.accessToken = it.access_token
-                        createGroupChat(
-                            hostUserData,
-                            otherId,
-                            questionMap,
-                            groupChannelCreateHandler
-                        )
-                    }, {
 
-                    }, {
-                        it?.let {}
-                    })
+//                    val connectUserRequest =
+//                        ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
+//                    User().connectUser(connectUserRequest, "", {
+//                        hostUserData.accessToken = it.access_token
+//                        createGroupChat(
+//                            hostUserData,
+//                            otherId,
+//                            questionMap,
+//                            groupChannelCreateHandler
+//                        )
+//                    }, {
+//
+//                    }, {
+//                        it?.let {}
+//                    })
                 })
             }
 

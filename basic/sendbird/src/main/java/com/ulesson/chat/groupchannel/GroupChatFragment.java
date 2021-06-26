@@ -195,11 +195,13 @@ public class GroupChatFragment extends Fragment {
                 switch (action) {
                     case INSERT:
                         List<BaseMessage> pendingMessages = new ArrayList<>();
+
                         for (BaseMessage message : messages) {
                             if (!mChatAdapter.failedMessageListContains(message)) {
                                 pendingMessages.add(message);
                             }
                         }
+
 //                        mChatAdapter.insertSucceededMessages(pendingMessages);
                         smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
                         mLayoutManager.startSmoothScroll(smoothScroller);
@@ -496,7 +498,7 @@ public class GroupChatFragment extends Fragment {
                 return Unit.INSTANCE;
             });
         } else {
-            chatStatus(false);
+//            chatStatus(false);
             updateChat();
         }
 
@@ -580,7 +582,7 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void sendAudio() {
-        Uri uri = FileProvider.getUriForFile(getContext(), PreferenceUtils.getPackageName()+".theprovider", newFile);
+        Uri uri = FileProvider.getUriForFile(getContext(), PreferenceUtils.getPackageName() + ".theprovider", newFile);
         sendFileWithThumbnail(uri);
     }
 
@@ -1054,7 +1056,11 @@ public class GroupChatFragment extends Fragment {
             isRecording = false;
             animateVoice(false);
             //stop recording
-            mMediaRecorder.stop();
+            try {
+                mMediaRecorder.stop();
+            } catch (Exception ignore) {
+            }
+
         } else {
             initVoiceRecorder();
             voiceView(true);
@@ -1210,7 +1216,7 @@ public class GroupChatFragment extends Fragment {
                     return;
                 } else {
                     new Connect().refreshChannel(() -> {
-                        sendUserMessageWithImageUrl(text, url, groupChannel);
+//                        sendUserMessageWithImageUrl(text, url, groupChannel);
                         return Unit.INSTANCE;
                     }, () -> {
                         return Unit.INSTANCE;
@@ -1263,7 +1269,7 @@ public class GroupChatFragment extends Fragment {
                 }
             } else {
                 new Connect().refreshChannel(() -> {
-                    sendUserMessage(text, groupChannel);
+//                    sendUserMessage(text, groupChannel);
                     return Unit.INSTANCE;
                 }, () -> {
 
