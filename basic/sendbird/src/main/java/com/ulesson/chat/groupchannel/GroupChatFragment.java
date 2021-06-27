@@ -498,7 +498,7 @@ public class GroupChatFragment extends Fragment {
                 return Unit.INSTANCE;
             });
         } else {
-//            chatStatus(false);
+            chatStatus(false);
             updateChat();
         }
 

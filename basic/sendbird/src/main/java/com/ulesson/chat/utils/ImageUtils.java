@@ -34,7 +34,7 @@ public class ImageUtils {
     static String THEME_ENGLISH_JSS = "english_english_jss";
     static String THEME_ENGLISH_PRIMARY = "primary_english_english";
     static String THEME_MATHS_PRIMARY = "primary_mathematics_english";
-    static String THEME_BASIC_SCIENCE_PRIMARY = "basic_science_english";
+    static String THEME_BASIC_SCIENCE_PRIMARY = "primary_basic_science_english";
 
     private static HashMap<String, Theme> themeMap = new HashMap<String, Theme>();
 
