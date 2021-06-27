@@ -20,7 +20,7 @@ class RetrofitInstance {
         PreferenceUtils.getSendbirdApiToken()
     }
 
-    val baseUrl = "https://api-A1D36AE4-1FFF-4472-B2DA-AA237598ECB1.sendbird.com"
+    val baseUrl = "https://api-$appId.sendbird.com"
 
     fun getClient(): Retrofit {
 
@@ -35,7 +35,7 @@ class RetrofitInstance {
 
                         val request = original.newBuilder()
                                 .header("Content-Type", "application/json; charset=utf8")
-                                .header("Api-Token", "d7e6ec94571a0866270703273be79dad19b2713e")
+                                .header("Api-Token", apiToken)
                                 .method(original.method, original.body)
                                 .build()
 
@@ -65,8 +65,13 @@ class UlessonRetrofitInstance {
         PreferenceUtils.getUlessonApiToken()
     }
 
-    private val baseUrl = "https://staging-tutor-backend.ulesson.com"
-    private val baseUrlUAT = "https://uat-tutor-backend.ulesson.com/"
+    private val baseUrl: String by lazy {
+        PreferenceUtils.getBaseUrl()
+    }
+
+    //private val baseUrl = "https://staging-tutor-backend.ulesson.com"
+    //private val baseUrlUAT = "https://uat-tutor-backend.ulesson.com/"
+    //private val baseUrlProd = ""
 
     fun getClient(): Retrofit {
 
@@ -92,7 +97,7 @@ class UlessonRetrofitInstance {
             }).build()
 
         return Retrofit.Builder()
-            .baseUrl(baseUrlUAT)
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

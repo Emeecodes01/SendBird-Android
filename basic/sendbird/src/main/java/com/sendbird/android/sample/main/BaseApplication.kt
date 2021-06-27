@@ -10,6 +10,7 @@ import com.sendbird.android.sample.fcm.MyFirebaseMessagingService
 abstract class BaseApplication : MultiDexApplication() {
     abstract val apiToken: String
     abstract val sendBirdAppId: String
+    abstract val baseUrl: String
 
     override fun onCreate() {
         super.onCreate()
@@ -17,6 +18,7 @@ abstract class BaseApplication : MultiDexApplication() {
         PreferenceUtils.init(applicationContext)
         PreferenceUtils.saveSendBirdId(sendBirdAppId)
         PreferenceUtils.saveSendbirdAPIToken(apiToken)
+        PreferenceUtils.saveBaseUrl(baseUrl)
 
         SendBird.init(sendBirdAppId, applicationContext)
         PushUtils.registerPushHandler(MyFirebaseMessagingService())

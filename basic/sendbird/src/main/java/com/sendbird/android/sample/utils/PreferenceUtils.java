@@ -17,6 +17,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_DISTINCT = "channelDistinct";
     private static final String SENDBIRD_APP_ID = "sendbird-app-id";
     private static final String SENDBIRD_API_TOKEN = "sendbird-api-token";
+    private static final String SENDBIRD_BASE_URL = "sendbird-base-url";
     private static final String ULESSON_API_TOKEN = "ulesson-api-token";
     private static final String DEVICE_TOKEN = "android-device-token";
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ = "last_read";
@@ -175,5 +176,14 @@ public class PreferenceUtils {
 
     public static boolean getGroupChannelDistinct() {
         return getSharedPreferences().getBoolean(PREFERENCE_KEY_GROUP_CHANNEL_DISTINCT, true);
+    }
+
+    public static void saveBaseUrl(String baseUrl) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(SENDBIRD_BASE_URL, baseUrl).apply();
+    }
+
+    public static String getBaseUrl() {
+        return getSharedPreferences().getString(SENDBIRD_BASE_URL, null);
     }
 }

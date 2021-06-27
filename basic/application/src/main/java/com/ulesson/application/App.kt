@@ -9,4 +9,8 @@ class App: BaseApplication() {
 
     override val sendBirdAppId: String
         get() = "A1D36AE4-1FFF-4472-B2DA-AA237598ECB1"
+
+
+    override val baseUrl: String
+        get() = "TODO("
 }

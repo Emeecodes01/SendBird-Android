@@ -18,8 +18,8 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
     val endChatVM: EndChatSessionViewModel by activityViewModels()
 
     private val userData = UserData(
-        "Tutor-30", "Emmanuel Ozibo",
-        "4001f64b8d6430ad6855675e5a1fd5abf331dbf6"
+        "Tutor-3", "Adenuga Ayannuga",
+        "6609c7e9a1a805cf07f27ac48e3fe4deb7f94b45"
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

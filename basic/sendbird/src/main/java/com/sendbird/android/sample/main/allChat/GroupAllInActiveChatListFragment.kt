@@ -265,7 +265,7 @@ class GroupAllInActiveChatListFragment : Fragment() {
                 !(questionDetailsMap["active"] as String).toBoolean()
             }
 
-            mChannelListAdapter!!.addLast(pastChannelList)
+            mChannelListAdapter?.addLast(pastChannelList)
         })
     }
 

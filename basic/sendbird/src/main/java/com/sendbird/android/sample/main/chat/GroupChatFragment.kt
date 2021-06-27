@@ -439,6 +439,7 @@ class GroupChatFragment : Fragment() {
             }
 
             override fun onFinish() {
+                timerTv!!.text = "00:00"
                 endChatSessionTimeOut()
             }
         }.start()

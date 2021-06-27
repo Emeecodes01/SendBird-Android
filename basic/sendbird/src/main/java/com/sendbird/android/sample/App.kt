@@ -6,6 +6,8 @@ class App(override val apiToken: String) : BaseApplication() {
 
     override val sendBirdAppId: String
         get() = TODO("Not yet implemented")
+    override val baseUrl: String
+        get() = "h"
 
 
     override fun onCreate() {

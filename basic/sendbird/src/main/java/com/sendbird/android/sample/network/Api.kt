@@ -12,7 +12,7 @@ interface Api {
     @POST("/v3/users/")
     fun createUser(@Body user: CreateUserRequest): Call<CreateUserResponse>
 
-    @POST("/api/v1/questions/{questionId}/chat/end")
+    @POST("api/v1/questions/{questionId}/chat/end")
     fun endChat(@Path("questionId") questionId: Int, @Body request: HashMap<String, String>): Call<Any>
 
 }
