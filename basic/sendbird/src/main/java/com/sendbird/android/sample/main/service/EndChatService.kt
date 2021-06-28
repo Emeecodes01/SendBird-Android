@@ -64,7 +64,7 @@ class EndChatService : Service() {
                 error = {
                     Log.e(EndChatService::class.java.simpleName, it)
 
-                    WorkRequestManager.enQueueWork(applicationContext, questionId, channel.url)
+                    WorkRequestManager.enQueueWork(applicationContext, questionId, channel.url, 0)
                 })
         }
 

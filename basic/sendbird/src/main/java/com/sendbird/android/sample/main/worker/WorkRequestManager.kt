@@ -7,8 +7,9 @@ import java.util.concurrent.TimeUnit
 
 object WorkRequestManager {
 
-    fun enQueueWork(context: Context, questionId: Int, channelUrl: String) {
+    fun enQueueWork(context: Context, questionId: Int, channelUrl: String, initialDelay: Long) {
         val workRequest = OneTimeWorkRequestBuilder<EndChatSessionWorker>()
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
             .addTag("$questionId")
             .setInputData(
                 workDataOf(

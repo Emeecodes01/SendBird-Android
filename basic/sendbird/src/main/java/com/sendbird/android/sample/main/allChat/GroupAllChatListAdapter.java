@@ -37,6 +37,7 @@ import com.sendbird.android.sample.R;
 import com.sendbird.android.sample.main.sendBird.ChatMetaData;
 import com.sendbird.android.sample.utils.DateUtils;
 import com.sendbird.android.sample.utils.FileUtils;
+import com.sendbird.android.sample.utils.IconUtils;
 import com.sendbird.android.sample.utils.PreferenceUtils;
 import com.sendbird.android.sample.utils.SubjectImageUtils;
 import com.sendbird.android.sample.utils.TextUtils;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import kotlin.Pair;
 
 /**
  * Displays a list of Group Channels within a Sendbird application.
@@ -361,9 +364,11 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String subject = (String) hashMap.get("subjectName");
             String grade = (String) hashMap.get("grade");
             String learnerName = (String) hashMap.get("studentName");
+            String themeKey = (String) hashMap.get("subjectThemeKey");
 
             boolean isActive = Boolean.parseBoolean((String) hashMap.get("active"));
             int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
+            Pair<Integer, Integer> iconPair = IconUtils.INSTANCE.getSubjectIconWithThemeKey(themeKey);
 
 
             if (!isActive) {
@@ -378,9 +383,14 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 subjectTv.setTextColor(inActiveGray);
             }
 
-            Glide.with(context).load(subjectIconUrl)
-                    .error(subjectImgRes)
-                    .into(subjectIcon);
+
+            if (isActive) {
+                int activeSubject = iconPair.getFirst();
+                subjectIcon.setImageResource(activeSubject);
+            } else {
+                int inactiveSubject = iconPair.getSecond();
+                subjectIcon.setImageResource(inactiveSubject);
+            }
 
 
             subjectTv.setText(subject);

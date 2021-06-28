@@ -370,7 +370,7 @@ class GroupChatFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    WorkRequestManager.enQueueWork(requireContext(), questionId, channel.url)
+                    WorkRequestManager.enQueueWork(requireContext(), questionId, channel.url, 0)
 
                     completed.invoke()
                 })
