@@ -462,6 +462,16 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             } catch (Exception ignore) {
             }
 
+            HashMap<String, ImageUtils.Theme> subjectThemeMap = ImageUtils.getThemeMap();
+            ImageUtils.Theme theme = subjectThemeMap.get(question.getSubjectThemeKey());
+
+            int activeIcon = R.drawable.ic_maths_fill;
+            if (theme != null) {
+                activeIcon = theme.pastIcon;
+            }
+
+            subjectIcon.setImageResource(activeIcon);
+
             unreadCountText.setVisibility(View.GONE);
             typingIndicatorContainer.setVisibility(View.GONE);
 

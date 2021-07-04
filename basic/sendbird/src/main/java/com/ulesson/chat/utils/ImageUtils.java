@@ -117,7 +117,7 @@ public class ImageUtils {
                     protected void setResource(Bitmap resource) {
                         RoundedBitmapDrawable circularBitmapDrawable =
                                 RoundedBitmapDrawableFactory.create(context.getResources(), resource);
-                        circularBitmapDrawable.setCornerRadius(30);
+                        circularBitmapDrawable.setCornerRadius(38);
                         imageView.setImageDrawable(circularBitmapDrawable);
                     }
                 });

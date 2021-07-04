@@ -378,7 +378,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             int index = SyncManagerUtils.findIndexOfMessage(mMessageList, message);
             mMessageList.add(index, message);
         }
-        notifyItemInserted(getItemCount() - 1);
+        notifyDataSetChanged();
+//        notifyItemInserted(getItemCount() - 1);
     }
 
     void updateSucceededMessages(List<BaseMessage> messages) {
@@ -386,7 +387,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             int index = SyncManagerUtils.getIndexOfMessage(mMessageList, message);
             if (index != -1) {
                 mMessageList.set(index, message);
-                notifyItemChanged(index);
+//                notifyItemChanged(index);
+                notifyDataSetChanged();
             }
         }
     }
@@ -992,7 +994,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             fileThumbnailImage = itemView.findViewById(R.id.image_group_chat_file_thumbnail);
             profileImage = itemView.findViewById(R.id.image_group_chat_profile);
             dateText = itemView.findViewById(R.id.text_group_chat_date);
-
 
         }
 

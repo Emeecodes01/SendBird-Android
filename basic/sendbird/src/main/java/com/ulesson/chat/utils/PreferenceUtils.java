@@ -110,7 +110,8 @@ public class PreferenceUtils {
     }
 
     public static List<Question> getPendingQuestions() {
-        Type type = new TypeToken<List<Question>>() {
+        Type type = new TypeToken<List<Question>>
+                () {
         }.getType();
         return gson.fromJson(getSharedPreferences().getString(PENDING_QUESTIONS, ""), type);
     }

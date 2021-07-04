@@ -126,12 +126,12 @@ public class GroupChannelActivity extends AppCompatActivity {
             questionList.add(new Question(1,
                     "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                     "What is Mathematics", "What's good",
-                    0,
+                    0,"",
                     "20210609"));
             questionList.add(new Question(2,
                     "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                     "What is Chemistry", "Another question",
-                    0,
+                    0, "",
                     "20210609"));
 
             new Chat().setPendingQuestions(new Gson().toJson(questionList));

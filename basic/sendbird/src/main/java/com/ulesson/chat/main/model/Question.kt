@@ -6,5 +6,6 @@ data class Question(
     val questionText: String? = "",
     val subjectName: String? = "",
     val subjectIcon: Int? = 0,
+    val subjectThemeKey : String = "",
     val date: String
 )

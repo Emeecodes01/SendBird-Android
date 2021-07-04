@@ -35,7 +35,6 @@
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_nickname"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/image_group_chat_profile"
@@ -51,12 +50,11 @@
         android:layout_below="@id/text_group_chat_date"
         android:layout_marginTop="10dp"
         android:background="@drawable/other_message_shape"
-        android:padding="2dp"
+        android:padding="3dp"
         android:scaleType="center" />
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/image_group_chat_file_thumbnail"
