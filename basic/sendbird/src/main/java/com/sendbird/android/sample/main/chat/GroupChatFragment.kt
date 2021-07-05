@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.groupchannel.GroupChannelListFragment
@@ -343,14 +344,30 @@ class GroupChatFragment : Fragment() {
 
 
         mChannel?.let { channel ->
-            val questionId = channel.data.toMutableMap()["questionId"].toString().toInt()
+            var questionId = channel.data.toMutableMap()["questionId"]
+
+            questionId = if (questionId is Double) {
+                questionId.toInt()
+            }else {
+                questionId.toString().toInt()
+            }
+            //val questionId = channel.data.toMutableMap()["questionId"].toString().toInt()
             NetworkRequest().endChat(questionId, dateString, channel.url,
                 success = {
                     progressBar3?.visibility = View.GONE
                     val questionDetailsMap = channel.data.toMutableMap()
 
+                    val temp = questionDetailsMap["active"]
                     questionDetailsMap["active"] = false
-                    val strData = questionDetailsMap.toString()
+
+
+                    val strData = if (temp is String) {
+                        questionDetailsMap.toString()
+                    } else {
+                        val gson = Gson()
+                        gson.toJson(questionDetailsMap)
+                    }
+
 
                     channel.updateChannel(channel.name, channel.coverUrl, strData) { _, e ->
                         if (e != null) {
@@ -480,7 +497,8 @@ class GroupChatFragment : Fragment() {
             val questionDetailsMap = channel.data.toMutableMap()
 
             try {
-                mUserName?.text = questionDetailsMap["studentName"] as String
+                mUserName?.text = (questionDetailsMap["studentName"] as String)
+                    .split(" ")[0]
 
                 Glide.with(this).load(questionDetailsMap["studentAvatar"])
                     .error(R.drawable.profile_thumbnail)
@@ -497,7 +515,13 @@ class GroupChatFragment : Fragment() {
         mChannel?.let { channel ->
 
             val map = channel.data.toMutableMap()
-            val questionId = (map["questionId"] as String).toInt()
+            var questionId = map["questionId"]
+            questionId = if (questionId is Double) {
+                questionId.toInt()
+            } else {
+                (questionId as String).toInt()
+            }
+           // val questionId = ( as String).toInt()
 
             val shMgr = ScheduleManager.getInstance(SessionStoreManager(requireContext()))
                 .apply {
@@ -525,7 +549,13 @@ class GroupChatFragment : Fragment() {
 
             val elapse = nowMillis.time - date.time
             val elapseMins = TimeUnit.MILLISECONDS.toMinutes(elapse)
-            val chatDuration = map["chatDuration"].toString().toInt()
+            var chatDuration = map["chatDuration"]
+            chatDuration = if (chatDuration is Double) {
+                chatDuration.toInt()
+            }else {
+                chatDuration.toString().toInt()
+            }
+            //val chatDuration = map["chatDuration"].toString().toInt()
             val countDown = chatDuration - abs(elapseMins)
 
             val countDownMillis = TimeUnit.MINUTES.toMillis(countDown)
@@ -1016,8 +1046,8 @@ class GroupChatFragment : Fragment() {
             override fun onFailedMessageEvent(
                 collection: MessageCollection?,
                 messages: List<BaseMessage?>,
-                action: MessageEventAction,
-                reason: FailedMessageEventActionReason
+                action: MessageEventAction?,
+                reason: FailedMessageEventActionReason?
             ) {
 
                 Log.d(

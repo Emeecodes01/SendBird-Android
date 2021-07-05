@@ -25,6 +25,7 @@ import com.sendbird.android.sample.main.ConnectionManager
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.main.chat.LinearLayoutManagerWrapper
 import com.sendbird.android.sample.utils.toMutableMap
+import java.lang.Exception
 
 class GroupAllInActiveChatListFragment : Fragment() {
     private var mRecyclerView: RecyclerView? = null
@@ -235,8 +236,21 @@ class GroupAllInActiveChatListFragment : Fragment() {
             mChannelListAdapter!!.setAllGroupChannelList(list)
 
             val pastChannelList: List<GroupChannel> = list.filter { ch ->
-                val questionDetailsMap = ch.data.toMutableMap()
-                !(questionDetailsMap["active"] as String).toBoolean()
+                try {
+                    val isActive: Boolean
+                    val questionDetailsMap = ch.data.toMutableMap()
+                    val active = questionDetailsMap["active"]
+                    isActive = if (active is Boolean) {
+                        active
+                    } else {
+                        active.toString().toBoolean()
+                    }
+
+                    !isActive
+                } catch (e: Exception) {
+                    false
+                }
+
             }
 
             mChannelListAdapter?.setGroupChannelList(pastChannelList)

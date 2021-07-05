@@ -358,16 +358,28 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             indicator.animate();
 
             String data = channel.getData();
+            String learnerName = "";
 
-            HashMap<String, Object> hashMap = TextUtils.toMap(data);
+            Map<String, Object> hashMap = TextUtils.toMap(data);
             String subjectIconUrl = (String) hashMap.get("subjectAvatar");
             String subject = (String) hashMap.get("subjectName");
             String grade = (String) hashMap.get("grade");
-            String learnerName = (String) hashMap.get("studentName");
+            try{
+                learnerName = ((String) hashMap.get("studentName")).split(" ")[0];
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            boolean isActive;
             String themeKey = (String) hashMap.get("subjectThemeKey");
+            Object active = hashMap.get("active");
 
-            boolean isActive = Boolean.parseBoolean((String) hashMap.get("active"));
-            int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
+            if (active instanceof Boolean) {
+                isActive = (Boolean) active;
+            } else {
+                isActive = Boolean.parseBoolean((String) active);
+            }
+
+            //int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
             Pair<Integer, Integer> iconPair = IconUtils.INSTANCE.getSubjectIconWithThemeKey(themeKey);
 
 

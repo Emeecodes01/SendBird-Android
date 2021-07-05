@@ -8,6 +8,7 @@ import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.gson.Gson
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.sample.main.service.EndChatService
 import com.sendbird.android.sample.network.NetworkRequest
@@ -58,8 +59,15 @@ class EndChatSessionWorker(
                     success = {
                         val questionDetailsMap = channel.data.toMutableMap()
 
+                        val temp = questionDetailsMap["active"]
                         questionDetailsMap["active"] = false
-                        val strData = questionDetailsMap.toString()
+                        //val strData = questionDetailsMap.toString()
+                        val strData = if (temp is String) {
+                            questionDetailsMap.toString()
+                        } else {
+                            val gson = Gson()
+                            gson.toJson(questionDetailsMap)
+                        }
 
                         channel.updateChannel(channel.name, channel.coverUrl, strData) { _, e ->
                             if (e != null) {
