@@ -6,16 +6,16 @@
     android:layout_height="wrap_content">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
+        android:id="@+id/audioLayout"
+        android:layout_width="228dp"
         android:layout_height="60dp"
         android:layout_marginStart="50dp"
         android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="8dp"
         android:background="@drawable/me_audio_message_shape"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_status_group_chat"
-        app:layout_constraintLeft_toLeftOf="@id/message_status_group_chat"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <SeekBar
@@ -72,16 +72,14 @@
             app:layout_constraintStart_toEndOf="@+id/seekBar"
             app:layout_constraintTop_toTopOf="parent" />
 
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
     <com.ulesson.chat.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintBottom_toBottomOf="@id/audioLayout"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

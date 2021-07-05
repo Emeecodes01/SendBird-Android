@@ -12,15 +12,19 @@ import android.provider.MediaStore;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import com.sendbird.android.SendBird;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MediaUtils extends Activity {
+import id.zelory.compressor.Compressor;
+
+public class MediaUtils extends AppCompatActivity {
 
     public static final int MEDIA_REQUEST_CODE = 3;
     private static final int INTENT_REQUEST_CHOOSE_MEDIA = 0xf0;
@@ -39,6 +43,7 @@ public class MediaUtils extends Activity {
     Intent returnIntent = new Intent();
     private boolean mRequestingCamera = false;
     private Uri mTempPhotoUri = null;
+    private File tempFile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,10 +65,10 @@ public class MediaUtils extends Activity {
 
         try {
             File imagePath = this.getExternalFilesDir(null);
-            File tempFile = File.createTempFile("SendBird_" + System.currentTimeMillis(), ".jpg", imagePath);
+            tempFile = File.createTempFile("SendBird_" + System.currentTimeMillis(), ".jpg", imagePath);
 
             if (Build.VERSION.SDK_INT >= 24) {
-                mTempPhotoUri = FileProvider.getUriForFile(this, PreferenceUtils.getPackageName()+".theprovider", tempFile);
+                mTempPhotoUri = FileProvider.getUriForFile(this, PreferenceUtils.getPackageName() + ".theprovider", tempFile);
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -177,9 +182,23 @@ public class MediaUtils extends Activity {
     }
 
     private void returnURI(Uri uri, int resultCode) {
-        returnIntent.setData(uri);
-        setResult(resultCode, returnIntent);
-        finish();
+
+        try {
+            File tempFile = FileUtils.from(this, uri);
+            Compressor compressor = new Compressor(this);
+            compressor.compressToFile(tempFile);
+            File file = new File(this.getCacheDir().getPath() + File.separator + "images/" + tempFile.getName());
+            if (Build.VERSION.SDK_INT >= 24) {
+                returnIntent.setData(FileProvider.getUriForFile(this, PreferenceUtils.getPackageName() + ".theprovider", file));
+            } else {
+                returnIntent.setData(Uri.fromFile(file));
+                returnIntent.setData(uri);
+            }
+            setResult(resultCode, returnIntent);
+            finish();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void permissionDenied() {

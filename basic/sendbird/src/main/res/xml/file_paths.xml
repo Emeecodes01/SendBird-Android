@@ -8,4 +8,9 @@
     <external-cache-path
         name="recordings"
         path="voice_chats/"/>
+
+    <cache-path
+        name="images"
+        path="/"/>
+
 </paths>

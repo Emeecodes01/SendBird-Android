@@ -91,7 +91,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("subject", "11");
         questionMap.put("tutorId", "12");
         questionMap.put("questionText", "hey");
-        questionMap.put("chatDuration", "4");
+        questionMap.put("chatDuration", "1");
         questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
         questionMap.put("subjectName", "Basic Tech");
         questionMap.put("subjectThemeKey", "basic_technology_english");

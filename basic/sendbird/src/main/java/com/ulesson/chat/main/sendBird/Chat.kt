@@ -270,11 +270,12 @@ class Chat {
         val groupChannelParams = GroupChannelParams()
         val map = channelData.toMutableMap() + updateMap
 
-        groupChannelParams.setData(Gson().toJson(map.toString()))
+        groupChannelParams.setData(Gson().toJson(map))
 
         val userGroup = UserGroup(channelUrl, groupChannelParams)
         oneTimeWork(activity, userGroup) {
             updatedGroupChannel(it)
+            Log.d("okh", "$it done")
         }
     }
 
@@ -325,8 +326,8 @@ class Chat {
                 .add(layoutId, fragment)
                 .addToBackStack(fragment.tag)
                 .commit()
-        }
 
+        }
     }
 
     fun showChatList(

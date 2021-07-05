@@ -9,25 +9,16 @@
     android:focusable="true"
     android:minWidth="50dp">
 
-    <View
-        android:id="@+id/view_group_chat_padding"
-        android:layout_width="match_parent"
-        android:layout_height="12dp"
-        android:layout_alignParentTop="true" />
-
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
         android:layout_width="wrap_content"
-
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_below="@id/view_group_chat_padding"
         android:layout_centerHorizontal="true"
         android:background="@drawable/group_chat_date_background"
         android:gravity="center"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingBottom="4dp"
         android:text="February 22"
         android:textColor="@color/groupChatDateText"
         android:textSize="14sp" />
@@ -37,22 +28,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_group_chat_date"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="8dp"
         android:layout_toStartOf="@id/message_status_group_chat"
-        android:layout_toLeftOf="@id/message_status_group_chat"
         android:background="@drawable/me_message_shape"
         android:minWidth="50dp"
         android:orientation="vertical"
-        android:paddingHorizontal="20dp"
+        android:paddingHorizontal="18dp"
         android:paddingVertical="12dp">
 
         <ImageView
             android:id="@+id/text_image_chat_message"
-            android:layout_width="200dp"
+            android:layout_width="190dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
-            android:scaleType="centerInside"
+            android:scaleType="center"
             android:visibility="gone"
             tools:src="@drawable/bg_btn_next_lesson"
             tools:visibility="visible" />
@@ -156,7 +146,6 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"
         android:layout_marginEnd="2dp"
-        android:layout_marginRight="2dp"
         android:layout_marginBottom="4dp"
         android:layout_toLeftOf="@id/group_chat_message_container"
         android:text="21:27"
@@ -169,8 +158,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"
-        android:layout_alignParentRight="true"
-        android:layout_marginEnd="2dp"
-        android:layout_marginRight="2dp" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="5dp" />
 
 </RelativeLayout>

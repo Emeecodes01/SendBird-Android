@@ -24,6 +24,7 @@ import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -160,7 +161,7 @@ public class GroupChatFragment extends Fragment {
             getActivity().runOnUiThread(() -> {
                 switch (action) {
                     case INSERT:
-                        mChatAdapter.insertSucceededMessages(messages);
+                        mChatAdapter.insertSucceededMessages(messages, -1);
                         mChatAdapter.markAllMessagesAsRead();
                         smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
                         mLayoutManager.startSmoothScroll(smoothScroller);
@@ -201,7 +202,7 @@ public class GroupChatFragment extends Fragment {
                             }
                         }
 
-                        mChatAdapter.insertSucceededMessages(pendingMessages);
+                        mChatAdapter.insertSucceededMessages(pendingMessages, 0);
                         smoothScroller.setTargetPosition(mChatAdapter.getLastReadPosition(mLastRead));
                         mLayoutManager.startSmoothScroll(smoothScroller);
                         break;

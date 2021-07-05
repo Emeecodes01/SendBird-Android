@@ -373,10 +373,15 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mTempFileMessageUriTable.put(message.getRequestId(), uri);
     }
 
-    void insertSucceededMessages(List<BaseMessage> messages) {
+    void insertSucceededMessages(List<BaseMessage> messages, int pendingIndex) {
         for (BaseMessage message : messages) {
             int index = SyncManagerUtils.findIndexOfMessage(mMessageList, message);
-            mMessageList.add(index, message);
+            if (pendingIndex == 0){
+                mMessageList.add(0, message);
+            }else{
+                mMessageList.add(index, message);
+            }
+
         }
         notifyDataSetChanged();
 //        notifyItemInserted(getItemCount() - 1);
@@ -705,7 +710,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ViewGroup urlPreviewContainer;
         TextView urlPreviewSiteNameText, urlPreviewTitleText, urlPreviewDescriptionText;
         ImageView urlPreviewMainImageView, messageImage;
-        View padding;
         MessageStatusView messageStatusView;
 
         MyUserMessageHolder(View itemView) {
@@ -724,8 +728,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             urlPreviewDescriptionText = itemView.findViewById(R.id.text_url_preview_description);
             urlPreviewMainImageView = itemView.findViewById(R.id.image_url_preview_main);
 
-            // Dynamic padding that can be hidden or shown based on whether the message is continuous.
-            padding = itemView.findViewById(R.id.view_group_chat_padding);
         }
 
         void bind(Context context, final UserMessage message, GroupChannel channel, boolean isContinuous, boolean isNewDay, final OnItemClickListener clickListener, final OnItemLongClickListener longClickListener, final int position) {

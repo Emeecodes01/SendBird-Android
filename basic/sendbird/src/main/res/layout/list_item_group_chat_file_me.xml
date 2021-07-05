@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp">
+    android:layout_marginBottom="8dp">
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
@@ -46,10 +43,8 @@
         <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_file_name"
             android:layout_width="wrap_content"
-
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
             android:ellipsize="middle"
             android:singleLine="true"
             android:text="File Name.xls" />
@@ -58,7 +53,6 @@
             android:layout_width="2dp"
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
             android:background="#d8d8d8" />
 
         <Button
@@ -66,7 +60,6 @@
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:layout_marginStart="7dp"
-            android:layout_marginLeft="7dp"
             android:background="@drawable/ic_file_message_download" />
 
     </LinearLayout>
@@ -74,10 +67,9 @@
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_time"
         android:layout_width="wrap_content"
-
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/layout_group_chat_file_message"
-        android:layout_toLeftOf="@id/layout_group_chat_file_message"
+        android:layout_toStartOf="@id/layout_group_chat_file_message"
         android:text="21:27"
         android:textColor="#8e8e8e"
         android:textSize="10dp"
@@ -85,11 +77,10 @@
 
     <com.ulesson.chat.widget.MessageStatusView
         android:id="@+id/message_status_group_chat"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignBottom="@id/layout_group_chat_file_message"
-        android:layout_marginBottom="4dp"
-        android:layout_toLeftOf="@id/layout_group_chat_file_message" />
+        android:layout_marginBottom="5dp" />
 
 </RelativeLayout>

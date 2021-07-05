@@ -4,10 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="5dp"
     android:background="#E5E5E5"
-    android:minWidth="50dp"
-    android:paddingLeft="8dp">
+    android:minWidth="50dp">
 
     <com.ulesson.chat.utils.CustomFontTextView
         android:id="@+id/text_group_chat_date"
@@ -15,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"
         android:background="@drawable/group_chat_date_background"
         android:gravity="center"
         android:paddingLeft="8dp"
@@ -33,9 +30,9 @@
         android:layout_height="32dp"
         android:layout_alignWithParentIfMissing="true"
         android:layout_below="@id/text_group_chat_date"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         android:src="@drawable/profile_placeholder"
         android:visibility="gone" />
 
@@ -45,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/image_group_chat_profile"
         android:layout_marginBottom="4dp"
-        android:layout_toRightOf="@id/image_group_chat_profile"
+        android:layout_toEndOf="@id/image_group_chat_profile"
         android:text="Daniel Silberschatz"
         android:textSize="14sp"
         android:visibility="gone"
@@ -56,11 +53,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_group_chat_date"
-        android:layout_marginVertical="5dp"
-        android:layout_toRightOf="@id/image_group_chat_profile"
+        android:layout_marginVertical="8dp"
+        android:layout_toEndOf="@id/image_group_chat_profile"
         android:background="@drawable/other_message_shape"
         android:minWidth="50dp"
         android:orientation="vertical"
+        android:layout_marginTop="4dp"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp">
 
@@ -71,8 +69,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="10dp"
             android:src="@drawable/profile_thumbnail"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:visibility="gone" />
 
         <com.ulesson.chat.utils.CustomFontTextView
             android:id="@+id/text_group_chat_message"
@@ -168,7 +165,7 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/group_chat_message_container"
         android:layout_marginBottom="4dp"
-        android:layout_toRightOf="@id/group_chat_message_container"
+        android:layout_toEndOf="@id/group_chat_message_container"
         android:text="21:27"
         android:textColor="#8e8e8e"
         android:textSize="10dp"
