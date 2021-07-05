@@ -275,7 +275,6 @@ class Chat {
         val userGroup = UserGroup(channelUrl, groupChannelParams)
         oneTimeWork(activity, userGroup) {
             updatedGroupChannel(it)
-            Log.d("okh", "$it done")
         }
     }
 
