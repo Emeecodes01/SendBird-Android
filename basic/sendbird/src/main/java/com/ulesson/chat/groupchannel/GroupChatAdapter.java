@@ -1,6 +1,10 @@
 package com.ulesson.chat.groupchannel;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -28,13 +32,18 @@ import com.sendbird.android.UserMessage;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
 import com.ulesson.chat.utils.DateUtils;
+import com.ulesson.chat.utils.FileUtils;
 import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.widget.MessageStatusView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -64,6 +73,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private OnItemClickListener mItemClickListener;
     private OnItemLongClickListener mItemLongClickListener;
     private boolean mIsMessageListLoading;
+    BroadcastReceiver broadcastReceiver;
 
     GroupChatAdapter(Context context) {
         mContext = context;
@@ -348,27 +358,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public void markMessageSent(BaseMessage message) {
-        BaseMessage msg;
-        for (int i = mMessageList.size() - 1; i >= 0; i--) {
-            msg = mMessageList.get(i);
-            if (message instanceof UserMessage && msg instanceof UserMessage) {
-                if (msg.getRequestId().equals((message).getRequestId())) {
-                    mMessageList.set(i, message);
-                    notifyDataSetChanged();
-                    return;
-                }
-            } else if (message instanceof FileMessage && msg instanceof FileMessage) {
-                if (msg.getRequestId().equals(message.getRequestId())) {
-                    mTempFileMessageUriTable.remove(message.getRequestId());
-                    mMessageList.set(i, message);
-                    notifyDataSetChanged();
-                    return;
-                }
-            }
-        }
-    }
-
     void addTempFileMessageInfo(FileMessage message, Uri uri) {
         mTempFileMessageUriTable.put(message.getRequestId(), uri);
     }
@@ -376,15 +365,14 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     void insertSucceededMessages(List<BaseMessage> messages, int pendingIndex) {
         for (BaseMessage message : messages) {
             int index = SyncManagerUtils.findIndexOfMessage(mMessageList, message);
-            if (pendingIndex == 0){
+            if (pendingIndex == 0) {
                 mMessageList.add(0, message);
-            }else{
+            } else {
                 mMessageList.add(index, message);
             }
 
         }
-        notifyDataSetChanged();
-//        notifyItemInserted(getItemCount() - 1);
+        notifyItemInserted(getItemCount() - 1);
     }
 
     void updateSucceededMessages(List<BaseMessage> messages) {
@@ -392,8 +380,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             int index = SyncManagerUtils.getIndexOfMessage(mMessageList, message);
             if (index != -1) {
                 mMessageList.set(index, message);
-//                notifyItemChanged(index);
-                notifyDataSetChanged();
+                notifyItemChanged(index);
             }
         }
     }
@@ -1204,7 +1191,12 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                     .setUsage(AudioAttributes.USAGE_MEDIA)
                                     .build()
                     );
-                    player.setDataSource(message.getUrl());
+
+                    String audioFilePath = getLocalAudioFilePath(message.getUrl(), message.getName());
+
+                    if (audioFilePath != null && !audioFilePath.isEmpty()) {
+                        loadAudio(player, audioFilePath);
+                    }
                 }
 
             } catch (Exception e) {
@@ -1217,11 +1209,9 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (fromUser) {
                         player.pause();
                         int playerPosition = (int) (player.getDuration() * (progress / 100.0));
-
                         updateDurationTxt(playerPosition);
-
                         player.seekTo(playerPosition);
-                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                        btnPlayPause.setImageResource(R.drawable.ic_audio_play_me);
                     }
                 }
 
@@ -1256,12 +1246,18 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             btnPlayPause.setOnClickListener(v -> {
 
                 if (!isAudioLoaded) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    try {
-                        player.prepareAsync();
-                    } catch (Exception ignore) {
-                    }
-                    showLoaderProgress();
+                    getAudioFilePath(message.getUrl(), message.getName(), new AudioDownload() {
+                        @Override
+                        public void done(String audioFilePath) {
+                            loadAudio(player, audioFilePath);
+                        }
+
+                        @Override
+                        public void loading() {
+                            showLoaderProgress();
+                        }
+
+                    });
                 } else {
                     if (!player.isPlaying()) {
                         player.start();
@@ -1272,8 +1268,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         btnPlayPause.setImageResource(R.drawable.ic_audio_play_me);
                         mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
                     }
-
                 }
+
 
             });
 
@@ -1282,11 +1278,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private void hideLoaderProgress() {
             progressBar.setVisibility(View.INVISIBLE);
             tvDuration.setVisibility(View.VISIBLE);
+            btnPlayPause.setEnabled(true);
         }
 
         private void showLoaderProgress() {
             progressBar.setVisibility(View.VISIBLE);
             tvDuration.setVisibility(View.INVISIBLE);
+            btnPlayPause.setEnabled(false);
         }
 
         private void updateDurationTxt(int playerPosition) {
@@ -1305,6 +1303,22 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
         }
 
+    }
+
+    private void loadAudio(MediaPlayer player, String audioFilePath) {
+        FileInputStream fileInputStream;
+        try {
+            fileInputStream = new FileInputStream(audioFilePath);
+            player.setDataSource(fileInputStream.getFD());
+
+            try {
+                player.prepareAsync();
+            } catch (Exception ignore) {
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class OtherAudioFileMessageViewHolder extends RecyclerView.ViewHolder {
@@ -1357,6 +1371,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 .setUsage(AudioAttributes.USAGE_MEDIA)
                                 .build()
                 );
+
+                String audioFilePath = getLocalAudioFilePath(message.getUrl(), message.getName());
+
+                if (audioFilePath != null && !audioFilePath.isEmpty()) {
+                    loadAudio(player, audioFilePath);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1405,12 +1426,18 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             btnPlayPause.setOnClickListener(v -> {
 
                 if (!isAudioLoaded) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    try {
-                        player.prepareAsync();
-                    } catch (Exception ignore) {
-                    }
-                    showLoaderProgress();
+                    getAudioFilePath(message.getUrl(), message.getName(), new AudioDownload() {
+                        @Override
+                        public void done(String audioFilePath) {
+                            loadAudio(player, audioFilePath);
+                        }
+
+                        @Override
+                        public void loading() {
+                            showLoaderProgress();
+                        }
+
+                    });
                 } else {
                     if (!player.isPlaying()) {
                         player.start();
@@ -1453,6 +1480,79 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
         }
 
+    }
+
+    private String getLocalAudioFilePath(String audioUrl, String audioName) {
+
+        File path = mContext.getExternalFilesDir(null);
+
+        if (path != null) {
+            if (new File(path.getAbsolutePath() + "/audio/" + audioName).exists()) {
+                return path.getAbsolutePath() + "/audio/" + audioName;
+            }else{
+                return null;
+            }
+        }else{
+            return null;
+        }
+
+    }
+
+    private void getAudioFilePath(String audioUrl, String audioName, AudioDownload audioDownload) {
+
+        HashMap<String, String> audioFiles = PreferenceUtils.getAudioFiles();
+        if (audioFiles == null || audioFiles.get(audioUrl) == null) {
+            getDownloadedAudioFilePath(mContext, audioUrl, audioName, audioDownload);
+        } else {
+            audioDownload.done(audioFiles.get(audioUrl));
+        }
+
+    }
+
+    public void getDownloadedAudioFilePath(Context context, String audioUrl, String audioName, AudioDownload audioDownload) {
+
+        File path = context.getExternalFilesDir(null);
+
+        if (path != null) {
+            if (new File(path.getAbsolutePath() + "/audio/" + audioName).exists()) {
+                audioDownload.done(path.getAbsolutePath() + "/audio/" + audioName);
+            } else {
+
+                Long downloadId = FileUtils.downloadFile(mContext, audioUrl, audioName, true);
+
+                audioDownload.loading();
+
+                broadcastReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+
+                        long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                        if (referenceId == -1) {
+                            return;
+                        }
+
+                        if (downloadId == referenceId) {
+                            HashMap<String, String> audioMap = new HashMap<>();
+                            String audioFilePath = path.getAbsolutePath() + "/audio/" + audioName;
+                            audioMap.put(audioUrl, audioFilePath);
+                            PreferenceUtils.setAudioFile(audioMap);
+                            audioDownload.done(audioFilePath);
+                            mContext.unregisterReceiver(broadcastReceiver);
+                        }
+                    }
+                };
+
+                mContext.registerReceiver(broadcastReceiver,
+                        new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+            }
+        }
+
+    }
+
+    interface AudioDownload {
+        void done(String audioFilePath);
+        void loading();
     }
 
 }

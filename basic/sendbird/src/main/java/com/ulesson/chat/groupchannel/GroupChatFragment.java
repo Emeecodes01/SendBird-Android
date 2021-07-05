@@ -727,6 +727,9 @@ public class GroupChatFragment extends Fragment {
             mMessageCollection.setCollectionHandler(null);
             mMessageCollection.remove();
         }
+
+        mRecyclerView.setAdapter(null);
+
         super.onDestroy();
     }
 
@@ -1160,7 +1163,7 @@ public class GroupChatFragment extends Fragment {
                     .setMessage("Download file?")
                     .setPositiveButton(R.string.download, (dialog, which) -> {
                         if (which == DialogInterface.BUTTON_POSITIVE) {
-                            FileUtils.downloadFile(getActivity(), message.getUrl(), message.getName());
+                            FileUtils.downloadFile(getActivity(), message.getUrl(), message.getName(), false);
                         }
                     })
                     .setNegativeButton(R.string.cancel, null).show();

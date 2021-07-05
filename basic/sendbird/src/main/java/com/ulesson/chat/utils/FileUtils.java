@@ -107,17 +107,21 @@ public class FileUtils {
     /**
      * Downloads a file using DownloadManager.
      */
-    public static Long downloadFile(Context context, String url, String fileName) {
+    public static Long downloadFile(Context context, String url, String fileName, Boolean isAudio) {
         DownloadManager.Request downloadRequest = new DownloadManager.Request(Uri.parse(url));
-        downloadRequest.setTitle(fileName);
+//        downloadRequest.setTitle(fileName);
 
         // in order for this if to run, you must use the android 3.2 to compile your app
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             downloadRequest.allowScanningByMediaScanner();
-            downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            downloadRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
         }
-
-        downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        downloadRequest.setAllowedOverMetered(true);
+        if (isAudio) {
+            downloadRequest.setDestinationInExternalFilesDir(context, "", "/audio/" + fileName);
+        } else {
+            downloadRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        }
 
         DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         return manager.enqueue(downloadRequest);

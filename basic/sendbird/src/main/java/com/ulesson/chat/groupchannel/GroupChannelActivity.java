@@ -91,7 +91,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("subject", "11");
         questionMap.put("tutorId", "12");
         questionMap.put("questionText", "hey");
-        questionMap.put("chatDuration", "1");
+        questionMap.put("chatDuration", "10");
         questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
         questionMap.put("subjectName", "Basic Tech");
         questionMap.put("subjectThemeKey", "basic_technology_english");
@@ -108,19 +108,19 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 //
-            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
-                @Override
-                public void chatReceived() { }
-                @Override
-                public void showDummyChat(@NotNull Question question) { }
-                @Override
-                public void getPendingQuestions() { }
-            }, new TutorActions() {
-                @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) { }
-                @Override
-                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
-            });
+//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
+//                @Override
+//                public void chatReceived() { }
+//                @Override
+//                public void showDummyChat(@NotNull Question question) { }
+//                @Override
+//                public void getPendingQuestions() { }
+//            }, new TutorActions() {
+//                @Override
+//                public void showTutorProfile(@NotNull List<? extends Member> members) { }
+//                @Override
+//                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
+//            });
 
             List<Question> questionList = new ArrayList<>();
             questionList.add(new Question(1,

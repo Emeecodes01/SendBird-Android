@@ -20,6 +20,7 @@ public class PreferenceUtils {
     private static final String PENDING_QUESTIONS = "pendingQuestions";
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
+    private static final String PREFERENCE_AUDIO_FILE = "audioFile";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
     private static final String PREFERENCE_MASTER_TOKEN = "masterToken";
     private static final String PREFERENCE_PACKAGE_NAME = "packageName";
@@ -146,6 +147,25 @@ public class PreferenceUtils {
             endTime = endTimeMap;
         }
         editor.putString(PREFERENCE_COUNTDOWN_TIME, gson.toJson(endTime)).apply();
+    }
+
+
+    @Nullable
+    public static HashMap<String, String> getAudioFiles() {
+        Type type = new TypeToken<HashMap<String, String>>() {
+        }.getType();
+        return gson.fromJson(getSharedPreferences().getString(PREFERENCE_AUDIO_FILE, ""), type);
+    }
+
+    public static void setAudioFile(HashMap<String, String> audioMap) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        HashMap<String, String> audioFiles = getAudioFiles();
+        if (audioFiles != null) {
+            audioFiles.putAll(audioMap);
+        } else {
+            audioFiles = audioMap;
+        }
+        editor.putString(PREFERENCE_AUDIO_FILE, gson.toJson(audioFiles)).apply();
     }
 
     public static boolean getConnected() {
