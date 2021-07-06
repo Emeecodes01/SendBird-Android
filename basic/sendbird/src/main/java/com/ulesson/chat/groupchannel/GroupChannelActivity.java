@@ -95,6 +95,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
         questionMap.put("subjectName", "Basic Tech");
         questionMap.put("subjectThemeKey", "basic_technology_english");
+        questionMap.put("newVersion", "true");
         questionMap.put("subjectAvatar", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
 
         new User().connectUser(connectUserRequest, "0284ea063fdf33aa6814db88f774f7e38af510fa", (userResponse) -> {
@@ -157,7 +158,7 @@ public class GroupChannelActivity extends AppCompatActivity {
                 public void showDummyChat(@NotNull Question question) {
                     Log.d("okh", question.toString() + " question");
                 }
-            });
+            }, true);
 
             return Unit.INSTANCE;
         }, (errorData) -> Unit.INSTANCE, (updateAccessToken) -> Unit.INSTANCE);

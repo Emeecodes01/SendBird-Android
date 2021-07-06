@@ -24,7 +24,7 @@ import com.ulesson.chat.main.model.UserData
 import com.ulesson.chat.main.model.UserGroup
 import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.utils.PreferenceUtils
-import com.ulesson.chat.utils.StringUtils.Companion.isActive
+import com.ulesson.chat.utils.StringUtils.Companion.chatType
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
 import java.util.*
 
@@ -45,13 +45,17 @@ class Chat {
         tutorActions: TutorActions
     ) {
 
-        questionMap["active"] = "true"
+        if (questionMap["newVersion"] == "true") {
+            questionMap["active"] = "pending"
+        } else {
+            questionMap["active"] = "true"
+        }
 
         createGroupChat(hostUserData, otherUserData.id, questionMap) { groupChannel, error ->
 
             if (error == null) {
 
-                if (groupChannel.data.isActive()) {
+                if (groupChannel.data.chatType()) {
 
                     channelUrl(groupChannel.url)
 
@@ -314,10 +318,11 @@ class Chat {
         layoutId: Int,
         hostUserData: UserData,
         tutorActions: TutorActions,
-        chatActions: ChatActions
+        chatActions: ChatActions,
+        newVersion : Boolean
     ) {
 
-        val fragment: Fragment = PagerFragment.newInstance(tutorActions, chatActions)
+        val fragment: Fragment = PagerFragment.newInstance(tutorActions, chatActions, newVersion)
 
         if (activity != null && !activity.supportFragmentManager.isDestroyed) {
             val manager: FragmentManager = activity.supportFragmentManager
@@ -334,7 +339,8 @@ class Chat {
         layoutId: Int,
         hostUserData: UserData,
         tutorActions: TutorActions,
-        chatActions: ChatActions
+        chatActions: ChatActions,
+        newVersion : Boolean
     ) {
 
         val fragment: Fragment =
@@ -359,7 +365,7 @@ class Chat {
                     chatActions.getPendingQuestions()
                 }
 
-            })
+            }, newVersion)
 
         if (activity != null && !activity.supportFragmentManager.isDestroyed) {
             val manager: FragmentManager = activity.supportFragmentManager

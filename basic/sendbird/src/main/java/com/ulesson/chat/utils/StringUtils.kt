@@ -24,9 +24,9 @@ class StringUtils {
                 .toMap().toMutableMap()
         }
 
-        fun String.isActive(): Boolean {
+        fun String.chatType(): Boolean {
             val map = this.gsonToMap()
-            return map["active"] == "true"
+            return map["active"] == "true" || map["active"] == "active"
         }
 
         private fun String.gsonToMap(): MutableMap<String, Any?> {
@@ -48,9 +48,18 @@ class StringUtils {
         }
     }
 
-    fun String.isActive(): Boolean {
+    fun String.chatType(): ChatType {
+
         val map = this.gsonToMap().toMutableMap()
-        return map["active"] == "true"
+        return if ((map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)) {
+            ChatType.Active
+        } else if (map["active"] == "false" || map["active"] == "past") {
+            ChatType.Past
+        } else if (map["active"] == "pending") {
+            ChatType.PendingChat
+        } else {
+            ChatType.PendingQuestion
+        }
     }
 
 }

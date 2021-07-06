@@ -18,6 +18,7 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
@@ -44,6 +45,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String HOST_USER_DATA = "HOST_USER_DATA";
+    public static final String NEW_VERSION = "newVersion";
 
     private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
@@ -73,6 +75,12 @@ public class GroupChannelListFragment extends BaseFragment {
                     mSwipeRefresh.setRefreshing(false);
                 }
 
+                list.get(0).join(new GroupChannel.GroupChannelJoinHandler() {
+                    @Override
+                    public void onResult(SendBirdException e) {
+
+                    }
+                });
                 if (list.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);
@@ -130,14 +138,16 @@ public class GroupChannelListFragment extends BaseFragment {
         }
     };
     private UserData hostUserData;
+    private Boolean newVersion;
     private ChannelCollection mChannelCollection;
 
-    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions) {
+    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions, Boolean newVersion) {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
         Bundle args = new Bundle();
         tutorActionsChannel = tutorActions;
         chatActionsChannel = chatActions;
-        args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
+        args.putParcelable(HOST_USER_DATA, hostUserData);
+        args.putBoolean(NEW_VERSION, newVersion);
         fragment.setArguments(args);
         return fragment;
     }
@@ -145,7 +155,8 @@ public class GroupChannelListFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            hostUserData = getArguments().getParcelable(GroupChannelListFragment.HOST_USER_DATA);
+            hostUserData = getArguments().getParcelable(HOST_USER_DATA);
+            newVersion = getArguments().getBoolean(NEW_VERSION);
         }
 
         super.onCreate(savedInstanceState);
@@ -171,7 +182,7 @@ public class GroupChannelListFragment extends BaseFragment {
         });
 
         if (getActivity() != null) {
-            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData, tutorActionsChannel, chatActionsChannel));
+            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData, tutorActionsChannel, chatActionsChannel, newVersion));
             mChannelListAdapter = new GroupChannelListAdapter(getActivity());
         }
 

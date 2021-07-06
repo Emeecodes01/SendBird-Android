@@ -23,6 +23,7 @@ import com.sendbird.android.UserMessage;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
 import com.ulesson.chat.main.sendBird.ChatActions;
+import com.ulesson.chat.utils.ChatType;
 import com.ulesson.chat.utils.DateUtils;
 import com.ulesson.chat.utils.ImageUtils;
 import com.ulesson.chat.utils.StringUtils;
@@ -207,7 +208,7 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             HashMap<String, ImageUtils.Theme> subjectThemeMap = ImageUtils.getThemeMap();
             ImageUtils.Theme theme = subjectThemeMap.get(subjectThemeKey);
 
-            if (!new StringUtils().isActive(channel.getData())) {
+            if (new StringUtils().chatType(channel.getData()) != ChatType.Past) {
 
                 int pastIcon = R.drawable.ic_maths_grey_fill;
                 if (theme != null) {

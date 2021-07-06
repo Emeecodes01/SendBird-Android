@@ -20,10 +20,12 @@ class PagerFragment : Fragment() {
 
         lateinit var tutorActionsChannel: TutorActions
         lateinit var chatActionsChannel: ChatActions
+        var newVersionChannel: Boolean = false
 
-        fun newInstance(tutorActions: TutorActions, chatActions: ChatActions): PagerFragment {
+        fun newInstance(tutorActions: TutorActions, chatActions: ChatActions, newVersion : Boolean ): PagerFragment {
             tutorActionsChannel = tutorActions
             chatActionsChannel = chatActions
+            newVersionChannel = newVersion
             return PagerFragment()
         }
     }
@@ -47,7 +49,7 @@ class PagerFragment : Fragment() {
             activity?.supportFragmentManager?.popBackStack()
         }
 
-        chatPagerAdapter = ChatPagerAdapter(this, tutorActionsChannel, chatActionsChannel)
+        chatPagerAdapter = ChatPagerAdapter(this, tutorActionsChannel, chatActionsChannel, newVersionChannel)
         chatPager.adapter = chatPagerAdapter
 
         TabLayoutMediator(tabLayout, chatPager) { tab, position ->

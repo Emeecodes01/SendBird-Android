@@ -24,7 +24,6 @@ import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +67,7 @@ import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.utils.ChatGenericDialog;
+import com.ulesson.chat.utils.ChatType;
 import com.ulesson.chat.utils.CustomFontButton;
 import com.ulesson.chat.utils.FileUtils;
 import com.ulesson.chat.utils.MediaPlayerActivity;
@@ -453,11 +453,13 @@ public class GroupChatFragment extends Fragment {
 
     private void handleTimer(GroupChannel groupChannel) {
 
-        if (new StringUtils().isActive(groupChannel.getData())) {
+        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+
+        String newVersion = (String) questionMap.get("newVersion");
+
+        if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Active) {
 
             countdownTxt.setVisibility(View.VISIBLE);
-
-            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
 
             int chatDuration = 0;
             try {
@@ -475,18 +477,18 @@ public class GroupChatFragment extends Fragment {
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
 
-                countTime(countDownMinutes, countDownSeconds);
+                countTime(countDownMinutes, countDownSeconds, newVersion);
 
                 return Unit.INSTANCE;
 
             }, () -> {
                 chatStatus(false);
-                updateChat();
+                updateChat(newVersion);
                 return Unit.INSTANCE;
             });
         } else {
             chatStatus(false);
-            updateChat();
+            updateChat(newVersion);
         }
 
     }
@@ -504,9 +506,13 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    private void updateChat() {
+    private void updateChat(String newVersion) {
         HashMap<String, Object> activeMap = new HashMap<>();
-        activeMap.put("active", "false");
+        if (newVersion != null) {
+            activeMap.put("active", "past");
+        } else {
+            activeMap.put("active", "false");
+        }
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
             new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
             return Unit.INSTANCE;
@@ -514,20 +520,20 @@ public class GroupChatFragment extends Fragment {
     }
 
     @SuppressLint("SetTextI18n")
-    private void countTime(long minute, long seconds) {
+    private void countTime(long minute, long seconds, String newVersion) {
         if (minute >= 0) {
 
             new TimerUtils().timer(seconds, (l) -> {
                 countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l));
                 return Unit.INSTANCE;
             }, () -> {
-                countTime(minute - 1, 59);
+                countTime(minute - 1, 59, newVersion);
                 return Unit.INSTANCE;
             });
 
         } else {
             chatStatus(false);
-            updateChat();
+            updateChat(newVersion);
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
             }
@@ -835,7 +841,7 @@ public class GroupChatFragment extends Fragment {
             @Override
             public void onUserMessageItemLongClick(UserMessage message, int position) {
                 try {
-                    if (message.getSender().getUserId() != null && new StringUtils().isActive(mChannel.getData())) {
+                    if (message.getSender().getUserId() != null && new StringUtils().chatType(mChannel.getData()) == ChatType.Active) {
                         if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                             showMessageOptionsDialog(message, position);
                         }
