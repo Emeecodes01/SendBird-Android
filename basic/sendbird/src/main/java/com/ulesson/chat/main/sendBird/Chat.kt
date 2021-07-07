@@ -46,7 +46,7 @@ class Chat {
         tutorActions: TutorActions
     ) {
 
-        if (questionMap["newVersion"] == true) {
+        if (questionMap["newVersion"] == "true") {
             questionMap["active"] = "pending"
         } else {
             questionMap["active"] = "true"
@@ -232,7 +232,12 @@ class Chat {
             .setDistinct(false)
             .addUserIds(userIdList)
             .setData(gsonString)
-            .setName("${hostUserData.id} and $otherId Chat")
+
+        if (questionMap?.get("newVersion") == "true") {
+            params.setName("${hostUserData.id} and Chat")
+        } else {
+            params.setName("${hostUserData.id} and $otherId Chat")
+        }
 
         GroupChannel.createChannel(params) { groupChannel, error ->
 
