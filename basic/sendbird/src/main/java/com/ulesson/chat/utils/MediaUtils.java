@@ -192,7 +192,6 @@ public class MediaUtils extends AppCompatActivity {
                 returnIntent.setData(FileProvider.getUriForFile(this, PreferenceUtils.getPackageName() + ".theprovider", file));
             } else {
                 returnIntent.setData(Uri.fromFile(file));
-                returnIntent.setData(uri);
             }
             setResult(resultCode, returnIntent);
             finish();
