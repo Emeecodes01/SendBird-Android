@@ -1,6 +1,7 @@
 package com.ulesson.chat.main.sendBird
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -13,6 +14,9 @@ import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
 import com.sendbird.android.Member
+import com.sendbird.syncmanager.ChannelCollection
+import com.sendbird.syncmanager.handler.ChannelCollectionHandler
+import com.sendbird.syncmanager.handler.CompletionHandler
 import com.ulesson.chat.groupchannel.GroupChannelListFragment
 import com.ulesson.chat.groupchannel.GroupChatActivity
 import com.ulesson.chat.groupchannel.GroupChatFragment
@@ -24,7 +28,7 @@ import com.ulesson.chat.main.model.UserData
 import com.ulesson.chat.main.model.UserGroup
 import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.utils.PreferenceUtils
-import com.ulesson.chat.utils.StringUtils.Companion.chatType
+import com.ulesson.chat.utils.StringUtils.Companion.pendingChatType
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
 import java.io.File
 import java.util.*
@@ -52,11 +56,17 @@ class Chat {
             questionMap["active"] = "true"
         }
 
-        createGroupChat(hostUserData, otherUserData.id, questionMap) { groupChannel, error ->
+        createGroupChat(
+            hostUserData,
+            otherUserData.id,
+            questionMap,
+            activity
+
+        ) { groupChannel, error ->
 
             if (error == null) {
 
-                if (groupChannel.data.chatType()) {
+                if (groupChannel.data.pendingChatType()) {
 
                     channelUrl(groupChannel.url)
 
@@ -215,10 +225,35 @@ class Chat {
 
     }
 
+    private fun checkPendingChat(activity: FragmentActivity?, pendingChats: PendingChats) {
+
+        var pendingChatCount: Int = 0
+
+        val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
+            list.forEach { channel ->
+                channel.refresh {}
+            }
+            list.forEach {
+                if (it.data.pendingChatType()) {
+                    pendingChatCount++
+                }
+            }
+        }
+
+        val mChannelCollection: ChannelCollection?
+        val query = GroupChannel.createMyGroupChannelListQuery()
+        mChannelCollection = ChannelCollection(query)
+        mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
+        mChannelCollection.fetch(CompletionHandler {
+            pendingChats.chatPending(pendingChatCount)
+        })
+    }
+
     private fun createGroupChat(
         hostUserData: UserData,
         otherId: String,
         questionMap: MutableMap<String, Any?>?,
+        activity: FragmentActivity?,
         groupChannelCreateHandler: GroupChannelCreateHandler
     ) {
 
@@ -239,14 +274,23 @@ class Chat {
             params.setName("${hostUserData.id} and $otherId Chat")
         }
 
-        GroupChannel.createChannel(params) { groupChannel, error ->
+        checkPendingChat(activity, object : PendingChats {
+            override fun chatPending(pendingCount: Int) {
+                if (pendingCount == 0) {
+                    GroupChannel.createChannel(params) { groupChannel, error ->
 
-            if (error == null) {
-                groupChannelCreateHandler.onResult(groupChannel, error)
-            } else {
-                Connect().refreshActivity({
-                    createGroupChat(hostUserData, otherId, questionMap, groupChannelCreateHandler)
-                }, {
+                        if (error == null) {
+                            groupChannelCreateHandler.onResult(groupChannel, error)
+                        } else {
+                            Connect().refreshActivity({
+                                createGroupChat(
+                                    hostUserData,
+                                    otherId,
+                                    questionMap,
+                                    activity,
+                                    groupChannelCreateHandler
+                                )
+                            }, {
 
 //                    val connectUserRequest =
 //                        ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
@@ -263,10 +307,23 @@ class Chat {
 //                    }, {
 //                        it?.let {}
 //                    })
-                })
+                            })
+                        }
+
+                    }
+                } else {
+                    activity?.let {
+                        Toast.makeText(
+                            it.baseContext,
+                            "You currently have a pending chat, please wait for it to be accepted",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
             }
 
-        }
+        })
+
 
     }
 

@@ -321,8 +321,6 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            handleTimer(groupChannel);
-
             showTutorProfile(groupChannel);
 
             if (channelCreate) {
@@ -551,7 +549,7 @@ public class GroupChatFragment extends Fragment {
             activeMap.put("active", "true");
         }
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
-            new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
+            handleTimer(updatedGroupChannel);
             return Unit.INSTANCE;
         });
     }

@@ -19,6 +19,7 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
+import com.sendbird.android.SendBirdException;
 import com.sendbird.android.UserMessage;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.SyncManagerUtils;
@@ -168,6 +169,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         if (channels != null) {
             for (GroupChannel newChannel : channels) {
+                newChannel.refresh(e -> {});
                 if (new StringUtils().chatType(newChannel.getData()) == ChatType.PendingChat) {
                     isPendingChatChannel.add(newChannel);
                 } else if (new StringUtils().chatType(newChannel.getData()) == ChatType.Active) {
@@ -175,6 +177,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 } else {
                     isPastChannel.add(newChannel);
                 }
+
             }
         }
 

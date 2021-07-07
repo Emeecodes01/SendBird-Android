@@ -75,12 +75,6 @@ public class GroupChannelListFragment extends BaseFragment {
                     mSwipeRefresh.setRefreshing(false);
                 }
 
-                list.get(0).join(new GroupChannel.GroupChannelJoinHandler() {
-                    @Override
-                    public void onResult(SendBirdException e) {
-
-                    }
-                });
                 if (list.isEmpty()) {
                     mRecyclerView.setVisibility(View.GONE);
                     noChatCard.setVisibility(View.VISIBLE);

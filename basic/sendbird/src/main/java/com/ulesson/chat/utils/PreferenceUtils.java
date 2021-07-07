@@ -19,6 +19,7 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_ACCESS_TOKEN = "accessToken";
     private static final String PENDING_QUESTIONS = "pendingQuestions";
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
+    private static final String PREFERENCE_CHAT_COUNT = "chatCount";
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
     private static final String PREFERENCE_AUDIO_FILE = "audioFile";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";

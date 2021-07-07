@@ -297,12 +297,12 @@ public class GroupAllChatListFragment extends Fragment {
                 mChannelListAdapter.notifyDataSetChanged();
             });
 
-            if (getArguments() != null) {
-                String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
-                if (chatType.equalsIgnoreCase(ChatType.PendingQuestion.name())) {
-                    chatActionsChannel.getPendingQuestions();
-                }
-            }
+//            if (getArguments() != null) {
+//                String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
+//                if (chatType.equalsIgnoreCase(ChatType.PendingQuestion.name())) {
+//                    chatActionsChannel.getPendingQuestions();
+//                }
+//            }
 
         } catch (Exception e) {
 

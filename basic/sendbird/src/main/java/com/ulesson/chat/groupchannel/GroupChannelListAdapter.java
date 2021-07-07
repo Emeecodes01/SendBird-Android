@@ -91,6 +91,7 @@ class GroupChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     void insertChannels(List<GroupChannel> channels, GroupChannelListQuery.Order order, ChatActions chatActions) {
 
         for (GroupChannel newChannel : channels) {
+            newChannel.refresh(e -> {});
             int index = SyncManagerUtils.findIndexOfChannel(mChannelList, newChannel, order);
             mChannelList.add(index, newChannel);
         }
