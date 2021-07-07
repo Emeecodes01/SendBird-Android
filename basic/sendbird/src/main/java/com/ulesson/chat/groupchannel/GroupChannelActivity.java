@@ -41,13 +41,13 @@ public class GroupChannelActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        if (bundle != null ){
-            Log.d("okh", "push background"+ bundle.getString("GROUP_CHANNEL_URL")+"");
-            Log.d("okh", "push background"+ bundle+"");
+        if (bundle != null) {
+            Log.d("okh", "push background" + bundle.getString("GROUP_CHANNEL_URL") + "");
+            Log.d("okh", "push background" + bundle + "");
 
             String channelUrl = bundle.getString("GROUP_CHANNEL_URL");
-            if (channelUrl != null){
-                new Chat().gotoChat(channelUrl, this, true, true,  new TutorActions() {
+            if (channelUrl != null) {
+                new Chat().gotoChat(channelUrl, this, true, true, new TutorActions() {
                     @Override
                     public void showTutorProfile(@NotNull List<? extends Member> members) {
 
@@ -90,9 +90,10 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("questionId", "123");
         questionMap.put("subject", "11");
         questionMap.put("tutorId", "12");
-        questionMap.put("questionText", "hey");
+        questionMap.put("questionText", "hey image, this an image");
         questionMap.put("chatDuration", "10");
-        questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
+        questionMap.put("questionUri", "/storage/emulated/0/Android/data/com.ulesson.chat/files/questionImage.jpg");
+//        questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
         questionMap.put("subjectName", "Basic Tech");
         questionMap.put("subjectThemeKey", "basic_technology_english");
         questionMap.put("newVersion", "true");
@@ -109,25 +110,13 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 //
-//            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
-//                @Override
-//                public void chatReceived() { }
-//                @Override
-//                public void showDummyChat(@NotNull Question question) { }
-//                @Override
-//                public void getPendingQuestions() { }
-//            }, new TutorActions() {
-//                @Override
-//                public void showTutorProfile(@NotNull List<? extends Member> members) { }
-//                @Override
-//                public void showTutorRating(@NotNull Map<String, Object> questionMap) { }
-//            });
+
 
             List<Question> questionList = new ArrayList<>();
             questionList.add(new Question(1,
                     "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
                     "What is Mathematics", "What's good",
-                    0,"",
+                    0, "",
                     "20210609"));
             questionList.add(new Question(2,
                     "https://ulesson-uat.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png",
@@ -140,9 +129,12 @@ public class GroupChannelActivity extends AppCompatActivity {
             new Chat().showChatList(this, R.id.container_group_channel, hostUserData, new TutorActions() {
 
                 @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) {}
+                public void showTutorProfile(@NotNull List<? extends Member> members) {
+                }
+
                 @Override
-                public void showTutorRating(@NotNull Map<String, Object> questionMap) {}
+                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
+                }
 
             }, new ChatActions() {
                 @Override
@@ -152,13 +144,37 @@ public class GroupChannelActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void chatReceived() {}
+                public void chatReceived() {
+                }
 
                 @Override
                 public void showDummyChat(@NotNull Question question) {
                     Log.d("okh", question.toString() + " question");
                 }
             }, true);
+
+
+            new Chat().createChat(this, hostUserData, tutorUserData, true, questionMap, (channelUrl) -> Unit.INSTANCE, new ChatActions() {
+                @Override
+                public void chatReceived() {
+                }
+
+                @Override
+                public void showDummyChat(@NotNull Question question) {
+                }
+
+                @Override
+                public void getPendingQuestions() {
+                }
+            }, new TutorActions() {
+                @Override
+                public void showTutorProfile(@NotNull List<? extends Member> members) {
+                }
+
+                @Override
+                public void showTutorRating(@NotNull Map<String, Object> questionMap) {
+                }
+            });
 
             return Unit.INSTANCE;
         }, (errorData) -> Unit.INSTANCE, (updateAccessToken) -> Unit.INSTANCE);
@@ -168,17 +184,25 @@ public class GroupChannelActivity extends AppCompatActivity {
             // If started from notification
             Fragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
                 @Override
-                public void showTutorProfile(@NotNull List<? extends Member> members) {}
+                public void showTutorProfile(@NotNull List<? extends Member> members) {
+                }
+
                 @Override
-                public void showTutorRating(Map<String, Object> questionMap) {}
+                public void showTutorRating(Map<String, Object> questionMap) {
+                }
 
             }, new ChatActions() {
                 @Override
-                public void getPendingQuestions() {}
+                public void getPendingQuestions() {
+                }
+
                 @Override
-                public void chatReceived() {}
+                public void chatReceived() {
+                }
+
                 @Override
-                public void showDummyChat(@NotNull Question question) {}
+                public void showDummyChat(@NotNull Question question) {
+                }
             });
 
             FragmentManager manager = getSupportFragmentManager();

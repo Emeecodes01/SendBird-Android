@@ -718,6 +718,9 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         void bind(Context context, final UserMessage message, GroupChannel channel, boolean isContinuous, boolean isNewDay, final OnItemClickListener clickListener, final OnItemLongClickListener longClickListener, final int position) {
+//            if (message.getMessage().isEmpty()){
+//                messageText.setVisibility(View.GONE);
+//            }
             messageText.setText(message.getMessage());
             timeText.setText(DateUtils.formatTime(message.getCreatedAt()));
 

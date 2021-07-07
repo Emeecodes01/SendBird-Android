@@ -26,6 +26,7 @@ import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.utils.PreferenceUtils
 import com.ulesson.chat.utils.StringUtils.Companion.chatType
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
+import java.io.File
 import java.util.*
 
 class Chat {
@@ -45,7 +46,7 @@ class Chat {
         tutorActions: TutorActions
     ) {
 
-        if (questionMap["newVersion"] == "true") {
+        if (questionMap["newVersion"] == true) {
             questionMap["active"] = "pending"
         } else {
             questionMap["active"] = "true"
@@ -225,14 +226,15 @@ class Chat {
 
         val gsonString = Gson().toJson(questionMap)
 
-        GroupChannel.createChannelWithUserIds(
-            userIdList,
-            false,
-            "${hostUserData.id} and $otherId Chat",
-            "",
-            gsonString,
-            ""
-        ) { groupChannel, error ->
+        val params = GroupChannelParams()
+            .setPublic(true)
+            .setEphemeral(false)
+            .setDistinct(false)
+            .addUserIds(userIdList)
+            .setData(gsonString)
+            .setName("${hostUserData.id} and $otherId Chat")
+
+        GroupChannel.createChannel(params) { groupChannel, error ->
 
             if (error == null) {
                 groupChannelCreateHandler.onResult(groupChannel, error)
@@ -282,6 +284,10 @@ class Chat {
         }
     }
 
+    fun copyFile(src: File, dest: File) {
+        src.copyTo(dest, true)
+    }
+
     private fun oneTimeWork(
         activity: FragmentActivity?,
         userGroup: UserGroup,
@@ -319,7 +325,7 @@ class Chat {
         hostUserData: UserData,
         tutorActions: TutorActions,
         chatActions: ChatActions,
-        newVersion : Boolean
+        newVersion: Boolean
     ) {
 
         val fragment: Fragment = PagerFragment.newInstance(tutorActions, chatActions, newVersion)
@@ -340,7 +346,7 @@ class Chat {
         hostUserData: UserData,
         tutorActions: TutorActions,
         chatActions: ChatActions,
-        newVersion : Boolean
+        newVersion: Boolean
     ) {
 
         val fragment: Fragment =

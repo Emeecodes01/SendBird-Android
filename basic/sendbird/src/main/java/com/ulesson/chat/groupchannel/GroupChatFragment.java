@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -399,17 +400,15 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void animateVoice(boolean animate) {
-        if (requireContext() != null) {
-            AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(requireContext(), R.animator.fade_animator);
-            if (animate) {
-                set.setTarget(icVoice);
-                set.setTarget(icVoice1);
-                set.setTarget(icVoice2);
-                set.start();
+        AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(requireContext(), R.animator.fade_animator);
+        if (animate) {
+            set.setTarget(icVoice);
+            set.setTarget(icVoice1);
+            set.setTarget(icVoice2);
+            set.start();
 
-            } else {
-                set.cancel();
-            }
+        } else {
+            set.cancel();
         }
     }
 
@@ -420,9 +419,32 @@ public class GroupChatFragment extends Fragment {
             Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
             String questionText = (String) questionMap.get("questionText");
             String questionUrl = (String) questionMap.get("questionUrl");
+            String questionUriPath = (String) questionMap.get("questionUri");
 
-            if (questionText != null && questionUrl != null && !questionUrl.isEmpty()) {
+            Uri mTempPhotoUri = null;
+            File tempFile = null;
+
+            if (questionUrl != null && !questionUrl.isEmpty()) {
                 sendUserMessageWithImageUrl(questionText, questionUrl, groupChannel);
+            } else if (questionUriPath != null && !questionUriPath.isEmpty()) {
+
+                if (getActivity() != null) {
+
+                    File questionImage = new File(questionUriPath);
+
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        mTempPhotoUri = FileProvider.getUriForFile(getActivity().getBaseContext(), PreferenceUtils.getPackageName() + ".theprovider", questionImage);
+                    } else {
+                        mTempPhotoUri = Uri.fromFile(questionImage);
+                    }
+
+                    sendFileWithThumbnail(mTempPhotoUri);
+                    if (questionText != null) {
+                        sendUserMessage(questionText, groupChannel);
+                    }
+
+                }
+
             } else {
                 sendUserMessage(questionText, groupChannel);
             }
@@ -457,7 +479,9 @@ public class GroupChatFragment extends Fragment {
 
         String newVersion = (String) questionMap.get("newVersion");
 
-        if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Active) {
+        ChatType chatType = new StringUtils().chatType(groupChannel.getData());
+
+        if (chatType == ChatType.Active || chatType == ChatType.PendingChat) {
 
             countdownTxt.setVisibility(View.VISIBLE);
 

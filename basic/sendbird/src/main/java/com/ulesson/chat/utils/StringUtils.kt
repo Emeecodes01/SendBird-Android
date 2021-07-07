@@ -9,48 +9,30 @@ class StringUtils {
         @JvmStatic
         fun String.toMutableMap(): MutableMap<String, Any?> {
 
-            val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
+            val type = object : TypeToken<MutableMap<String, Any?>>() {}.type
 
-            val gsonString = try {
-                Gson().fromJson(this, type).toString()
+            return try {
+                Gson().fromJson(this, type)
             } catch (ignore: Exception) {
-                this
+                this.replace("{", "").replace("}", "")
+                    .split(",")
+                    .map { it.split("=") }
+                    .map { it.first().trim() to it.last().trim() }
+                    .toMap().toMutableMap()
             }
 
-            return gsonString.replace("{", "").replace("}", "")
-                .split(",")
-                .map { it.split("=") }
-                .map { it.first().trim() to it.last().trim() }
-                .toMap().toMutableMap()
         }
 
         fun String.chatType(): Boolean {
-            val map = this.gsonToMap()
-            return map["active"] == "true" || map["active"] == "active"
+            val map = this.toMutableMap()
+            return map["active"] == "true" || map["active"] == "pending"
         }
 
-        private fun String.gsonToMap(): MutableMap<String, Any?> {
-            val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
-            return try {
-                Gson().fromJson(this, type).toString().toMutableMap()
-            } catch (ignore: Exception) {
-                this.toMutableMap()
-            }
-        }
-    }
-
-    private fun String.gsonToMap(): MutableMap<String, Any?> {
-        val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
-        return try {
-            Gson().fromJson(this, type).toString().toMutableMap()
-        } catch (ignore: Exception) {
-            this.toMutableMap()
-        }
     }
 
     fun String.chatType(): ChatType {
 
-        val map = this.gsonToMap().toMutableMap()
+        val map = this.toMutableMap()
         return if ((map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)) {
             ChatType.Active
         } else if (map["active"] == "false" || map["active"] == "past") {
