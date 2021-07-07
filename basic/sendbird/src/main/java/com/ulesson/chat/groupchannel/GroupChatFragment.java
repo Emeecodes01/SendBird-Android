@@ -435,7 +435,7 @@ public class GroupChatFragment extends Fragment {
                         mTempPhotoUri = Uri.fromFile(questionImage);
                     }
 
-                    sendFileWithThumbnail(mTempPhotoUri);
+                    sendFileWithThumbnail(mTempPhotoUri, questionImage);
                     if (questionText != null) {
                         sendUserMessage(questionText, groupChannel);
                     }
@@ -610,7 +610,7 @@ public class GroupChatFragment extends Fragment {
 
     private void sendAudio() {
         Uri uri = FileProvider.getUriForFile(getContext(), PreferenceUtils.getPackageName() + ".theprovider", newFile);
-        sendFileWithThumbnail(uri);
+        sendFileWithThumbnail(uri, null);
     }
 
     private void initVoiceRecorder() {
@@ -787,7 +787,7 @@ public class GroupChatFragment extends Fragment {
         SendBird.setAutoBackgroundDetection(true);
 
         if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            sendFileWithThumbnail(data.getData());
+            sendFileWithThumbnail(data.getData(), null);
             uploadFileDialog.dismiss();
         }
 
@@ -799,7 +799,7 @@ public class GroupChatFragment extends Fragment {
                 return;
             }
 
-            sendFileWithThumbnail(data.getData());
+            sendFileWithThumbnail(data.getData(), null);
         }
     }
 
@@ -1036,7 +1036,7 @@ public class GroupChatFragment extends Fragment {
                             mChannel.resendUserMessage((UserMessage) message, (userMessage, e) -> mMessageCollection.handleSendMessageResponse(userMessage, e));
                         } else if (message instanceof FileMessage) {
                             Uri uri = mChatAdapter.getTempFileMessageUri(message);
-                            sendFileWithThumbnail(uri);
+                            sendFileWithThumbnail(uri, null);
                         }
                         mChatAdapter.removeFailedMessage(message);
                     }
@@ -1331,7 +1331,7 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    private void sendFileWithThumbnail(Uri uri) {
+    private void sendFileWithThumbnail(Uri uri, File defaultFile) {
         if (mChannel == null) {
             return;
         }
@@ -1365,6 +1365,15 @@ public class GroupChatFragment extends Fragment {
             BaseChannel.SendFileMessageHandler fileMessageHandler = (fileMessage, e) -> {
                 mMessageCollection.handleSendMessageResponse(fileMessage, e);
                 mMessageCollection.fetchAllNextMessages(null);
+
+                if (defaultFile != null) {
+                    try {
+                        defaultFile.delete();
+                    } catch (Exception ignore) {
+
+                    }
+
+                }
             };
 
             // Send image with thumbnails in the specified dimensions
@@ -1376,7 +1385,6 @@ public class GroupChatFragment extends Fragment {
                 mMessageCollection.appendMessage(tempFileMessage);
             }
 
-            file.delete();
         }
     }
 
