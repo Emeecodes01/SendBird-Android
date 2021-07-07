@@ -420,7 +420,6 @@ public class GroupChatFragment extends Fragment {
             String questionUriPath = (String) questionMap.get("questionUri");
 
             Uri mTempPhotoUri = null;
-            File tempFile = null;
 
             if (questionUrl != null && !questionUrl.isEmpty()) {
                 sendUserMessageWithImageUrl(questionText, questionUrl, groupChannel);
@@ -1376,6 +1375,8 @@ public class GroupChatFragment extends Fragment {
             if (mMessageCollection != null) {
                 mMessageCollection.appendMessage(tempFileMessage);
             }
+
+            file.delete();
         }
     }
 
