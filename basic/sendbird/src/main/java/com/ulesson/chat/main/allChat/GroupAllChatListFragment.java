@@ -70,6 +70,7 @@ public class GroupAllChatListFragment extends Fragment {
                                 String chatType = getArguments().getString(CHAT_TYPE);
                                 List<GroupChannel> groupChannelList = mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), chatType);
                                 groupChannelEmpty = groupChannelList.isEmpty();
+                                mChannelListAdapter.notifyDataSetChanged();
                                 setUpChatView(groupChannelEmpty);
                             }
                             break;

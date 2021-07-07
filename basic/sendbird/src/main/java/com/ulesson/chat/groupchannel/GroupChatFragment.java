@@ -543,6 +543,19 @@ public class GroupChatFragment extends Fragment {
         });
     }
 
+    private void updateChatToActive(String newVersion) {
+        HashMap<String, Object> activeMap = new HashMap<>();
+        if (newVersion != null) {
+            activeMap.put("active", "active");
+        } else {
+            activeMap.put("active", "true");
+        }
+        new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
+            new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
+            return Unit.INSTANCE;
+        });
+    }
+
     @SuppressLint("SetTextI18n")
     private void countTime(long minute, long seconds, String newVersion) {
         if (minute >= 0) {
@@ -1208,6 +1221,14 @@ public class GroupChatFragment extends Fragment {
             title = TextUtils.getGroupChannelTitle(mChannel);
         }
         mUserName.setText(title);
+
+        if (mChannel.getMembers().size() == 2) {
+
+            Map<String, Object> questionMap = StringUtils.toMutableMap(mChannel.getData());
+            String newVersion = (String) questionMap.get("newVersion");
+
+            updateChatToActive(newVersion);
+        }
 
     }
 

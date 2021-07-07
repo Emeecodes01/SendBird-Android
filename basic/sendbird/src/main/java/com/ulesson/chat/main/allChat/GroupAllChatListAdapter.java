@@ -179,18 +179,15 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         if (chatType.equalsIgnoreCase(ChatType.PendingQuestion.name())) {
-            notifyDataSetChanged();
             return isPendingQuestionChannel;
         } else if (chatType.equalsIgnoreCase(ChatType.PendingChat.name())) {
-            notifyDataSetChanged();
             return isPendingChatChannel;
         } else if (chatType.equalsIgnoreCase(ChatType.Active.name())) {
-            notifyDataSetChanged();
             return isActiveChannel;
         } else {
-            notifyDataSetChanged();
             return isPastChannel;
         }
+
     }
 
     void updateChannels(List<GroupChannel> channels) {
@@ -303,8 +300,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
             isPendingChatChannel.add(0, groupChannel);
 
-        }
-        else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Active) {
+        } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Active) {
 
             for (int i = 0; i < isActiveChannel.size(); i++) {
                 if (isActiveChannel.get(i).getUrl().equals(groupChannel.getUrl())) {

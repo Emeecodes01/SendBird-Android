@@ -234,7 +234,7 @@ class Chat {
             .setData(gsonString)
 
         if (questionMap?.get("newVersion") == "true") {
-            params.setName("${hostUserData.id} and Chat")
+            params.setName("${hostUserData.id} Chat")
         } else {
             params.setName("${hostUserData.id} and $otherId Chat")
         }

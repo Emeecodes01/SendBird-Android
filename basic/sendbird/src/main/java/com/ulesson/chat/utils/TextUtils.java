@@ -10,14 +10,13 @@ import java.util.List;
 
 public class TextUtils {
 
-    public static String THEME_MATH = "mathematics_english";
-
     public static String getGroupChannelTitle(GroupChannel channel) {
         List<Member> members = channel.getMembers();
 
         if (members.size() < 2 || PreferenceUtils.getUserId().isEmpty()) {
-            return "You";
+            return "Searching Tutor...";
         } else if (members.size() == 2) {
+
             StringBuffer names = new StringBuffer();
             for (Member member : members) {
                 if (member.getUserId().equals(PreferenceUtils.getUserId())) {
