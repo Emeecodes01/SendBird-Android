@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:letterSpacing="0.0125"
-                android:text="Recent Chats"
+                android:text="Recent Questions"
                 android:textColor="#313848"
                 android:textSize="24sp"
                 app:fontName="ItimRegular"
@@ -88,14 +88,14 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/ic_empty_chat" />
+                        app:srcCompat="@drawable/ic_girl_ask_question" />
 
                     <com.ulesson.chat.utils.CustomFontTextView
                         android:id="@+id/noChatTxt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="17dp"
-                        android:text="You have no chats"
+                        android:layout_marginTop="14dp"
+                        android:text="Ask your first question"
                         android:textColor="#313848"
                         android:textSize="24sp"
                         android:textStyle="bold"
@@ -106,15 +106,16 @@
 
                     <com.ulesson.chat.utils.CustomFontTextView
                         android:id="@+id/askQuestionChatTxt"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:text="Ask a question to start a chat with a tutor"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:text="Ask a question and an answer will be provided quickly."
                         android:textColor="#313848"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         app:fontName="MuliRegular"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="@id/noChatTxt"
+                        app:layout_constraintStart_toStartOf="@id/noChatTxt"
                         app:layout_constraintTop_toBottomOf="@id/noChatTxt" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
