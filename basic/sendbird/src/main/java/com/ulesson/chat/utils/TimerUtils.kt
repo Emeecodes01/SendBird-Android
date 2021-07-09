@@ -73,10 +73,8 @@ class TimerUtils {
                 timeOut()
             }
             else -> {
-
                 PreferenceUtils.getEndTime()?.get(channelUrl)?.let {
-
-                    if (it in (currentTime + 1) until endTime) {
+                    if (it in currentTime until endTime) {
                         countDownTime(it - currentTime)
                     } else {
                         PreferenceUtils.setEndTime(hashMapOf(channelUrl to -1))
@@ -89,8 +87,8 @@ class TimerUtils {
 
     }
 
-    fun updateChannelData(channelUrl: String) {
-        PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
+    fun removeChannelData(channelUrl: String) {
+        PreferenceUtils.removeTime(channelUrl)
     }
 
 }

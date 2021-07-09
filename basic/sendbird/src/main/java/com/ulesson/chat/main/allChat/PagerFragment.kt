@@ -51,7 +51,7 @@ class PagerFragment : Fragment() {
 
         chatPagerAdapter = ChatPagerAdapter(this, tutorActionsChannel, chatActionsChannel, newVersionChannel)
         chatPager.adapter = chatPagerAdapter
-
+        chatPager.offscreenPageLimit = 3
         TabLayoutMediator(tabLayout, chatPager) { tab, position ->
 
             when (position) {

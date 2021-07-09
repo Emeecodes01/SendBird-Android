@@ -56,6 +56,7 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
 import com.sendbird.android.UserMessage;
 import com.sendbird.syncmanager.FailedMessageEventActionReason;
 import com.sendbird.syncmanager.MessageCollection;
@@ -321,6 +322,8 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
+            handleTimer(groupChannel.getData());
+
             showTutorProfile(groupChannel);
 
             if (channelCreate) {
@@ -331,9 +334,53 @@ public class GroupChatFragment extends Fragment {
 
             tutorChatActions.chatReceived();
 
+            checkChannel();
+
+            checkActiveChat(groupChannel);
+
         });
 
         return rootView;
+    }
+
+    private void checkActiveChat(GroupChannel groupChannel) {
+
+        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+
+        if (new StringUtils().chatType(questionMap) == ChatType.Active) {
+
+            String inSession = (String) questionMap.get("inSession");
+
+            if (inSession != null && inSession.equals("true")) {
+                handleTimer(groupChannel.getData());
+            }
+        }
+        else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
+            chatStatus(false);
+        }
+    }
+
+    private void initializeViews(View rootView) {
+        mProfileImage = rootView.findViewById(R.id.profile_image);
+        mProfileLayout = rootView.findViewById(R.id.profile_layout);
+        mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
+        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
+        mUserName = rootView.findViewById(R.id.userName);
+        countdownTxt = rootView.findViewById(R.id.countdownTxt);
+        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
+        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
+        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
+        mSendMessage = rootView.findViewById(R.id.send_message_btn);
+        button_voice = rootView.findViewById(R.id.button_voice);
+        icVoice = rootView.findViewById(R.id.ic_voice);
+        icVoice1 = rootView.findViewById(R.id.ic_voice1);
+        icVoice2 = rootView.findViewById(R.id.ic_voice2);
+        chronometer = rootView.findViewById(R.id.chronometer);
+        cancelRecord = rootView.findViewById(R.id.cancel_record_txt);
+        recordGroup = rootView.findViewById(R.id.record_group);
+        textGroup = rootView.findViewById(R.id.text_group);
+        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
     }
 
     private void onTyping() {
@@ -372,29 +419,6 @@ public class GroupChatFragment extends Fragment {
             }
 
         });
-    }
-
-    private void initializeViews(View rootView) {
-        mProfileImage = rootView.findViewById(R.id.profile_image);
-        mProfileLayout = rootView.findViewById(R.id.profile_layout);
-        mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
-        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
-        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
-        mUserName = rootView.findViewById(R.id.userName);
-        countdownTxt = rootView.findViewById(R.id.countdownTxt);
-        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
-        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
-        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
-        mSendMessage = rootView.findViewById(R.id.send_message_btn);
-        button_voice = rootView.findViewById(R.id.button_voice);
-        icVoice = rootView.findViewById(R.id.ic_voice);
-        icVoice1 = rootView.findViewById(R.id.ic_voice1);
-        icVoice2 = rootView.findViewById(R.id.ic_voice2);
-        chronometer = rootView.findViewById(R.id.chronometer);
-        cancelRecord = rootView.findViewById(R.id.cancel_record_txt);
-        recordGroup = rootView.findViewById(R.id.record_group);
-        textGroup = rootView.findViewById(R.id.text_group);
-        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
     }
 
     private void animateVoice(boolean animate) {
@@ -470,28 +494,19 @@ public class GroupChatFragment extends Fragment {
         mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
 
-    private void handleTimer(GroupChannel groupChannel) {
+    private void handleTimer(String channelData) {
 
-        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+        Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
 
         String newVersion = (String) questionMap.get("newVersion");
 
-        ChatType chatType = new StringUtils().chatType(groupChannel.getData());
+        ChatType chatType = new StringUtils().chatType(channelData);
 
         if (chatType == ChatType.Active || chatType == ChatType.PendingChat) {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            int chatDuration = 0;
-            try {
-                String chatDurationString = (String) questionMap.get("chatDuration");
-                if (chatDurationString != null) {
-                    chatDuration = Integer.parseInt(chatDurationString);
-                }
-            } catch (Exception ignore) {
-            }
-
-            new TimerUtils().getTime(mChannelUrl, chatDuration, channelCreate, (countDownTime) -> {
+            new TimerUtils().getTime(mChannelUrl, getChatDuration(questionMap), channelCreate, (countDownTime) -> {
 
                 chatStatus(true);
 
@@ -531,24 +546,12 @@ public class GroupChatFragment extends Fragment {
         HashMap<String, Object> activeMap = new HashMap<>();
         if (newVersion != null) {
             activeMap.put("active", "past");
+            activeMap.put("inSession", "false");
         } else {
             activeMap.put("active", "false");
         }
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
-            new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
-            return Unit.INSTANCE;
-        });
-    }
-
-    private void updateChatToActive(String newVersion) {
-        HashMap<String, Object> activeMap = new HashMap<>();
-        if (newVersion != null) {
-            activeMap.put("active", "active");
-        } else {
-            activeMap.put("active", "true");
-        }
-        new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
-            handleTimer(updatedGroupChannel);
+            new TimerUtils().removeChannelData(updatedGroupChannel.getUrl());
             return Unit.INSTANCE;
         });
     }
@@ -703,9 +706,73 @@ public class GroupChatFragment extends Fragment {
             }
         });
 
+        checkConnection();
+        checkChannel();
+
+    }
+
+    private void checkConnection() {
+        SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
+            @Override
+            public void onReconnectStarted() {
+            }
+
+            @Override
+            public void onReconnectSucceeded() {
+
+                if (mMessageCollection != null) {
+                    if (mLayoutManager.findFirstVisibleItemPosition() <= 0) {
+                        mMessageCollection.fetchAllNextMessages((hasMore, e) -> {
+                        });
+                    }
+
+                    if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
+                        mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, (hasMore, e) -> {
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onReconnectFailed() {
+            }
+        });
+    }
+
+    private void checkChannel() {
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
             public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+            }
+
+            @Override
+            public void onUserJoined(GroupChannel channel, User user) {
+                if (channel.getMemberCount() == 2 && new StringUtils().chatType(channel.getData()) == ChatType.Active) {
+
+                    Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
+
+                    if (new StringUtils().chatType(questionMap) == ChatType.Active) {
+
+                        String inSession = (String) questionMap.get("inSession");
+
+                        if (inSession != null && inSession.equals("true")) {
+                            handleTimer(channel.getData());
+                            checkConnection();
+                        }
+                    }
+//
+//                    showTutorProfile(channel);
+//                    updateActionBarTitle();
+
+                } else if (channel.getMemberCount() > 2) {
+                    channel.banUserWithUserId(user.getUserId(), "Tutor has accepted a question", 100000, new GroupChannel.GroupChannelBanHandler() {
+                        @Override
+                        public void onResult(SendBirdException e) {
+
+                        }
+                    });
+                }
+                super.onUserJoined(channel, user);
             }
 
             @Override
@@ -746,7 +813,22 @@ public class GroupChatFragment extends Fragment {
                 }
             }
         });
+    }
 
+
+    private int getChatDuration(Map<String, Object> questionMap) {
+
+        int chatDuration = 0;
+
+        try {
+            String chatDurationString = (String) questionMap.get("chatDuration");
+            if (chatDurationString != null) {
+                chatDuration = Integer.parseInt(chatDurationString);
+            }
+        } catch (Exception ignore) {
+        }
+
+        return chatDuration;
     }
 
 
@@ -1218,15 +1300,6 @@ public class GroupChatFragment extends Fragment {
             title = TextUtils.getGroupChannelTitle(mChannel);
         }
         mUserName.setText(title);
-
-        if (mChannel.getMembers().size() == 2) {
-
-            Map<String, Object> questionMap = StringUtils.toMutableMap(mChannel.getData());
-            String newVersion = (String) questionMap.get("newVersion");
-
-            updateChatToActive(newVersion);
-        }
-
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -1275,14 +1348,6 @@ public class GroupChatFragment extends Fragment {
             }
         }.execute(url);
 
-    }
-
-    private void refresh(GroupChannel groupChannel, String text) {
-        if (groupChannel != null) {
-
-        } else {
-            Log.d("okh", "no channel");
-        }
     }
 
     private void sendUserMessage(String text, GroupChannel groupChannel) {

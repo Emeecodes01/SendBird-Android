@@ -9,6 +9,6 @@ interface ChatActions {
 }
 
 interface PendingChats {
-    fun chatPending(pendingCount : Int)
+    fun chatPending(pendingCount : Int, chatActions: ChatActions)
 }
 

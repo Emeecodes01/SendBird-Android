@@ -19,6 +19,7 @@ import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.main.sendBird.User;
 import com.ulesson.chat.network.userModel.ConnectUserRequest;
+import com.ulesson.chat.utils.PreferenceUtils;
 import com.ulesson.chat.utils.PushUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +92,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("subject", "11");
         questionMap.put("tutorId", "12");
         questionMap.put("questionText", "hey image, this an image");
-        questionMap.put("chatDuration", "10");
+        questionMap.put("chatDuration", "1");
         questionMap.put("questionUri", "/storage/emulated/0/Android/data/com.ulesson.chat/files/questionImage.jpg");
 //        questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
         questionMap.put("subjectName", "Basic Tech");
@@ -99,7 +100,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("newVersion", "true");
         questionMap.put("subjectAvatar", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");
 
-        new User().connectUser(connectUserRequest, "0284ea063fdf33aa6814db88f774f7e38af510fa", (userResponse) -> {
+        new User().connectUser(connectUserRequest, PreferenceUtils.getAccessToken(), (userResponse) -> {
 
             PushUtils.registerPushTokenForCurrentUser((pushTokenRegistrationStatus, e) -> {
                 if (e != null) {
@@ -110,7 +111,6 @@ public class GroupChannelActivity extends AppCompatActivity {
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
 //
-
 
             List<Question> questionList = new ArrayList<>();
             questionList.add(new Question(1,

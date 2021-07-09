@@ -44,4 +44,18 @@ class StringUtils {
         }
     }
 
+    fun Map<String, Any?>.chatType(): ChatType {
+
+        val map = this
+        return if ((map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)) {
+            ChatType.Active
+        } else if (map["active"] == "false" || map["active"] == "past") {
+            ChatType.Past
+        } else if (map["active"] == "pending") {
+            ChatType.PendingChat
+        } else {
+            ChatType.PendingQuestion
+        }
+    }
+
 }

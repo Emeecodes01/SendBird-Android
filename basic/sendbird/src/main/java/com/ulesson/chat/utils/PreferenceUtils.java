@@ -139,6 +139,15 @@ public class PreferenceUtils {
         return gson.fromJson(getSharedPreferences().getString(PREFERENCE_COUNTDOWN_TIME, ""), type);
     }
 
+    public static void removeTime(String channelUrl){
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        HashMap<String, Integer> endTime = getEndTime();
+        if (endTime != null) {
+            endTime.remove(channelUrl);
+        }
+        editor.putString(PREFERENCE_COUNTDOWN_TIME, gson.toJson(endTime)).apply();
+    }
+
     public static void setEndTime(HashMap<String, Integer> endTimeMap) {
         SharedPreferences.Editor editor = getSharedPreferences().edit();
         HashMap<String, Integer> endTime = getEndTime();

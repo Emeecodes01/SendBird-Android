@@ -10,6 +10,7 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.gson.Gson
+import android.util.Log
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
@@ -30,6 +31,7 @@ import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.utils.PreferenceUtils
 import com.ulesson.chat.utils.StringUtils.Companion.pendingChatType
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
+import com.ulesson.chat.utils.TimerUtils
 import java.io.File
 import java.util.*
 
@@ -56,12 +58,14 @@ class Chat {
             questionMap["active"] = "true"
         }
 
+        questionMap["inSession"] = "false"
+
         createGroupChat(
             hostUserData,
             otherUserData.id,
             questionMap,
-            activity
-
+            activity,
+            chatActions
         ) { groupChannel, error ->
 
             if (error == null) {
@@ -225,14 +229,11 @@ class Chat {
 
     }
 
-    private fun checkPendingChat(activity: FragmentActivity?, pendingChats: PendingChats) {
+    private fun checkPendingChat(chatActions: ChatActions, pendingChats: PendingChats) {
 
-        var pendingChatCount: Int = 0
+        var pendingChatCount = 0
 
         val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
-            list.forEach { channel ->
-                channel.refresh {}
-            }
             list.forEach {
                 if (it.data.pendingChatType()) {
                     pendingChatCount++
@@ -245,7 +246,7 @@ class Chat {
         mChannelCollection = ChannelCollection(query)
         mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
         mChannelCollection.fetch(CompletionHandler {
-            pendingChats.chatPending(pendingChatCount)
+            pendingChats.chatPending(pendingChatCount, chatActions)
         })
     }
 
@@ -254,8 +255,11 @@ class Chat {
         otherId: String,
         questionMap: MutableMap<String, Any?>?,
         activity: FragmentActivity?,
+        chatActions: ChatActions,
         groupChannelCreateHandler: GroupChannelCreateHandler
     ) {
+
+        syncAllChat(activity)
 
         val userIdList = listOf(hostUserData.id, otherId)
 
@@ -274,8 +278,8 @@ class Chat {
             params.setName("${hostUserData.id} and $otherId Chat")
         }
 
-        checkPendingChat(activity, object : PendingChats {
-            override fun chatPending(pendingCount: Int) {
+        checkPendingChat(chatActions, object : PendingChats {
+            override fun chatPending(pendingCount: Int, chatActions: ChatActions) {
                 if (pendingCount == 0) {
                     GroupChannel.createChannel(params) { groupChannel, error ->
 
@@ -288,25 +292,10 @@ class Chat {
                                     otherId,
                                     questionMap,
                                     activity,
+                                    chatActions,
                                     groupChannelCreateHandler
                                 )
                             }, {
-
-//                    val connectUserRequest =
-//                        ConnectUserRequest(hostUserData.id, hostUserData.nickname, "")
-//                    User().connectUser(connectUserRequest, "", {
-//                        hostUserData.accessToken = it.access_token
-//                        createGroupChat(
-//                            hostUserData,
-//                            otherId,
-//                            questionMap,
-//                            groupChannelCreateHandler
-//                        )
-//                    }, {
-//
-//                    }, {
-//                        it?.let {}
-//                    })
                             })
                         }
 
@@ -319,6 +308,7 @@ class Chat {
                             Toast.LENGTH_LONG
                         ).show()
                     }
+                    chatActions.chatReceived()
                 }
             }
 
@@ -344,6 +334,80 @@ class Chat {
         oneTimeWork(activity, userGroup) {
             updatedGroupChannel(it)
         }
+    }
+
+    private fun syncAllChat(activity: FragmentActivity?) {
+
+        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
+
+        val currentHour = calendar.get(Calendar.HOUR)
+        val currentMinutes = calendar.get(Calendar.MINUTE)
+        val currentSeconds = calendar.get(Calendar.SECOND)
+
+        val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
+
+        val timeMap = PreferenceUtils.getEndTime()
+
+        Log.d("okh", "Current Time : $currentTime ")
+        Log.d("okh", "Time map : ${timeMap.toString()} ")
+
+       val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
+
+            list.forEach { channel ->
+                channel.refresh {}
+            }
+
+            list.forEach { channel ->
+
+                val chatDuration = getChatDuration(channel.data.toMutableMap())
+
+                val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
+                val endMinutes = (currentMinutes + chatDuration) % 60
+                val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
+
+                timeMap?.get(channel.url)?.let {
+
+                    if (it !in currentTime until endTime) {
+
+                        Log.d("okh", "sync $it")
+
+                        val activeMap = mutableMapOf<String, Any?>()
+
+                        activeMap["active"] = "past"
+                        activeMap["inSession"] = "false"
+
+                        updateGroupChat(channel.url, channel.data, activeMap, activity) {
+                            it?.url?.let {
+                                TimerUtils().removeChannelData(it)
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+        val mChannelCollection: ChannelCollection?
+        val query = GroupChannel.createMyGroupChannelListQuery()
+        mChannelCollection = ChannelCollection(query)
+        mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
+        mChannelCollection.fetch(CompletionHandler {
+
+        })
+    }
+
+    private fun getChatDuration(questionMap: MutableMap<String, Any?>): Int {
+        var chatDuration = 0
+        try {
+            val chatDurationString = questionMap["chatDuration"] as String?
+            if (chatDurationString != null) {
+                chatDuration = chatDurationString.toInt()
+            }
+        } catch (ignore: Exception) {
+        }
+        return chatDuration
     }
 
     fun copyFile(src: File, dest: File) {
@@ -390,6 +454,8 @@ class Chat {
         newVersion: Boolean
     ) {
 
+        syncAllChat(activity)
+
         val fragment: Fragment = PagerFragment.newInstance(tutorActions, chatActions, newVersion)
 
         if (activity != null && !activity.supportFragmentManager.isDestroyed) {
@@ -410,6 +476,8 @@ class Chat {
         chatActions: ChatActions,
         newVersion: Boolean
     ) {
+
+        syncAllChat(activity)
 
         val fragment: Fragment =
             GroupChannelListFragment.newInstance(hostUserData, object : TutorActions {
