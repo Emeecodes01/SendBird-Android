@@ -24,6 +24,7 @@ import com.sendbird.android.sample.main.ConnectionManager
 
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.main.chat.LinearLayoutManagerWrapper
+import com.sendbird.android.sample.utils.isBooleanString
 import com.sendbird.android.sample.utils.toMutableMap
 import java.lang.Exception
 
@@ -237,16 +238,16 @@ class GroupAllInActiveChatListFragment : Fragment() {
 
             val pastChannelList: List<GroupChannel> = list.filter { ch ->
                 try {
-                    val isActive: Boolean
+                    var isActive: Boolean
                     val questionDetailsMap = ch.data.toMutableMap()
-                    val active = questionDetailsMap["active"]
-                    isActive = if (active is Boolean) {
-                        active
-                    } else {
-                        active.toString().toBoolean()
+                    val active = questionDetailsMap["active"] ?: ""
+                    isActive = if (active.isBooleanString()) {
+                        !active.toBoolean()
+                    }else {
+                        active == "past"
                     }
 
-                    !isActive
+                    isActive
                 } catch (e: Exception) {
                     false
                 }

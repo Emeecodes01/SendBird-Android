@@ -13,7 +13,7 @@ class SessionStoreManager(val context: Context) {
         val sessions = sharedPreferences.getString(CHAT_SESSIONS, null)?.toMutableMap()
         sessions?.let { map ->
             if (!isSessionAvaliable(id)) {
-                map["$id"] = true
+                map["$id"] = true.toString()
             }
             sharedPreferences.edit().putString(CHAT_SESSIONS, map.toString()).apply()
         }?: run {

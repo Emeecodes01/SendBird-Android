@@ -68,17 +68,17 @@ object TextUtils {
     }
 
     @JvmStatic
-    fun toMap(v: String): MutableMap<String, Any> {
+    fun toMap(v: String): MutableMap<String, String> {
         var value = v
 
         if (value.isJsonString()) {
             val gsonBuilder = GsonBuilder()
-                .registerTypeAdapter(Int::class.java, IntDeserializer())
-                .registerTypeAdapter(Boolean::class.java, IntDeserializer())
-                .registerTypeAdapter(Double::class.java, IntDeserializer())
+//                .registerTypeAdapter(Int::class.java, IntDeserializer())
+//                .registerTypeAdapter(Boolean::class.java, IntDeserializer())
+//                .registerTypeAdapter(Double::class.java, IntDeserializer())
                 .create()
 
-            val typeToken = object: TypeToken<MutableMap<String, Any>>(){}.type
+            val typeToken = object: TypeToken<MutableMap<String, String>>(){}.type
             return gsonBuilder.fromJson(value, typeToken)
         }
 
@@ -87,7 +87,7 @@ object TextUtils {
         val keyValuePairs =
             value.split(",".toRegex()).toTypedArray()
 
-        val map: MutableMap<String, Any> = HashMap()
+        val map: MutableMap<String, String> = HashMap()
 
         var previousMapKey = ""
         for (pair in keyValuePairs) {
@@ -102,4 +102,11 @@ object TextUtils {
         }
         return map
     }
+
+
+    @JvmStatic
+    fun isBooleanString(value: String): Boolean {
+        return !(value == "pending" || value == "active" || value == "past")
+    }
+
 }

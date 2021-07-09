@@ -295,11 +295,22 @@ class GroupChatFragment : Fragment() {
         when (groupChatFragmentArgs.entryPoint) {
             DASHBOARD -> {
                 //show navigate to dashboard
-                findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+                try {
+                    findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                    requireActivity().finish()
+                }
+
             }
 
             CHAT_LIST -> {
-                findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+                try {
+                    findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                    requireActivity().finish()
+                }
             }
 
             else -> {
@@ -344,29 +355,35 @@ class GroupChatFragment : Fragment() {
 
 
         mChannel?.let { channel ->
-            var questionId = channel.data.toMutableMap()["questionId"]
+            var questionId = (channel.data.toMutableMap()["questionId"] ?: "").toInt()
 
-            questionId = if (questionId is Double) {
-                questionId.toInt()
-            }else {
-                questionId.toString().toInt()
-            }
-            //val questionId = channel.data.toMutableMap()["questionId"].toString().toInt()
             NetworkRequest().endChat(questionId, dateString, channel.url,
                 success = {
                     progressBar3?.visibility = View.GONE
                     val questionDetailsMap = channel.data.toMutableMap()
 
-                    val temp = questionDetailsMap["active"]
-                    questionDetailsMap["active"] = false
+                    val temp = questionDetailsMap["active"] ?: ""
 
 
-                    val strData = if (temp is String) {
+
+
+                    val strData = if (temp.isBooleanString()) {
+                        //v1
+                        questionDetailsMap["active"] = false.toString()
                         questionDetailsMap.toString()
                     } else {
+                        //v2
+                        questionDetailsMap["active"] = "past"
                         val gson = Gson()
                         gson.toJson(questionDetailsMap)
                     }
+
+//                    val strData = if (temp is String) {
+//                        questionDetailsMap.toString()
+//                    } else {
+//                        val gson = Gson()
+//                        gson.toJson(questionDetailsMap)
+//                    }
 
 
                     channel.updateChannel(channel.name, channel.coverUrl, strData) { _, e ->
@@ -515,13 +532,7 @@ class GroupChatFragment : Fragment() {
         mChannel?.let { channel ->
 
             val map = channel.data.toMutableMap()
-            var questionId = map["questionId"]
-            questionId = if (questionId is Double) {
-                questionId.toInt()
-            } else {
-                (questionId as String).toInt()
-            }
-           // val questionId = ( as String).toInt()
+            val questionId = (map["questionId"] ?: "").toInt()
 
             val shMgr = ScheduleManager.getInstance(SessionStoreManager(requireContext()))
                 .apply {
@@ -549,12 +560,12 @@ class GroupChatFragment : Fragment() {
 
             val elapse = nowMillis.time - date.time
             val elapseMins = TimeUnit.MILLISECONDS.toMinutes(elapse)
-            var chatDuration = map["chatDuration"]
-            chatDuration = if (chatDuration is Double) {
-                chatDuration.toInt()
-            }else {
-                chatDuration.toString().toInt()
-            }
+            var chatDuration = (map["chatDuration"] ?: "").toInt()
+//            chatDuration = if (chatDuration is Double) {
+//                chatDuration.toInt()
+//            }else {
+//                chatDuration.toString().toInt()
+//            }
             //val chatDuration = map["chatDuration"].toString().toInt()
             val countDown = chatDuration - abs(elapseMins)
 
@@ -585,6 +596,7 @@ class GroupChatFragment : Fragment() {
         if (mChannel != null) {
             startChatTimer()
         } else {
+
             GroupChannel.getChannel(groupChatFragmentArgs.channelUrl) { channel: GroupChannel?, error: SendBirdException? ->
                 if (error != null) {
                     error.printStackTrace()
@@ -592,6 +604,16 @@ class GroupChatFragment : Fragment() {
                 }
 
                 mChannel = channel
+
+                /*channel?.join { e: SendBirdException? ->
+                    if (e != null) {
+                        e.printStackTrace()
+                        return@join
+                    }
+
+
+                }*/
+
                 startChatTimer()
             }
         }
@@ -915,7 +937,7 @@ class GroupChatFragment : Fragment() {
 
                 if (e != null) {
                     MessageCollection.create(channelUrl, mMessageFilter, Long.MAX_VALUE,
-                        MessageCollectionCreateHandler { messageCollection, e ->
+                        MessageCollectionCreateHandler { messageCollection: MessageCollection?, e: SendBirdException? ->
                             if (e == null) {
                                 if (mMessageCollection != null) {
                                     mMessageCollection?.remove()
@@ -1442,11 +1464,11 @@ class GroupChatFragment : Fragment() {
         if (mChannel == null) {
             return
         }
-        val urls = WebUtils.extractUrls(text)
-        if (urls.size > 0) {
-            sendUserMessageWithUrl(text, urls[0])
-            return
-        }
+//        val urls = WebUtils.extractUrls(text)
+//        if (urls.size > 0) {
+//            sendUserMessageWithUrl(text, urls[0])
+//            return
+//        }
 
         val pendingMessage: UserMessage =
             mChannel!!.sendUserMessage(text, object : BaseChannel.SendUserMessageHandler {

@@ -25,24 +25,6 @@ class ScheduleManager(private val sessionStoreManager: SessionStoreManager) {
 
 
     fun scheduleEndChat(futureTime: Long) {
-        //if(!sessionStoreManager.isSessionAvaliable(questionId)) {
-//            val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//            val alarmIntent = Intent(context, EndChatReceiver::class.java).also {
-//                it.putExtra(EndChatService.END_CHAT_SERVICE_QUESTION_ID, questionId)
-//                it.putExtra(EndChatService.END_CHAT_SERVICE_CHANNEL_URL, channelUrl)
-//            }.let { intent ->
-//                PendingIntent.getBroadcast(context, 0, intent, 0)
-//            }
-//
-//            alarmMgr.set(
-//                AlarmManager.ELAPSED_REALTIME,
-//                SystemClock.elapsedRealtime() + futureTime,
-//                alarmIntent
-//            )
-//            sessionStoreManager.saveSessionId(questionId)
-
-
-        //}
         WorkRequestManager.enQueueWork(context, questionId ?: -1, channelUrl ?: "", futureTime)
     }
 

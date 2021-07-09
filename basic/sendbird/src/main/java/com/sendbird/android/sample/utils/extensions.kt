@@ -5,16 +5,13 @@ import com.google.gson.reflect.TypeToken
 import java.lang.Exception
 import java.lang.reflect.Type
 
-fun String.toMutableMap(): MutableMap<String, Any> {
+fun String.toMutableMap(): MutableMap<String, String> {
     var value = this
     if (value.isJsonString()) {
         val gsonBuilder = GsonBuilder()
-            .registerTypeAdapter(Int::class.java, IntDeserializer())
-            .registerTypeAdapter(Boolean::class.java, IntDeserializer())
-            .registerTypeAdapter(Double::class.java, IntDeserializer())
             .create()
 
-        val typeToken = object: TypeToken<MutableMap<String, Any>>(){}.type
+        val typeToken = object: TypeToken<MutableMap<String, String>>(){}.type
         return gsonBuilder.fromJson(value, typeToken)
     }
 
@@ -23,7 +20,7 @@ fun String.toMutableMap(): MutableMap<String, Any> {
     val keyValuePairs =
         value.split(",".toRegex()).toTypedArray()
 
-    val map: MutableMap<String, Any> = HashMap()
+    val map: MutableMap<String, String> = HashMap()
 
     var previousMapKey = ""
     for (pair in keyValuePairs) {
@@ -51,22 +48,6 @@ fun String.isJsonString(): Boolean {
     }
 }
 
-class IntDeserializer: JsonDeserializer<String> {
-
-    override fun deserialize(
-        json: JsonElement?,
-        typeOfT: Type?,
-        context: JsonDeserializationContext?
-    ): String {
-        val primitive = json?.asJsonPrimitive
-        if (primitive?.isNumber == false) {
-            return primitive.asString ?: ""
-        }else if (primitive?.isBoolean == false) {
-            return primitive.asString
-        }else if (primitive?.isJsonNull == false) {
-            return "null"
-        }
-        return primitive?.asString ?: ""
-    }
-
+fun String.isBooleanString(): Boolean {
+    return !(this == "pending" || this == "active" || this == "past")
 }

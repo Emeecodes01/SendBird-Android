@@ -277,7 +277,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         //        memberCountText, topicText
         TextView lastMessageText, unreadCountText, dateText, subjectTv, gradeTv, channelNameTv;
         LinearLayout typingIndicatorContainer;
-        ImageView subjectIcon,imageView2;
+        ImageView subjectIcon, imageView2;
 
         ChannelHolder(View itemView) {
             super(itemView);
@@ -360,24 +360,26 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String data = channel.getData();
             String learnerName = "";
 
-            Map<String, Object> hashMap = TextUtils.toMap(data);
+            Map<String, String> hashMap = TextUtils.toMap(data);
             String subjectIconUrl = (String) hashMap.get("subjectAvatar");
             String subject = (String) hashMap.get("subjectName");
             String grade = (String) hashMap.get("grade");
-            try{
+            try {
                 learnerName = ((String) hashMap.get("studentName")).split(" ")[0];
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             boolean isActive;
             String themeKey = (String) hashMap.get("subjectThemeKey");
-            Object active = hashMap.get("active");
+            String active = hashMap.get("active");
 
-            if (active instanceof Boolean) {
-                isActive = (Boolean) active;
+
+            if (TextUtils.isBooleanString(active)) {
+                isActive = Boolean.parseBoolean(active);
             } else {
-                isActive = Boolean.parseBoolean((String) active);
+                isActive = active.equals("active");
             }
+
 
             //int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
             Pair<Integer, Integer> iconPair = IconUtils.INSTANCE.getSubjectIconWithThemeKey(themeKey);

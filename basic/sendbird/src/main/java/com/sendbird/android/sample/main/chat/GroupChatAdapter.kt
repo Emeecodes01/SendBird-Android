@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
+import com.sendbird.android.sample.main.scheduler.AudioFileDownloadManager
 import com.sendbird.android.sample.utils.*
 import com.sendbird.android.sample.utils.SyncManagerUtils.findIndexOfMessage
 import com.sendbird.android.sample.utils.SyncManagerUtils.getIndexOfMessage
@@ -62,7 +63,7 @@ class ChatDiffUtil : DiffUtil.ItemCallback<BaseMessage>() {
 
 
 internal class GroupChatAdapter(private var mContext: Context) :
-    ListAdapter<BaseMessage, RecyclerView.ViewHolder>(ChatDiffUtil()) {
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var mChannel: GroupChannel? = null
 
@@ -452,9 +453,9 @@ internal class GroupChatAdapter(private var mContext: Context) :
         for (i in mMessageList.indices.reversed()) {
             msg = mMessageList[i]
             if (msg.requestId == message.requestId) {
-                //mMessageList[i] = message
-                //notifyDataSetChanged()
-                submitList(mMessageList)
+                mMessageList[i] = message
+                notifyDataSetChanged()
+                //submitList(mMessageList)
                 return
             }
         }
@@ -463,8 +464,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
     fun removeFailedMessage(message: BaseMessage) {
         mTempFileMessageUriTable.remove((message as FileMessage).requestId)
         mMessageList.remove(message)
-        //notifyDataSetChanged()
-        submitList(mMessageList)
+        notifyDataSetChanged()
+        //submitList(mMessageList)
     }
 
     fun markMessageSent(message: BaseMessage?) {
@@ -474,8 +475,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
             if (message is UserMessage && msg is UserMessage) {
                 if (msg.requestId == message.requestId) {
                     mMessageList[i] = message
-                    submitList(mMessageList)
-                    // notifyDataSetChanged()
+                    //submitList(mMessageList)
+                     notifyDataSetChanged()
                     //notifyItemChanged(i)
                     return
                 }
@@ -484,8 +485,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     mTempFileMessageUriTable.remove(message.requestId)
                     mMessageList[i] = message
                     //notifyItemChanged(i)
-                    //notifyDataSetChanged()
-                    submitList(mMessageList)
+                    notifyDataSetChanged()
+                    //submitList(mMessageList)
                     return
                 }
             }
@@ -533,14 +534,14 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 //notifyItemChanged(index)
             }
         }
-        submitList(mMessageList)
-        //notifyDataSetChanged()
+        //submitList(mMessageList)
+        notifyDataSetChanged()
         // mMessageList = messages.sortedBy { it?.createdAt }.filterNotNull()
     }
 
     //this correspond to onDataSetChange
     fun resubmitList() {
-        submitList(mMessageList)
+        //submitList(mMessageList)
     }
 
 
@@ -592,8 +593,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
         val tempList = mMessageList
         mMessageList.clear()
         mMessageList = tempList
-        //notifyDataSetChanged()
-        submitList(mMessageList)
+        notifyDataSetChanged()
+        //submitList(mMessageList)
     }
 
     fun failedMessageListContains(message: BaseMessage?): Boolean {
@@ -618,8 +619,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
     fun clear() {
         mMessageList.clear()
         mFailedMessageList.clear()
-        submitList(mMessageList)
-        //notifyDataSetChanged()
+        //submitList(mMessageList)
+        notifyDataSetChanged()
     }
 
     /**
@@ -631,8 +632,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
         if (mChannel != null) {
             mChannel!!.markAsRead()
         }
-        //notifyDataSetChanged()
-        submitList(mMessageList)
+        notifyDataSetChanged()
+        //submitList(mMessageList)
     }
 
     fun getLastReadPosition(lastRead: Long): Int {
