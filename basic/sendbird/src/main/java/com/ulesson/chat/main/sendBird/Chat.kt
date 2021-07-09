@@ -348,9 +348,6 @@ class Chat {
 
         val timeMap = PreferenceUtils.getEndTime()
 
-        Log.d("okh", "Current Time : $currentTime ")
-        Log.d("okh", "Time map : ${timeMap.toString()} ")
-
        val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
 
             list.forEach { channel ->
@@ -368,8 +365,6 @@ class Chat {
                 timeMap?.get(channel.url)?.let {
 
                     if (it !in currentTime until endTime) {
-
-                        Log.d("okh", "sync $it")
 
                         val activeMap = mutableMapOf<String, Any?>()
 
