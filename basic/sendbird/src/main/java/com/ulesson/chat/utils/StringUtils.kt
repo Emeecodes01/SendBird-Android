@@ -25,7 +25,12 @@ class StringUtils {
 
         fun String.pendingChatType(): Boolean {
             val map = this.toMutableMap()
-            return map["active"] == "true" || map["active"] == "pending"
+            return (map["active"] == "pending" && map["newVersion"] != null)
+        }
+
+        fun String.activeChatType(): Boolean {
+            val map = this.toMutableMap()
+            return (map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)
         }
 
     }

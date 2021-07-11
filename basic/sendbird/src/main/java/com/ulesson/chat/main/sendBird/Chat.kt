@@ -10,18 +10,19 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.gson.Gson
-import android.util.Log
 import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
 import com.sendbird.android.Member
 import com.sendbird.syncmanager.ChannelCollection
+import com.sendbird.syncmanager.SendBirdSyncManager
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler
 import com.sendbird.syncmanager.handler.CompletionHandler
 import com.ulesson.chat.groupchannel.GroupChannelListFragment
 import com.ulesson.chat.groupchannel.GroupChatActivity
 import com.ulesson.chat.groupchannel.GroupChatFragment
 import com.ulesson.chat.groupchannel.GroupChatFragment.GROUP_CHAT_TAG
+import com.ulesson.chat.main.SyncManagerUtils
 import com.ulesson.chat.main.allChat.GroupAllChatListFragment
 import com.ulesson.chat.main.allChat.PagerFragment
 import com.ulesson.chat.main.model.Question
@@ -29,6 +30,7 @@ import com.ulesson.chat.main.model.UserData
 import com.ulesson.chat.main.model.UserGroup
 import com.ulesson.chat.network.ChannelWorker
 import com.ulesson.chat.utils.PreferenceUtils
+import com.ulesson.chat.utils.StringUtils.Companion.activeChatType
 import com.ulesson.chat.utils.StringUtils.Companion.pendingChatType
 import com.ulesson.chat.utils.StringUtils.Companion.toMutableMap
 import com.ulesson.chat.utils.TimerUtils
@@ -70,76 +72,32 @@ class Chat {
 
             if (error == null) {
 
-                if (groupChannel.data.pendingChatType()) {
+                channelUrl(groupChannel.url)
 
-                    channelUrl(groupChannel.url)
+                gotoChat(groupChannel.url, activity, toFinish, true, object : TutorActions {
 
-                    gotoChat(groupChannel.url, activity, toFinish, true, object : TutorActions {
-
-                        override fun showTutorProfile(members: List<Member>) {
-                            tutorActions.showTutorProfile(members)
-                        }
-
-                        override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
-                            tutorActions.showTutorRating(questionMap)
-                        }
-                    }, object : ChatActions {
-                        override fun chatReceived() {
-                            chatActions.chatReceived()
-                        }
-
-                        override fun showDummyChat(question: Question) {
-                            chatActions.showDummyChat(question)
-                        }
-
-                        override fun getPendingQuestions() {
-                            chatActions.getPendingQuestions()
-                        }
-
-                    })
-                } else {
-
-                    updateGroupChat(
-                        groupChannel.url,
-                        groupChannel.data,
-                        questionMap,
-                        activity
-                    ) { updatedGroupChannel ->
-
-                        updatedGroupChannel?.url?.let {
-                            channelUrl(it)
-
-                            gotoChat(
-                                updatedGroupChannel.url,
-                                activity,
-                                true,
-                                toFinish,
-                                object : TutorActions {
-                                    override fun showTutorProfile(members: List<Member>) {
-                                        tutorActions.showTutorProfile(members)
-                                    }
-
-                                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
-                                        tutorActions.showTutorRating(questionMap)
-                                    }
-                                },
-                                object : ChatActions {
-                                    override fun chatReceived() {
-                                        chatActions.chatReceived()
-                                    }
-
-                                    override fun showDummyChat(question: Question) {
-                                        chatActions.showDummyChat(question)
-                                    }
-
-                                    override fun getPendingQuestions() {
-                                        chatActions.getPendingQuestions()
-                                    }
-
-                                })
-                        }
+                    override fun showTutorProfile(members: List<Member>) {
+                        tutorActions.showTutorProfile(members)
                     }
-                }
+
+                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                        tutorActions.showTutorRating(questionMap)
+                    }
+                }, object : ChatActions {
+                    override fun chatReceived() {
+                        chatActions.chatReceived()
+                    }
+
+                    override fun showDummyChat(question: Question) {
+                        chatActions.showDummyChat(question)
+                    }
+
+                    override fun getPendingQuestions() {
+                        chatActions.getPendingQuestions()
+                    }
+
+                })
+
             }
 
         }
@@ -232,11 +190,15 @@ class Chat {
     private fun checkPendingChat(chatActions: ChatActions, pendingChats: PendingChats) {
 
         var pendingChatCount = 0
+        var activeChatCount = 0
 
         val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
             list.forEach {
                 if (it.data.pendingChatType()) {
                     pendingChatCount++
+                }
+                if (it.data.activeChatType()) {
+                    activeChatCount++
                 }
             }
         }
@@ -246,7 +208,7 @@ class Chat {
         mChannelCollection = ChannelCollection(query)
         mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
         mChannelCollection.fetch(CompletionHandler {
-            pendingChats.chatPending(pendingChatCount, chatActions)
+            pendingChats.chatPending(pendingChatCount, activeChatCount, chatActions)
         })
     }
 
@@ -279,8 +241,12 @@ class Chat {
         }
 
         checkPendingChat(chatActions, object : PendingChats {
-            override fun chatPending(pendingCount: Int, chatActions: ChatActions) {
-                if (pendingCount == 0) {
+            override fun chatPending(
+                pendingCount: Int,
+                activeCount: Int,
+                chatActions: ChatActions
+            ) {
+                if (pendingCount == 0 && activeCount == 0) {
                     GroupChannel.createChannel(params) { groupChannel, error ->
 
                         if (error == null) {
@@ -300,11 +266,23 @@ class Chat {
                         }
 
                     }
-                } else {
+                } else if (pendingCount > 0) {
+
                     activity?.let {
                         Toast.makeText(
                             it.baseContext,
-                            "You currently have a pending chat, please wait for it to be accepted",
+                            "You have a pending question, please wait for it to be accepted by a Tutor",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    chatActions.chatReceived()
+
+                } else if (activeCount > 0) {
+
+                    activity?.let {
+                        Toast.makeText(
+                            it.baseContext,
+                            "You have an active chat with a Tutor, please finish it before asking another question",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -313,7 +291,6 @@ class Chat {
             }
 
         })
-
 
     }
 
@@ -338,59 +315,66 @@ class Chat {
 
     private fun syncAllChat(activity: FragmentActivity?) {
 
-        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
+        SyncManagerUtils.setup(
+            PreferenceUtils.getContext(),
+            PreferenceUtils.getUserId()
+        ) {
+            SendBirdSyncManager.getInstance().resumeSync()
 
-        val currentHour = calendar.get(Calendar.HOUR)
-        val currentMinutes = calendar.get(Calendar.MINUTE)
-        val currentSeconds = calendar.get(Calendar.SECOND)
+            val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
 
-        val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
+            val currentHour = calendar.get(Calendar.HOUR)
+            val currentMinutes = calendar.get(Calendar.MINUTE)
+            val currentSeconds = calendar.get(Calendar.SECOND)
 
-        val timeMap = PreferenceUtils.getEndTime()
+            val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-       val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
+            val timeMap = PreferenceUtils.getEndTime()
 
-            list.forEach { channel ->
-                channel.refresh {}
-            }
+            val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
 
-            list.forEach { channel ->
+                list.forEach { channel ->
+                    channel.refresh {}
+                }
 
-                val chatDuration = getChatDuration(channel.data.toMutableMap())
+                list.forEach { channel ->
 
-                val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
-                val endMinutes = (currentMinutes + chatDuration) % 60
-                val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
+                    val chatDuration = getChatDuration(channel.data.toMutableMap())
 
-                timeMap?.get(channel.url)?.let {
+                    val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
+                    val endMinutes = (currentMinutes + chatDuration) % 60
+                    val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
 
-                    if (it !in currentTime until endTime) {
+                    timeMap?.get(channel.url)?.let {
 
-                        val activeMap = mutableMapOf<String, Any?>()
+                        if (it !in currentTime until endTime) {
 
-                        activeMap["active"] = "past"
-                        activeMap["inSession"] = "false"
+                            val activeMap = mutableMapOf<String, Any?>()
 
-                        updateGroupChat(channel.url, channel.data, activeMap, activity) {
-                            it?.url?.let {
-                                TimerUtils().removeChannelData(it)
+                            activeMap["active"] = "past"
+                            activeMap["inSession"] = "false"
+
+                            updateGroupChat(channel.url, channel.data, activeMap, activity) {
+                                it?.url?.let {
+                                    TimerUtils().removeChannelData(it)
+                                }
                             }
                         }
+
                     }
 
                 }
 
             }
 
+            val mChannelCollection: ChannelCollection?
+            val query = GroupChannel.createMyGroupChannelListQuery()
+            mChannelCollection = ChannelCollection(query)
+            mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
+            mChannelCollection.fetch(CompletionHandler {
+            })
+
         }
-
-        val mChannelCollection: ChannelCollection?
-        val query = GroupChannel.createMyGroupChannelListQuery()
-        mChannelCollection = ChannelCollection(query)
-        mChannelCollection.setCollectionHandler(mChannelCollectionHandler)
-        mChannelCollection.fetch(CompletionHandler {
-
-        })
     }
 
     private fun getChatDuration(questionMap: MutableMap<String, Any?>): Int {

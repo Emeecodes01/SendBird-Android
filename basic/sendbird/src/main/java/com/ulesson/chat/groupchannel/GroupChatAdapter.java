@@ -1309,14 +1309,14 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private void loadAudio(MediaPlayer player, String audioFilePath) {
-        FileInputStream fileInputStream;
         try {
-            fileInputStream = new FileInputStream(audioFilePath);
-            player.setDataSource(fileInputStream.getFD());
 
-            try {
+            File file = new File(audioFilePath);
+            if (file.exists()){
+                FileInputStream fileInputStream;
+                fileInputStream = new FileInputStream(audioFilePath);
+                player.setDataSource(fileInputStream.getFD());
                 player.prepareAsync();
-            } catch (Exception ignore) {
             }
 
         } catch (IOException e) {
@@ -1460,11 +1460,13 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private void hideLoaderProgress() {
             progressBar.setVisibility(View.INVISIBLE);
             tvDuration.setVisibility(View.VISIBLE);
+            btnPlayPause.setEnabled(true);
         }
 
         private void showLoaderProgress() {
             progressBar.setVisibility(View.VISIBLE);
             tvDuration.setVisibility(View.INVISIBLE);
+            btnPlayPause.setEnabled(false);
         }
 
         private void updateDurationTxt(int playerPosition) {
@@ -1540,7 +1542,10 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             audioMap.put(audioUrl, audioFilePath);
                             PreferenceUtils.setAudioFile(audioMap);
                             audioDownload.done(audioFilePath);
-                            mContext.unregisterReceiver(broadcastReceiver);
+                            try{
+                                mContext.unregisterReceiver(broadcastReceiver);
+                            }catch(Exception ignore){}
+
                         }
                     }
                 };

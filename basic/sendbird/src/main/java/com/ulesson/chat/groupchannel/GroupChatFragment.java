@@ -322,8 +322,6 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            handleTimer(groupChannel.getData());
-
             showTutorProfile(groupChannel);
 
             if (channelCreate) {
@@ -354,8 +352,7 @@ public class GroupChatFragment extends Fragment {
             if (inSession != null && inSession.equals("true")) {
                 handleTimer(groupChannel.getData());
             }
-        }
-        else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
+        } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
             chatStatus(false);
         }
     }
@@ -479,19 +476,25 @@ public class GroupChatFragment extends Fragment {
 
     private void showTutorProfile(GroupChannel groupChannel) {
         Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
-        String tutorProfileUrl = (String) questionMap.get("tutorUrl");
 
-        RequestOptions options = new RequestOptions().transforms(new CircleCrop())
-                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                .placeholder(R.drawable.profile_thumbnail)
-                .error(R.drawable.profile_thumbnail);
+        if (questionMap != null) {
 
-        if (getContext() != null) {
-            Glide.with(getContext()).load(tutorProfileUrl).apply(options)
-                    .into(mProfileImage);
+            String tutorProfileUrl = (String) questionMap.get("tutorUrl");
+
+            RequestOptions options = new RequestOptions().transforms(new CircleCrop())
+                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                    .placeholder(R.drawable.profile_thumbnail)
+                    .error(R.drawable.profile_thumbnail);
+
+            if (getContext() != null && tutorProfileUrl != null) {
+                Glide.with(getContext()).load(tutorProfileUrl).apply(options)
+                        .into(mProfileImage);
+            }
+
+            mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
+
         }
 
-        mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
 
     private void handleTimer(String channelData) {
@@ -680,6 +683,8 @@ public class GroupChatFragment extends Fragment {
             mChatAdapter.setContext(getActivity());
         }
 
+        mRecyclerView.setAdapter(mChatAdapter);
+
         SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
             @Override
             public void onReconnectStarted() {
@@ -746,30 +751,18 @@ public class GroupChatFragment extends Fragment {
             }
 
             @Override
+            public void onChannelChanged(BaseChannel channel) {
+                Log.d("okh", " data " + channel.getData());
+                super.onChannelChanged(channel);
+            }
+
+            @Override
             public void onUserJoined(GroupChannel channel, User user) {
-                if (channel.getMemberCount() == 2 && new StringUtils().chatType(channel.getData()) == ChatType.Active) {
-
-                    Map<String, Object> questionMap = StringUtils.toMutableMap(channel.getData());
-
-                    if (new StringUtils().chatType(questionMap) == ChatType.Active) {
-
-                        String inSession = (String) questionMap.get("inSession");
-
-                        if (inSession != null && inSession.equals("true")) {
-                            handleTimer(channel.getData());
-                            checkConnection();
-                        }
-                    }
-//
-//                    showTutorProfile(channel);
-//                    updateActionBarTitle();
-
+                if (channel.getMemberCount() == 2) {
+                    handleTimer(channel.getData());
+                    checkConnection();
                 } else if (channel.getMemberCount() > 2) {
-                    channel.banUserWithUserId(user.getUserId(), "Tutor has accepted a question", 100000, new GroupChannel.GroupChannelBanHandler() {
-                        @Override
-                        public void onResult(SendBirdException e) {
-
-                        }
+                    channel.banUserWithUserId(user.getUserId(), "Another tutor has accepted this question", 100000, e -> {
                     });
                 }
                 super.onUserJoined(channel, user);
@@ -1308,45 +1301,50 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        new WebUtils.UrlPreviewAsyncTask() {
-            @Override
-            protected void onPostExecute(UrlPreviewInfo info) {
-                if (mChannel == null) {
-                    return;
-                }
-                if (url != null) {
+        try {
 
-                    UserMessage tempUserMessage = null;
-                    BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
-                        if (e != null) {
-                            // Error!
-                            Log.e(LOG_TAG, e.toString());
-                            if (getActivity() != null) {
-                                Toast.makeText(
-                                        getActivity(),
-                                        "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
-                                        .show();
+            new WebUtils.UrlPreviewAsyncTask() {
+                @Override
+                protected void onPostExecute(UrlPreviewInfo info) {
+                    if (mChannel == null) {
+                        return;
+                    }
+                    if (url != null) {
+
+                        UserMessage tempUserMessage = null;
+                        BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
+                            if (e != null) {
+                                // Error!
+                                Log.e(LOG_TAG, e.toString());
+                                if (getActivity() != null) {
+                                    Toast.makeText(
+                                            getActivity(),
+                                            "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
+                                            .show();
+                                }
+                                mChatAdapter.markMessageFailed(userMessage);
+                                return;
                             }
-                            mChatAdapter.markMessageFailed(userMessage);
-                            return;
+
+                            mMessageCollection.handleSendMessageResponse(userMessage, e);
+                        };
+
+                        try {
+                            tempUserMessage = mChannel.sendUserMessage(text, url, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
+                        } catch (Exception e) {
+                            // Sending a message without URL preview information.
+                            tempUserMessage = mChannel.sendUserMessage(text, handler);
                         }
 
-                        mMessageCollection.handleSendMessageResponse(userMessage, e);
-                    };
-
-                    try {
-                        tempUserMessage = mChannel.sendUserMessage(text, url, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
-                    } catch (Exception e) {
-                        // Sending a message without URL preview information.
-                        tempUserMessage = mChannel.sendUserMessage(text, handler);
-                    }
-
-                    if (mMessageCollection != null) {
-                        mMessageCollection.appendMessage(tempUserMessage);
+                        if (mMessageCollection != null) {
+                            mMessageCollection.appendMessage(tempUserMessage);
+                        }
                     }
                 }
-            }
-        }.execute(url);
+            }.execute(url);
+        } catch (Exception ignore) {
+
+        }
 
     }
 
