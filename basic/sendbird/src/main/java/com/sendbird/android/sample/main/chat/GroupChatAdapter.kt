@@ -38,11 +38,12 @@ class ChatDiffUtil : DiffUtil.ItemCallback<BaseMessage>() {
     }
 
     private fun isItemTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
-        return when(oldItem) {
+        return when (oldItem) {
             is FileMessage -> {
                 (newItem as FileMessage)
                 if (oldItem.type.startsWith("image")
-                    || newItem.type.startsWith("image")) {
+                    || newItem.type.startsWith("image")
+                ) {
                     return (oldItem.thumbnails[0].url == newItem.thumbnails[0].url)
                             && (oldItem.sendingStatus == newItem.sendingStatus)
                 } else if (oldItem.type.startsWith("video/3gpp") || newItem.type.startsWith("video/3gpp")) {
@@ -476,7 +477,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 if (msg.requestId == message.requestId) {
                     mMessageList[i] = message
                     //submitList(mMessageList)
-                     notifyDataSetChanged()
+                    notifyDataSetChanged()
                     //notifyItemChanged(i)
                     return
                 }
@@ -1335,10 +1336,12 @@ internal class GroupChatAdapter(private var mContext: Context) :
         var tvDuration: TextView? = null
         var seekBar: SeekBar? = null
         var progressBar: ProgressBar? = null
+
         //var messageStatusView: MessageStatusView? = null
         var isPlaying = false
         var player: MediaPlayer? = null
         private val format = "%02d:%02d"
+        private var audioFileDownloadManager: AudioFileDownloadManager? = null
 
         private val mSeekbarUpdateHandler = Handler()
         private val mUpdateSeekbar: Runnable = object : Runnable {
@@ -1360,20 +1363,17 @@ internal class GroupChatAdapter(private var mContext: Context) :
             listener: OnItemClickListener?
         ) {
             //messageStatusView?.drawMessageStatus(channel, message)
-            player = MediaPlayer()
-            try {
-                player!!.setAudioAttributes(
+            player = MediaPlayer().apply {
+                setAudioAttributes(
                     AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .build()
                 )
-                player!!.setDataSource(message.url)
-                player!!.prepareAsync()
-                showLoaderProgress()
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+
+            audioFileDownloadManager = context?.let { AudioFileDownloadManager(it) }
+
             seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
@@ -1407,6 +1407,35 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
 
             btnPlayPause?.setOnClickListener {
+                if (audioFileDownloadManager?.hasDownloadedAudio(message.url) == true) {
+                    audioFileDownloadManager?.getDownloadedPath(message.url)?.let { filePath ->
+                        try {
+                            player?.setDataSource(filePath)
+                            player?.prepareAsync()
+                        } catch (e: java.lang.Exception) {
+                            e.printStackTrace()
+                        }
+
+                    }
+                } else {
+                    audioFileDownloadManager?.downloadAudio(message.url,
+                        message.name,
+                        onLoading = {
+                            showLoaderProgress()
+                        },
+
+                        onCompleted = {
+                            audioFileDownloadManager?.getDownloadedPath(message.url)?.let { filePath ->
+                                try {
+                                    player?.setDataSource(filePath)
+                                    player?.prepareAsync()
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        })
+                }
+
                 if (!player!!.isPlaying) {
                     player!!.start()
                     mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
@@ -1416,6 +1445,7 @@ internal class GroupChatAdapter(private var mContext: Context) :
                     btnPlayPause?.setImageResource(R.drawable.ic_play)
                     mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
                 }
+
             }
         }
 
