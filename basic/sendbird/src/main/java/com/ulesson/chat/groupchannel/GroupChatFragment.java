@@ -748,6 +748,7 @@ public class GroupChatFragment extends Fragment {
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
             public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+
             }
 
             @Override
@@ -761,6 +762,8 @@ public class GroupChatFragment extends Fragment {
                 if (channel.getMemberCount() == 2) {
                     handleTimer(channel.getData());
                     checkConnection();
+                    updateActionBarTitle();
+                    showTutorProfile(channel);
                 } else if (channel.getMemberCount() > 2) {
                     channel.banUserWithUserId(user.getUserId(), "Another tutor has accepted this question", 100000, e -> {
                     });

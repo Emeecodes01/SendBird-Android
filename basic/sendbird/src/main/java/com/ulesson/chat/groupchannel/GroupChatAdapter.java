@@ -200,9 +200,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 ((OtherVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
                 break;
             case VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER:
-                ((OtherAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, mItemClickListener);
+                ((OtherAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
                 break;
-
             case VIEW_TYPE_FILE_MESSAGE_AUDIO_ME:
                 ((MeAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, isContinuous, mItemClickListener);
                 break;
@@ -1312,7 +1311,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         try {
 
             File file = new File(audioFilePath);
-            if (file.exists()){
+            if (file.exists()) {
                 FileInputStream fileInputStream;
                 fileInputStream = new FileInputStream(audioFilePath);
                 player.setDataSource(fileInputStream.getFD());
@@ -1360,25 +1359,30 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         void bind(Context context, final FileMessage message, GroupChannel channel,
-                  boolean isNewDay, final OnItemClickListener listener) {
+                  boolean isNewDay, boolean isTempMessage, Uri tempFileMessageUri, final OnItemClickListener listener) {
 
             messageStatusView.drawMessageStatus(channel, message);
             player = new MediaPlayer();
 
             try {
-                player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                player.setDataSource(message.getUrl());
-                player.setAudioAttributes(
-                        new AudioAttributes.Builder()
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .setUsage(AudioAttributes.USAGE_MEDIA)
-                                .build()
-                );
+                player = new MediaPlayer();
 
-                String audioFilePath = getLocalAudioFilePath(message.getUrl(), message.getName());
+                if (isTempMessage && tempFileMessageUri != null) {
+                    player.setDataSource(context, tempFileMessageUri);
+                    player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                } else {
+                    player.setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .build()
+                    );
 
-                if (audioFilePath != null && !audioFilePath.isEmpty()) {
-                    loadAudio(player, audioFilePath);
+                    String audioFilePath = getLocalAudioFilePath(message.getUrl(), message.getName());
+
+                    if (audioFilePath != null && !audioFilePath.isEmpty()) {
+                        loadAudio(player, audioFilePath);
+                    }
                 }
 
             } catch (Exception e) {
@@ -1494,10 +1498,10 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (path != null) {
             if (new File(path.getAbsolutePath() + "/audio/" + audioName).exists()) {
                 return path.getAbsolutePath() + "/audio/" + audioName;
-            }else{
+            } else {
                 return null;
             }
-        }else{
+        } else {
             return null;
         }
 
@@ -1506,10 +1510,22 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private void getAudioFilePath(String audioUrl, String audioName, AudioDownload audioDownload) {
 
         HashMap<String, String> audioFiles = PreferenceUtils.getAudioFiles();
+
         if (audioFiles == null || audioFiles.get(audioUrl) == null) {
             getDownloadedAudioFilePath(mContext, audioUrl, audioName, audioDownload);
         } else {
-            audioDownload.done(audioFiles.get(audioUrl));
+
+            try {
+                File file = new File(audioFiles.get(audioUrl)+"");
+
+                if (file.exists()) {
+                    audioDownload.done(audioFiles.get(audioUrl));
+                } else {
+                    getDownloadedAudioFilePath(mContext, audioUrl, audioName, audioDownload);
+                }
+            } catch (Exception ignore) {
+            }
+
         }
 
     }
@@ -1542,9 +1558,10 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             audioMap.put(audioUrl, audioFilePath);
                             PreferenceUtils.setAudioFile(audioMap);
                             audioDownload.done(audioFilePath);
-                            try{
+                            try {
                                 mContext.unregisterReceiver(broadcastReceiver);
-                            }catch(Exception ignore){}
+                            } catch (Exception ignore) {
+                            }
 
                         }
                     }
@@ -1560,6 +1577,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     interface AudioDownload {
         void done(String audioFilePath);
+
         void loading();
     }
 

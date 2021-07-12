@@ -1,6 +1,7 @@
 package com.ulesson.chat.main.sendBird
 
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -14,6 +15,7 @@ import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
 import com.sendbird.android.Member
+import com.sendbird.android.SendBirdException
 import com.sendbird.syncmanager.ChannelCollection
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler
@@ -187,6 +189,25 @@ class Chat {
 
     }
 
+    fun startCountDownTimer(channelUrl: String) {
+
+        GroupChannel.getChannel(channelUrl) { groupChannel: GroupChannel, e: SendBirdException? ->
+
+            val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
+
+            Log.d("okh", "count started")
+
+            TimerUtils().getTime(
+                channelUrl,
+                getChatDuration(questionMap),
+                true,
+                {
+
+                }) { }
+        }
+
+    }
+
     private fun checkPendingChat(chatActions: ChatActions, pendingChats: PendingChats) {
 
         var pendingChatCount = 0
@@ -305,7 +326,11 @@ class Chat {
         val groupChannelParams = GroupChannelParams()
         val map = channelData.toMutableMap() + updateMap
 
-        groupChannelParams.setData(Gson().toJson(map))
+        if (map["newVersion"] == null) {
+            groupChannelParams.setData(map.toString())
+        } else {
+            groupChannelParams.setData(Gson().toJson(map))
+        }
 
         val userGroup = UserGroup(channelUrl, groupChannelParams)
         oneTimeWork(activity, userGroup) {
