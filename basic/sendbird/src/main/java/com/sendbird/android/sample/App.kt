@@ -8,6 +8,8 @@ class App(override val apiToken: String) : BaseApplication() {
         get() = TODO("Not yet implemented")
     override val baseUrl: String
         get() = "h"
+    override val version: String
+        get() = "d"
 
 
     override fun onCreate() {

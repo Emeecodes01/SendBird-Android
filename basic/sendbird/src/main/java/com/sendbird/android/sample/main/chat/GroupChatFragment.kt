@@ -364,9 +364,6 @@ class GroupChatFragment : Fragment() {
 
                     val temp = questionDetailsMap["active"] ?: ""
 
-
-
-
                     val strData = if (temp.isBooleanString()) {
                         //v1
                         questionDetailsMap["active"] = false.toString()
@@ -605,15 +602,6 @@ class GroupChatFragment : Fragment() {
 
                 mChannel = channel
 
-                /*channel?.join { e: SendBirdException? ->
-                    if (e != null) {
-                        e.printStackTrace()
-                        return@join
-                    }
-
-
-                }*/
-
                 startChatTimer()
             }
         }
@@ -708,6 +696,9 @@ class GroupChatFragment : Fragment() {
             mMessageCollection?.setCollectionHandler(null);
             mMessageCollection?.remove();
         }
+
+        //Disconnect from sendbird
+
         super.onDestroy()
     }
 

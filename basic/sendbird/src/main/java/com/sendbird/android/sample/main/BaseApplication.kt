@@ -11,6 +11,7 @@ abstract class BaseApplication : MultiDexApplication() {
     abstract val apiToken: String
     abstract val sendBirdAppId: String
     abstract val baseUrl: String
+    abstract val version: String
 
     override fun onCreate() {
         super.onCreate()
@@ -19,6 +20,7 @@ abstract class BaseApplication : MultiDexApplication() {
         PreferenceUtils.saveSendBirdId(sendBirdAppId)
         PreferenceUtils.saveSendbirdAPIToken(apiToken)
         PreferenceUtils.saveBaseUrl(baseUrl)
+        PreferenceUtils.saveVersion(version)
 
         SendBird.init(sendBirdAppId, applicationContext)
         PushUtils.registerPushHandler(MyFirebaseMessagingService())

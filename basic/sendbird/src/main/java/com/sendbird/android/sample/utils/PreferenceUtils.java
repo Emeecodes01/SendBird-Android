@@ -20,6 +20,7 @@ public class PreferenceUtils {
     private static final String SENDBIRD_BASE_URL = "sendbird-base-url";
     private static final String ULESSON_API_TOKEN = "ulesson-api-token";
     private static final String DEVICE_TOKEN = "android-device-token";
+    private static final String VERSION = "app-version";
     private static final String PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ = "last_read";
 
     private static Context mAppContext;
@@ -185,5 +186,14 @@ public class PreferenceUtils {
 
     public static String getBaseUrl() {
         return getSharedPreferences().getString(SENDBIRD_BASE_URL, null);
+    }
+
+    public static void saveVersion(String version) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(VERSION, version).apply();
+    }
+
+    public static String getVersion() {
+        return getSharedPreferences().getString(VERSION, null);
     }
 }

@@ -310,139 +310,133 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                   @Nullable final OnItemClickListener clickListener,
                   @Nullable final OnItemLongClickListener longClickListener) {
 
-            int unreadCount = channel.getUnreadMessageCount();
-            // If there are no unread messages, hide the unread count badge.
-            if (unreadCount == 0) {
-                unreadCountText.setVisibility(View.INVISIBLE);
-            } else {
-                unreadCountText.setVisibility(View.VISIBLE);
-                unreadCountText.setText(String.valueOf(channel.getUnreadMessageCount()));
-            }
-
-            BaseMessage lastMessage = channel.getLastMessage();
-            if (lastMessage != null) {
-                dateText.setVisibility(View.VISIBLE);
-                lastMessageText.setVisibility(View.VISIBLE);
-
-                // Display information about the most recently sent message in the channel.
-                dateText.setText(String.valueOf(DateUtils.formatDateTime(lastMessage.getCreatedAt())));
-
-                // Bind last message text according to the type of message. Specifically, if
-                // the last message is a File Message, there must be special formatting.
-                if (lastMessage instanceof UserMessage) {
-                    lastMessageText.setText(((UserMessage) lastMessage).getMessage());
-                } else if (lastMessage instanceof AdminMessage) {
-                    lastMessageText.setText(((AdminMessage) lastMessage).getMessage());
-                } else {
-                    String lastMessageString = String.format(
-                            context.getString(R.string.group_channel_list_file_message_text),
-                            ((FileMessage) lastMessage).getSender().getNickname());
-                    lastMessageText.setText(lastMessageString);
-                }
-            } else {
-                dateText.setVisibility(View.INVISIBLE);
-                lastMessageText.setVisibility(View.INVISIBLE);
-            }
-
-            /*
-             * Set up the typing indicator.
-             * A typing indicator is basically just three dots contained within the layout
-             * that animates. The animation is implemented in the {@link TypingIndicator#animate() class}
-             */
-            ArrayList<ImageView> indicatorImages = new ArrayList<>();
-            indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_1));
-            indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_2));
-            indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_3));
-
-            TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
-            indicator.animate();
-
-            String data = channel.getData();
-            String learnerName = "";
-
-            Map<String, String> hashMap = TextUtils.toMap(data);
-            String subjectIconUrl = (String) hashMap.get("subjectAvatar");
-            String subject = (String) hashMap.get("subjectName");
-            String grade = (String) hashMap.get("grade");
             try {
-                learnerName = ((String) hashMap.get("studentName")).split(" ")[0];
+                int unreadCount = channel.getUnreadMessageCount();
+                // If there are no unread messages, hide the unread count badge.
+                if (unreadCount == 0) {
+                    unreadCountText.setVisibility(View.INVISIBLE);
+                } else {
+                    unreadCountText.setVisibility(View.VISIBLE);
+                    unreadCountText.setText(String.valueOf(channel.getUnreadMessageCount()));
+                }
+
+                BaseMessage lastMessage = channel.getLastMessage();
+                if (lastMessage != null) {
+                    dateText.setVisibility(View.VISIBLE);
+                    lastMessageText.setVisibility(View.VISIBLE);
+
+                    // Display information about the most recently sent message in the channel.
+                    dateText.setText(String.valueOf(DateUtils.formatDateTime(lastMessage.getCreatedAt())));
+
+                    // Bind last message text according to the type of message. Specifically, if
+                    // the last message is a File Message, there must be special formatting.
+                    if (lastMessage instanceof UserMessage) {
+                        lastMessageText.setText(((UserMessage) lastMessage).getMessage());
+                    } else if (lastMessage instanceof AdminMessage) {
+                        lastMessageText.setText(((AdminMessage) lastMessage).getMessage());
+                    } else {
+                        String lastMessageString = String.format(
+                                context.getString(R.string.group_channel_list_file_message_text),
+                                ((FileMessage) lastMessage).getSender().getNickname());
+                        lastMessageText.setText(lastMessageString);
+                    }
+                } else {
+                    dateText.setVisibility(View.INVISIBLE);
+                    lastMessageText.setVisibility(View.INVISIBLE);
+                }
+
+                // Set an OnClickListener to this item.
+                if (clickListener != null) {
+                    itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            clickListener.onItemClick(channel);
+                        }
+                    });
+                }
+
+                /*
+                 * Set up the typing indicator.
+                 * A typing indicator is basically just three dots contained within the layout
+                 * that animates. The animation is implemented in the {@link TypingIndicator#animate() class}
+                 */
+                ArrayList<ImageView> indicatorImages = new ArrayList<>();
+                indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_1));
+                indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_2));
+                indicatorImages.add((ImageView) typingIndicatorContainer.findViewById(R.id.typing_indicator_dot_3));
+
+                TypingIndicator indicator = new TypingIndicator(indicatorImages, 600);
+                indicator.animate();
+
+                String data = channel.getData();
+                String learnerName = "";
+
+                Map<String, String> hashMap = TextUtils.toMap(data);
+                String subjectIconUrl = (String) hashMap.get("subjectAvatar");
+                String subject = (String) hashMap.get("subjectName");
+                String grade = (String) hashMap.get("grade");
+                try {
+                    learnerName = ((String) hashMap.get("studentName")).split(" ")[0];
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                boolean isActive;
+                String themeKey = (String) hashMap.get("subjectThemeKey");
+                String active = hashMap.get("active");
+
+
+                if (TextUtils.isBooleanString(active)) {
+                    isActive = Boolean.parseBoolean(active);
+                } else {
+                    isActive = active.equals("active");
+                }
+
+
+                //int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
+                Pair<Integer, Integer> iconPair = IconUtils.INSTANCE.getSubjectIconWithThemeKey(themeKey);
+
+
+                if (!isActive) {
+                    //show grey scaled image
+                    cm.set(arry);
+                    int inActiveGray = ContextCompat.getColor(context, R.color.inactive_grey);
+                    subjectIcon.setColorFilter(new ColorMatrixColorFilter(cm));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        imageView2.setImageTintList(ColorStateList.valueOf(inActiveGray));
+                    }
+                    gradeTv.setTextColor(inActiveGray);
+                    subjectTv.setTextColor(inActiveGray);
+                }
+
+
+                if (isActive) {
+                    int activeSubject = iconPair.getFirst();
+                    subjectIcon.setImageResource(activeSubject);
+                } else {
+                    int inactiveSubject = iconPair.getSecond();
+                    subjectIcon.setImageResource(inactiveSubject);
+                }
+
+
+                subjectTv.setText(subject);
+                gradeTv.setText(grade);
+                channelNameTv.setText(learnerName);
+
+
+                // If someone in the channel is typing, display the typing indicator.
+                if (channel.isTyping()) {
+                    typingIndicatorContainer.setVisibility(View.VISIBLE);
+                    lastMessageText.setText(("Someone is typing"));
+                } else {
+                    // Display typing indicator only when someone is typing
+                    typingIndicatorContainer.setVisibility(View.GONE);
+                }
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            boolean isActive;
-            String themeKey = (String) hashMap.get("subjectThemeKey");
-            String active = hashMap.get("active");
 
-
-            if (TextUtils.isBooleanString(active)) {
-                isActive = Boolean.parseBoolean(active);
-            } else {
-                isActive = active.equals("active");
-            }
-
-
-            //int subjectImgRes = SubjectImageUtils.INSTANCE.getSubjectImageRes(subject, isActive);
-            Pair<Integer, Integer> iconPair = IconUtils.INSTANCE.getSubjectIconWithThemeKey(themeKey);
-
-
-            if (!isActive) {
-                //show grey scaled image
-                cm.set(arry);
-                int inActiveGray = ContextCompat.getColor(context, R.color.inactive_grey);
-                subjectIcon.setColorFilter(new ColorMatrixColorFilter(cm));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    imageView2.setImageTintList(ColorStateList.valueOf(inActiveGray));
-                }
-                gradeTv.setTextColor(inActiveGray);
-                subjectTv.setTextColor(inActiveGray);
-            }
-
-
-            if (isActive) {
-                int activeSubject = iconPair.getFirst();
-                subjectIcon.setImageResource(activeSubject);
-            } else {
-                int inactiveSubject = iconPair.getSecond();
-                subjectIcon.setImageResource(inactiveSubject);
-            }
-
-
-            subjectTv.setText(subject);
-            gradeTv.setText(grade);
-            channelNameTv.setText(learnerName);
-
-
-            // If someone in the channel is typing, display the typing indicator.
-            if (channel.isTyping()) {
-                typingIndicatorContainer.setVisibility(View.VISIBLE);
-                lastMessageText.setText(("Someone is typing"));
-            } else {
-                // Display typing indicator only when someone is typing
-                typingIndicatorContainer.setVisibility(View.GONE);
-            }
-
-            // Set an OnClickListener to this item.
-            if (clickListener != null) {
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        clickListener.onItemClick(channel);
-                    }
-                });
-            }
-
-            // Set an OnLongClickListener to this item.
-//            if (longClickListener != null) {
-//                itemView.setOnLongClickListener(new View.OnLongClickListener() {
-//                    @Override
-//                    public boolean onLongClick(View v) {
-//                        //longClickListener.onItemLongClick(channel);
-//
-//                        // return true if the callback consumed the long click
-//                        return true;
-//                    }
-//                });
-//            }
         }
 
     }

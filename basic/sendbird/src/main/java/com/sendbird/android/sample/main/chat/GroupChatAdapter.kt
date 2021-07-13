@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
-import com.sendbird.android.sample.main.scheduler.AudioFileDownloadManager
+
 import com.sendbird.android.sample.utils.*
 import com.sendbird.android.sample.utils.SyncManagerUtils.findIndexOfMessage
 import com.sendbird.android.sample.utils.SyncManagerUtils.getIndexOfMessage
@@ -1404,7 +1404,6 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 seekBar?.progress = 0
                 btnPlayPause?.setImageResource(R.drawable.ic_play)
             }
-
 
             btnPlayPause?.setOnClickListener {
                 if (!player!!.isPlaying) {

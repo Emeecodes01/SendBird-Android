@@ -69,6 +69,10 @@ class UlessonRetrofitInstance {
         PreferenceUtils.getBaseUrl()
     }
 
+    private val version: String by lazy {
+        PreferenceUtils.getVersion()
+    }
+
     //private val baseUrl = "https://staging-tutor-backend.ulesson.com"
     //private val baseUrlUAT = "https://uat-tutor-backend.ulesson.com/"
     //private val baseUrlProd = ""
@@ -88,6 +92,7 @@ class UlessonRetrofitInstance {
                         .header("Content-Type", "application/json; charset=utf8")
                         .addHeader("device-uuid", deviceId)
                         .addHeader("Authorization", "Bearer $ulessonApiToken")
+                        .addHeader("version", version)
 
                         .method(original.method, original.body)
                         .build()
