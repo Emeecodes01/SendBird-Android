@@ -1,6 +1,5 @@
 package com.ulesson.chat.main.sendBird
 
-import android.util.Log
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.ulesson.chat.main.ConnectionManager
 import com.ulesson.chat.main.SyncManagerUtils
@@ -11,6 +10,7 @@ import com.ulesson.chat.network.userModel.ConnectUserRequest
 import com.ulesson.chat.network.userModel.UpdateUserRequest
 import com.ulesson.chat.network.userModel.UserResponse
 import com.ulesson.chat.utils.PreferenceUtils
+import com.ulesson.chat.utils.PushUtils
 
 class User {
 
@@ -18,6 +18,7 @@ class User {
 
     fun disconnectUser(logout: () -> Unit) {
         ConnectionManager.logout {
+            PushUtils.unregisterPushTokenForCurrentUser {}
             logout()
         }
     }
