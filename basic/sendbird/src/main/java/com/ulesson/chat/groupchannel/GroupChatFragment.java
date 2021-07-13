@@ -322,19 +322,22 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            showTutorProfile(groupChannel);
+            if (groupChannel != null){
 
-            if (channelCreate) {
-                sendDefaultMessage(groupChannel);
+                showTutorProfile(groupChannel);
+
+                if (channelCreate) {
+                    sendDefaultMessage(groupChannel);
+                }
+
+                sendMessage(groupChannel);
+
+                tutorChatActions.chatReceived();
+
+                checkChannel();
+
+                checkActiveChat(groupChannel);
             }
-
-            sendMessage(groupChannel);
-
-            tutorChatActions.chatReceived();
-
-            checkChannel();
-
-            checkActiveChat(groupChannel);
 
         });
 
@@ -475,24 +478,27 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void showTutorProfile(GroupChannel groupChannel) {
-        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
 
-        if (questionMap != null) {
+        if (groupChannel != null){
 
-            String tutorProfileUrl = (String) questionMap.get("tutorUrl");
+            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+            if (questionMap != null) {
 
-            RequestOptions options = new RequestOptions().transforms(new CircleCrop())
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .placeholder(R.drawable.profile_thumbnail)
-                    .error(R.drawable.profile_thumbnail);
+                String tutorProfileUrl = (String) questionMap.get("tutorUrl");
 
-            if (getContext() != null && tutorProfileUrl != null) {
-                Glide.with(getContext()).load(tutorProfileUrl).apply(options)
-                        .into(mProfileImage);
+                RequestOptions options = new RequestOptions().transforms(new CircleCrop())
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .placeholder(R.drawable.profile_thumbnail)
+                        .error(R.drawable.profile_thumbnail);
+
+                if (getContext() != null && tutorProfileUrl != null) {
+                    Glide.with(getContext()).load(tutorProfileUrl).apply(options)
+                            .into(mProfileImage);
+                }
+
+                mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
+
             }
-
-            mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
-
         }
 
     }

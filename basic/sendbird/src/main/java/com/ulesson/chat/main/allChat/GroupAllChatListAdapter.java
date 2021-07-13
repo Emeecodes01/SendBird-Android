@@ -169,7 +169,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         if (channels != null) {
             for (GroupChannel newChannel : channels) {
-                newChannel.refresh(e -> {});
                 if (new StringUtils().chatType(newChannel.getData()) == ChatType.PendingChat) {
                     isPendingChatChannel.add(newChannel);
                 } else if (new StringUtils().chatType(newChannel.getData()) == ChatType.Active) {

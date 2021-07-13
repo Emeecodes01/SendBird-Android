@@ -98,7 +98,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String token) {
         Log.i(TAG, "onNewToken(" + token + ")");
-
         sendRegistrationToServer(token);
     }
 

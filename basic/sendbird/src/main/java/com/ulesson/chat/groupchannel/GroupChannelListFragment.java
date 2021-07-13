@@ -18,7 +18,6 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
-import com.sendbird.android.SendBirdException;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
@@ -30,12 +29,12 @@ import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
+import com.ulesson.chat.main.sendBird.User;
 import com.ulesson.chat.utils.CustomFontButton;
-import com.ulesson.chat.utils.TimerUtils;
+import com.ulesson.chat.utils.PreferenceUtils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -303,6 +302,22 @@ public class GroupChannelListFragment extends BaseFragment {
 
     private void refresh() {
 
+        if (PreferenceUtils.getUserData() != null) {
+            new User().connectUser(PreferenceUtils.getUserData(), PreferenceUtils.getAccessToken(),
+                    (userResponse) -> {
+                        loadChannels();
+                        return Unit.INSTANCE;
+                    },
+                    (errorData) -> Unit.INSTANCE, (updateAccessToken) -> Unit.INSTANCE);
+        } else {
+            loadChannels();
+        }
+
+
+    }
+
+    private void loadChannels() {
+
         try {
 
             if (mChannelCollection != null) {
@@ -344,7 +359,6 @@ public class GroupChannelListFragment extends BaseFragment {
                 }
             }
         }
-
     }
 
 }

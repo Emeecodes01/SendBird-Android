@@ -25,6 +25,7 @@ class Connect {
             if (e == null && PreferenceUtils.getContext() != null) {
                 PreferenceUtils.setConnected(true)
                 updateCurrentUserInfo(userData.id, userData.nickname, userData.accessToken)
+
                 PushUtils.registerPushTokenForCurrentUser(object :
                     SendBird.RegisterPushTokenWithStatusHandler {
                     override fun onRegistered(

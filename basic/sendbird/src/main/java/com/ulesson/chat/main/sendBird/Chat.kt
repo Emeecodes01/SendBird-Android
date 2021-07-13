@@ -245,6 +245,7 @@ class Chat {
         syncAllChat(activity)
 
         val userIdList = listOf(hostUserData.id, otherId)
+        val operatorId = listOf(hostUserData.id)
 
         val gsonString = Gson().toJson(questionMap)
 
@@ -253,6 +254,7 @@ class Chat {
             .setEphemeral(false)
             .setDistinct(false)
             .addUserIds(userIdList)
+            .setOperatorUserIds(operatorId)
             .setData(gsonString)
 
         if (questionMap?.get("newVersion") == "true") {
@@ -274,14 +276,13 @@ class Chat {
                             groupChannelCreateHandler.onResult(groupChannel, error)
                         } else {
                             Connect().refreshActivity({
-                                createGroupChat(
-                                    hostUserData,
-                                    otherId,
-                                    questionMap,
-                                    activity,
-                                    chatActions,
-                                    groupChannelCreateHandler
-                                )
+                                activity?.let {
+                                    Toast.makeText(
+                                        it.baseContext,
+                                        "Please check your internet and retry your question",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }, {
                             })
                         }
@@ -335,6 +336,21 @@ class Chat {
         val userGroup = UserGroup(channelUrl, groupChannelParams)
         oneTimeWork(activity, userGroup) {
             updatedGroupChannel(it)
+        }
+    }
+
+    fun deleteGroupChannel(channelUrl: String, deleted: () -> Unit, error: () -> Unit) {
+        GroupChannel.getChannel(channelUrl) { groupChannel, error ->
+            if (error == null){
+                groupChannel?.delete {
+                    if (it == null) {
+                        deleted()
+                    } else {
+                        error()
+                    }
+                }
+            }
+
         }
     }
 
