@@ -18,6 +18,7 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
@@ -184,6 +185,15 @@ public class GroupChannelListFragment extends BaseFragment {
         mSwipeRefresh.setOnRefreshListener(() -> {
             mSwipeRefresh.setRefreshing(true);
             refresh();
+
+            UserData loginData = new UserData(PreferenceUtils.getUserId(), PreferenceUtils.getNickname(), PreferenceUtils.getAccessToken());
+
+            new Connect().login(loginData, new SendBird.ConnectHandler() {
+                @Override
+                public void onConnected(com.sendbird.android.User user, SendBirdException e) {
+
+                }
+            });
         });
 
         if (getActivity() != null) {

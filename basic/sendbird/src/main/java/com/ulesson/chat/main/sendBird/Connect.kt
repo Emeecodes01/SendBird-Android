@@ -29,7 +29,8 @@ class Connect {
                 PushUtils.unregisterPushTokenForCurrentUser {
 
                     if (it == null) {
-                        PushUtils.registerPushTokenForCurrentUser(object :
+
+                        PushUtils.refreshPushTokenForCurrentUser(object :
                             SendBird.RegisterPushTokenWithStatusHandler {
                             override fun onRegistered(
                                 p0: SendBird.PushTokenRegistrationStatus?,

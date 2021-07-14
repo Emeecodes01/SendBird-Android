@@ -11,6 +11,8 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.gson.Gson;
 import com.sendbird.android.Member;
+import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
 import com.ulesson.chat.R;
 import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.model.UserData;
@@ -102,15 +104,14 @@ public class GroupChannelActivity extends AppCompatActivity {
 
         new User().connectUser(connectUserRequest, PreferenceUtils.getAccessToken(), (userResponse) -> {
 
-            PushUtils.registerPushTokenForCurrentUser((pushTokenRegistrationStatus, e) -> {
-                if (e != null) {
-                    return;
-                }
+            PushUtils.refreshPushTokenForCurrentUser(new SendBird.RegisterPushTokenWithStatusHandler() {
+                @Override
+                public void onRegistered(SendBird.PushTokenRegistrationStatus pushTokenRegistrationStatus, SendBirdException e) {
 
+                }
             });
 
 //            new Chat().createChat(this, tutorUserData, hostUserData, questionMap, (channelUrl) -> {
-//
 
             List<Question> questionList = new ArrayList<>();
             questionList.add(new Question(1,
