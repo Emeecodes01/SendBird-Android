@@ -170,7 +170,6 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         isTempMessage = isTempMessage(message);
         tempFileMessageUri = getTempFileMessageUri(message);
 
-        try{
             switch (holder.getItemViewType()) {
                 case VIEW_TYPE_USER_MESSAGE_ME:
                     ((MyUserMessageHolder) holder).bind(mContext, (UserMessage) message, mChannel, isContinuous, isNewDay, mItemClickListener, mItemLongClickListener, position);
@@ -208,7 +207,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 default:
                     break;
             }
-        }catch(Exception ignore){ }
+
 
     }
 
@@ -277,7 +276,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return VIEW_TYPE_ADMIN_MESSAGE;
         }
 
-        return VIEW_TYPE_USER_MESSAGE_ME;
+        return -1;
     }
 
     @Override
@@ -323,7 +322,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (message instanceof UserMessage) {
             return message.getRequestId();
         } else if (message instanceof FileMessage) {
-            return message.getRequestId();
+            return ((FileMessage) message).getRequestId();
         }
 
         return "";
@@ -338,7 +337,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return null;
         }
 
-        return mTempFileMessageUriTable.get(message.getRequestId());
+        return mTempFileMessageUriTable.get(((FileMessage) message).getRequestId());
     }
 
     public void markMessageFailed(BaseMessage message) {
@@ -455,11 +454,11 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         for (BaseMessage failedMessage : mFailedMessageList) {
             if (message instanceof UserMessage && failedMessage instanceof UserMessage) {
-                if (message.getRequestId().equals(failedMessage.getRequestId())) {
+                if (((UserMessage) message).getRequestId().equals(((UserMessage) failedMessage).getRequestId())) {
                     return true;
                 }
             } else if (message instanceof FileMessage && failedMessage instanceof FileMessage) {
-                if (message.getRequestId().equals(failedMessage.getRequestId())) {
+                if (((FileMessage) message).getRequestId().equals(((FileMessage) failedMessage).getRequestId())) {
                     return true;
                 }
             }
