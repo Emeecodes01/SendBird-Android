@@ -324,21 +324,24 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            if (groupChannel != null) {
+            try{
+                if (groupChannel != null) {
 
-                showTutorProfile(groupChannel);
+                    showTutorProfile(groupChannel);
 
-                if (channelCustomType.equalsIgnoreCase("tutorDefault")) {
-                    sendDefaultMessage(groupChannel);
+                    if (channelCustomType.equalsIgnoreCase("tutorDefault")) {
+                        sendDefaultMessage(groupChannel);
+                    }
+
+                    sendMessage(groupChannel);
+
+                    tutorChatActions.chatReceived();
+
+                    checkChannel();
+
+                    checkActiveChat(groupChannel);
                 }
-
-                sendMessage(groupChannel);
-
-                tutorChatActions.chatReceived();
-
-                checkChannel();
-
-                checkActiveChat(groupChannel);
+            }catch (Exception ignore){
             }
 
         });
@@ -903,11 +906,15 @@ public class GroupChatFragment extends Fragment {
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         if (mLayoutManager.findFirstVisibleItemPosition() == 0) {
-                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
+                            if (mMessageCollection != null){
+                                mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
+                            }
                         }
 
                         if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
-                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
+                            if (mMessageCollection != null){
+                                mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
+                            }
                         }
 
                     }

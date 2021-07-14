@@ -39,7 +39,6 @@ import com.ulesson.chat.widget.MessageStatusView;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -171,43 +170,46 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         isTempMessage = isTempMessage(message);
         tempFileMessageUri = getTempFileMessageUri(message);
 
-        switch (holder.getItemViewType()) {
-            case VIEW_TYPE_USER_MESSAGE_ME:
-                ((MyUserMessageHolder) holder).bind(mContext, (UserMessage) message, mChannel, isContinuous, isNewDay, mItemClickListener, mItemLongClickListener, position);
-                break;
-            case VIEW_TYPE_USER_MESSAGE_OTHER:
-                ((OtherUserMessageHolder) holder).bind(mContext, (UserMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener, mItemLongClickListener, position);
-                break;
-            case VIEW_TYPE_ADMIN_MESSAGE:
-                ((AdminMessageHolder) holder).bind(mContext, (AdminMessage) message, mChannel, isNewDay);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_ME:
-                ((MyFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_OTHER:
-                ((OtherFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
-                ((MyImageFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
-                ((OtherImageFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
-                ((MyVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
-                ((OtherVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER:
-                ((OtherAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_AUDIO_ME:
-                ((MeAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, isContinuous, mItemClickListener);
-                break;
-            default:
-                break;
-        }
+        try{
+            switch (holder.getItemViewType()) {
+                case VIEW_TYPE_USER_MESSAGE_ME:
+                    ((MyUserMessageHolder) holder).bind(mContext, (UserMessage) message, mChannel, isContinuous, isNewDay, mItemClickListener, mItemLongClickListener, position);
+                    break;
+                case VIEW_TYPE_USER_MESSAGE_OTHER:
+                    ((OtherUserMessageHolder) holder).bind(mContext, (UserMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener, mItemLongClickListener, position);
+                    break;
+                case VIEW_TYPE_ADMIN_MESSAGE:
+                    ((AdminMessageHolder) holder).bind(mContext, (AdminMessage) message, mChannel, isNewDay);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_ME:
+                    ((MyFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_OTHER:
+                    ((OtherFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
+                    ((MyImageFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
+                    ((OtherImageFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
+                    ((MyVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
+                    ((OtherVideoFileMessageHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isContinuous, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER:
+                    ((OtherAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, mItemClickListener);
+                    break;
+                case VIEW_TYPE_FILE_MESSAGE_AUDIO_ME:
+                    ((MeAudioFileMessageViewHolder) holder).bind(mContext, (FileMessage) message, mChannel, isNewDay, isTempMessage, tempFileMessageUri, isContinuous, mItemClickListener);
+                    break;
+                default:
+                    break;
+            }
+        }catch(Exception ignore){ }
+
     }
 
     @Override
@@ -1308,19 +1310,22 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private void loadAudio(MediaPlayer player, String audioFilePath) {
-        try {
 
-            File file = new File(audioFilePath);
-            if (file.exists()) {
-                FileInputStream fileInputStream;
+        File file = new File(audioFilePath);
+        if (file.exists()) {
+            FileInputStream fileInputStream;
+            try {
                 fileInputStream = new FileInputStream(audioFilePath);
-                player.setDataSource(fileInputStream.getFD());
-                player.prepareAsync();
+                if (fileInputStream != null && player != null) {
+                    player.setDataSource(fileInputStream.getFD());
+                    player.prepareAsync();
+                }
+            } catch (Exception ignore) {
+
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     private class OtherAudioFileMessageViewHolder extends RecyclerView.ViewHolder {
@@ -1516,7 +1521,7 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else {
 
             try {
-                File file = new File(audioFiles.get(audioUrl)+"");
+                File file = new File(audioFiles.get(audioUrl) + "");
 
                 if (file.exists()) {
                     audioDownload.done(audioFiles.get(audioUrl));

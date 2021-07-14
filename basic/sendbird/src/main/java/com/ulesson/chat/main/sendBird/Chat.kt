@@ -202,20 +202,24 @@ class Chat {
 
         GroupChannel.getChannel(channelUrl) { groupChannel: GroupChannel, e: SendBirdException? ->
 
-            groupChannel.refresh {
+            if (e == null){
+                groupChannel.refresh {
 
-                val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
+                    if (it == null){
+                        val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
 
-                Log.d("okh", "count started")
+                        Log.d("okh", "count started")
 
-                TimerUtils().getTime(
-                    channelUrl,
-                    getChatDuration(questionMap),
-                    true,
-                    {
+                        TimerUtils().getTime(
+                            channelUrl,
+                            getChatDuration(questionMap),
+                            true,
+                            {
 
-                    }) { }
+                            }) { }
+                    }
 
+                }
             }
 
         }

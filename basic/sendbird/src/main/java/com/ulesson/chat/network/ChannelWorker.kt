@@ -29,11 +29,15 @@ class ChannelWorker(val context: Context, workerParams: WorkerParameters) :
         )
 
         GroupChannel.getChannel(channelUrl) { groupChannel: GroupChannel, e: SendBirdException? ->
-            groupChannel.updateChannel(groupChannelParams) { updatedGroupChannel: GroupChannel?, error: SendBirdException? ->
-                channelCallBack?.let {
-                    it(updatedGroupChannel)
+
+            if (e == null){
+                groupChannel.updateChannel(groupChannelParams) { updatedGroupChannel: GroupChannel?, error: SendBirdException? ->
+                    channelCallBack?.let {
+                        it(updatedGroupChannel)
+                    }
                 }
             }
+
         }
 
         return Result.success()

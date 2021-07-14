@@ -274,7 +274,6 @@ public class GroupChannelListFragment extends BaseFragment {
 
     void enterGroupChannel(String channelUrl) {
 
-
         GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
 
             @Override
