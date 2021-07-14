@@ -227,7 +227,7 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
                 tutorActionsChannel.showTutorRating(questionMap);

@@ -105,6 +105,18 @@ public class GroupChannelListFragment extends BaseFragment {
 
                         groupChannelEmpty = list.isEmpty();
 
+                        mChannelListAdapter.notifyDataSetChanged();
+
+                        if (groupChannelEmpty) {
+                            mRecyclerView.setVisibility(View.GONE);
+                            noChatCard.setVisibility(View.VISIBLE);
+                        } else {
+                            noChatCard.setVisibility(View.GONE);
+                            seeAllBtn.setVisibility(View.VISIBLE);
+                            mRecyclerView.setVisibility(View.VISIBLE);
+                            mRecyclerView.smoothScrollToPosition(0);
+                        }
+
                         break;
 
                     case UPDATE:
@@ -263,7 +275,7 @@ public class GroupChannelListFragment extends BaseFragment {
     void enterGroupChannel(String channelUrl) {
 
 
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -300,7 +312,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
     }
 
-    private void refresh() {
+    public void refresh() {
 
         if (PreferenceUtils.getUserData() != null) {
             new User().connectUser(PreferenceUtils.getUserData(), PreferenceUtils.getAccessToken(),

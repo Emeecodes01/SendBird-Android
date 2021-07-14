@@ -76,7 +76,7 @@ class Chat {
 
                 channelUrl(groupChannel.url)
 
-                gotoChat(groupChannel.url, activity, toFinish, true, object : TutorActions {
+                gotoChat(groupChannel.url, activity, "tutorDefault", toFinish, true, object : TutorActions {
 
                     override fun showTutorProfile(members: List<Member>) {
                         tutorActions.showTutorProfile(members)
@@ -108,51 +108,23 @@ class Chat {
     fun gotoChat(
         groupChannelUrl: String,
         activity: FragmentActivity?,
+        customType: String,
         fromActivity: Boolean,
         createChat: Boolean,
         tutorActions: TutorActions,
         chatActions: ChatActions
     ) {
 
-        activity?.let {
+        SyncManagerUtils.setup(
+            PreferenceUtils.getContext(),
+            PreferenceUtils.getUserId()
+        ) {
+            SendBirdSyncManager.getInstance().resumeSync()
+            activity?.let {
 
-            if (fromActivity) {
+                if (fromActivity) {
 
-                GroupChatActivity.setActions(object : TutorActions {
-
-                    override fun showTutorProfile(members: List<Member>) {
-                        tutorActions.showTutorProfile(members)
-                    }
-
-                    override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
-                        tutorActions.showTutorRating(questionMap)
-                    }
-                }, object : ChatActions {
-                    override fun chatReceived() {
-                        chatActions.chatReceived()
-                    }
-
-                    override fun showDummyChat(question: Question) {
-                        chatActions.showDummyChat(question)
-                    }
-
-                    override fun getPendingQuestions() {
-                        chatActions.getPendingQuestions()
-                    }
-
-                }, createChat)
-
-                val intent = Intent(activity.baseContext, GroupChatActivity::class.java)
-                intent.putExtra("channelUrl", groupChannelUrl)
-                activity.startActivity(intent)
-
-            } else {
-
-                val fragment = GroupChatFragment.newInstance(
-                    groupChannelUrl,
-                    createChat,
-                    fromActivity,
-                    object : TutorActions {
+                    GroupChatActivity.setActions(object : TutorActions {
 
                         override fun showTutorProfile(members: List<Member>) {
                             tutorActions.showTutorProfile(members)
@@ -161,8 +133,7 @@ class Chat {
                         override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
                             tutorActions.showTutorRating(questionMap)
                         }
-                    },
-                    object : ChatActions {
+                    }, object : ChatActions {
                         override fun chatReceived() {
                             chatActions.chatReceived()
                         }
@@ -175,16 +146,54 @@ class Chat {
                             chatActions.getPendingQuestions()
                         }
 
-                    })
+                    }, createChat)
 
-                if (!it.supportFragmentManager.isDestroyed && !fragment.isAdded) {
-                    it.supportFragmentManager.beginTransaction()
-                        .add(android.R.id.content, fragment, GROUP_CHAT_TAG)
-                        .commitAllowingStateLoss()
+                    val intent = Intent(activity.baseContext, GroupChatActivity::class.java)
+                    intent.putExtra("channelUrl", groupChannelUrl)
+                    intent.putExtra("customType", customType)
+                    activity.startActivity(intent)
+
+                } else {
+
+                    val fragment = GroupChatFragment.newInstance(
+                        groupChannelUrl,
+                        createChat,
+                        customType,
+                        fromActivity,
+                        object : TutorActions {
+
+                            override fun showTutorProfile(members: List<Member>) {
+                                tutorActions.showTutorProfile(members)
+                            }
+
+                            override fun showTutorRating(questionMap: MutableMap<String, Any?>) {
+                                tutorActions.showTutorRating(questionMap)
+                            }
+                        },
+                        object : ChatActions {
+                            override fun chatReceived() {
+                                chatActions.chatReceived()
+                            }
+
+                            override fun showDummyChat(question: Question) {
+                                chatActions.showDummyChat(question)
+                            }
+
+                            override fun getPendingQuestions() {
+                                chatActions.getPendingQuestions()
+                            }
+
+                        })
+
+                    if (!it.supportFragmentManager.isDestroyed && !fragment.isAdded) {
+                        it.supportFragmentManager.beginTransaction()
+                            .add(android.R.id.content, fragment, GROUP_CHAT_TAG)
+                            .commitAllowingStateLoss()
+                    }
+
                 }
 
             }
-
         }
 
     }
@@ -193,17 +202,22 @@ class Chat {
 
         GroupChannel.getChannel(channelUrl) { groupChannel: GroupChannel, e: SendBirdException? ->
 
-            val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
+            groupChannel.refresh {
 
-            Log.d("okh", "count started")
+                val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
 
-            TimerUtils().getTime(
-                channelUrl,
-                getChatDuration(questionMap),
-                true,
-                {
+                Log.d("okh", "count started")
 
-                }) { }
+                TimerUtils().getTime(
+                    channelUrl,
+                    getChatDuration(questionMap),
+                    true,
+                    {
+
+                    }) { }
+
+            }
+
         }
 
     }
@@ -373,10 +387,6 @@ class Chat {
             val timeMap = PreferenceUtils.getEndTime()
 
             val mChannelCollectionHandler = ChannelCollectionHandler { _, list, _ ->
-
-                list.forEach { channel ->
-                    channel.refresh {}
-                }
 
                 list.forEach { channel ->
 

@@ -114,6 +114,7 @@ public class GroupChatFragment extends Fragment {
     private static TutorActions tutorActionsChat;
     private static ChatActions tutorChatActions;
     private static Boolean channelCreate;
+    private static String channelCustomType;
     private static Boolean channelFinish;
     final MessageFilter mMessageFilter = new MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null);
     private final ChatGenericDialog uploadFileDialog =
@@ -249,11 +250,12 @@ public class GroupChatFragment extends Fragment {
     private View rootView;
     private File newFile;
 
-    public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
+    public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, String customType, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
         GroupChatFragment groupChatFragment = new GroupChatFragment();
         tutorActionsChat = tutorActions;
         tutorChatActions = chatActions;
         channelCreate = isCreateChat;
+        channelCustomType = customType;
         channelFinish = toFinish;
         Bundle args = new Bundle();
         args.putString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL, channelUrl);
@@ -322,11 +324,11 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            if (groupChannel != null){
+            if (groupChannel != null) {
 
                 showTutorProfile(groupChannel);
 
-                if (channelCreate) {
+                if (channelCustomType.equalsIgnoreCase("tutorDefault")) {
                     sendDefaultMessage(groupChannel);
                 }
 
@@ -479,7 +481,7 @@ public class GroupChatFragment extends Fragment {
 
     private void showTutorProfile(GroupChannel groupChannel) {
 
-        if (groupChannel != null){
+        if (groupChannel != null) {
 
             Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
             if (questionMap != null) {

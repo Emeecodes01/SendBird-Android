@@ -15,9 +15,10 @@ class GroupChatActivity : AppCompatActivity() {
 
         intent?.getStringExtra("channelUrl")?.let {
 
+          val customType =  intent?.getStringExtra("customType") ?:""
             val fragment = tutorActions?.let { tutor ->
                 chatActions?.let { chat ->
-                    GroupChatFragment.newInstance(it, createChat, true, tutor, chat)
+                    GroupChatFragment.newInstance(it, createChat, customType, true, tutor, chat)
                 }
             }
 

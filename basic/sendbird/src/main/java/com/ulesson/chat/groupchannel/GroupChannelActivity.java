@@ -48,7 +48,7 @@ public class GroupChannelActivity extends AppCompatActivity {
 
             String channelUrl = bundle.getString("GROUP_CHANNEL_URL");
             if (channelUrl != null) {
-                new Chat().gotoChat(channelUrl, this, true, true, new TutorActions() {
+                new Chat().gotoChat(channelUrl, this, "",true, true, new TutorActions() {
                     @Override
                     public void showTutorProfile(@NotNull List<? extends Member> members) {
 
@@ -182,7 +182,7 @@ public class GroupChannelActivity extends AppCompatActivity {
         String channelUrl = getIntent().getStringExtra("groupChannelUrl");
         if (channelUrl != null) {
             // If started from notification
-            Fragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
+            Fragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
                 @Override
                 public void showTutorProfile(@NotNull List<? extends Member> members) {
                 }
