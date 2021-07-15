@@ -90,8 +90,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     public static void refreshPushToken(ITokenResult listner) {
 
-        FirebaseMessaging.getInstance().deleteToken();
-
          FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
 
              listner.onPushTokenReceived(task.getResult());
@@ -114,6 +112,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             pushToken.set(token);
         });
     }
+
     // [END receive_message]
 
     /**

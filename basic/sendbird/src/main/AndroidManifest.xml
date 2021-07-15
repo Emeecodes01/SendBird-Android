@@ -52,13 +52,13 @@
 
         <activity android:name="com.ulesson.chat.groupchannel.GroupChatActivity" />
 
-        <service
-            android:name="com.ulesson.chat.fcm.MyFirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+<!--        <service-->
+<!--            android:name="com.ulesson.chat.fcm.MyFirebaseMessagingService"-->
+<!--            android:exported="false">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.google.firebase.MESSAGING_EVENT" />-->
+<!--            </intent-filter>-->
+<!--        </service>-->
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
