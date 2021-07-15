@@ -62,8 +62,6 @@ class Chat {
             questionMap["active"] = "true"
         }
 
-        questionMap["inSession"] = "false"
-
         createGroupChat(
             hostUserData,
             otherUserData.id,
@@ -406,7 +404,6 @@ class Chat {
                             val activeMap = mutableMapOf<String, Any?>()
 
                             activeMap["active"] = "past"
-                            activeMap["inSession"] = "false"
 
                             updateGroupChat(channel.url, channel.data, activeMap, activity) {
                                 it?.url?.let {

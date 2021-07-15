@@ -96,7 +96,6 @@ public class GroupChannelActivity extends AppCompatActivity {
         questionMap.put("questionText", "hey image, this an image");
         questionMap.put("chatDuration", "1");
         questionMap.put("active", "active");
-        questionMap.put("inSession", "true");
         questionMap.put("startTime", "2021-07-15 10:12:52");
 //        questionMap.put("questionUri", "/storage/emulated/0/Android/data/com.ulesson.chat/files/questionImage.jpg");
 //        questionMap.put("questionUrl", "https://ulesson-staging.s3.eu-west-2.amazonaws.com/learners/avatars/defaults/thumb/missing.png");

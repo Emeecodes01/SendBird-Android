@@ -324,7 +324,7 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            try{
+            try {
                 if (groupChannel != null) {
 
                     showTutorProfile(groupChannel);
@@ -341,7 +341,7 @@ public class GroupChatFragment extends Fragment {
 
                     checkActiveChat(groupChannel);
                 }
-            }catch (Exception ignore){
+            } catch (Exception ignore) {
             }
 
         });
@@ -355,11 +355,8 @@ public class GroupChatFragment extends Fragment {
 
         if (new StringUtils().chatType(questionMap) == ChatType.Active) {
 
-            String inSession = (String) questionMap.get("inSession");
+            handleTimer(groupChannel.getData());
 
-            if (inSession != null && inSession.equals("true")) {
-                handleTimer(groupChannel.getData());
-            }
         } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
             chatStatus(false);
         }
@@ -562,7 +559,6 @@ public class GroupChatFragment extends Fragment {
         HashMap<String, Object> activeMap = new HashMap<>();
         if (newVersion != null) {
             activeMap.put("active", "past");
-            activeMap.put("inSession", "false");
         } else {
             activeMap.put("active", "false");
         }
@@ -923,13 +919,13 @@ public class GroupChatFragment extends Fragment {
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         if (mLayoutManager.findFirstVisibleItemPosition() == 0) {
-                            if (mMessageCollection != null){
+                            if (mMessageCollection != null) {
                                 mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
                             }
                         }
 
                         if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
-                            if (mMessageCollection != null){
+                            if (mMessageCollection != null) {
                                 mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
                             }
                         }
