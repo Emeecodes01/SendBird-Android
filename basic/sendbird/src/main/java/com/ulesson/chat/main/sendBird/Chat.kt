@@ -208,12 +208,11 @@ class Chat {
                     if (it == null){
                         val questionMap: MutableMap<String, Any?> = groupChannel.data.toMutableMap()
 
-                        Log.d("okh", "count started")
-
                         TimerUtils().getTime(
                             channelUrl,
                             getChatDuration(questionMap),
                             true,
+                            getStartTime(questionMap),
                             {
 
                             }) { }
@@ -442,6 +441,18 @@ class Chat {
         } catch (ignore: Exception) {
         }
         return chatDuration
+    }
+
+    private fun getStartTime(questionMap: MutableMap<String, Any?>): String {
+        var startTime = "0"
+        try {
+            val startTimeString = questionMap["startTime"] as String?
+            if (startTimeString != null) {
+                startTime = startTimeString
+            }
+        } catch (ignore: Exception) {
+        }
+        return startTime
     }
 
     fun copyFile(src: File, dest: File) {

@@ -520,7 +520,7 @@ public class GroupChatFragment extends Fragment {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            new TimerUtils().getTime(mChannelUrl, getChatDuration(questionMap), channelCreate, (countDownTime) -> {
+            new TimerUtils().getTime(mChannelUrl, getChatDuration(questionMap), channelCreate, getStartTime(questionMap), (countDownTime) -> {
 
                 chatStatus(true);
 
@@ -540,6 +540,8 @@ public class GroupChatFragment extends Fragment {
             chatStatus(false);
             updateChat(newVersion);
         }
+
+        chatStatus(true);
 
     }
 
@@ -836,6 +838,21 @@ public class GroupChatFragment extends Fragment {
         }
 
         return chatDuration;
+    }
+
+    private String getStartTime(Map<String, Object> questionMap) {
+
+        String startTime = "0";
+
+        try {
+            String startTimeString = (String) questionMap.get("startTime");
+            if (startTimeString != null) {
+                startTime = startTimeString;
+            }
+        } catch (Exception ignore) {
+        }
+
+        return startTime;
     }
 
 
