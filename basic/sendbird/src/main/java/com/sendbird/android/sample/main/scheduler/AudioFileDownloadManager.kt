@@ -20,10 +20,11 @@ class AudioFileDownloadManager(private val mContext: Context) {
     private val gson = Gson()
 
     fun getDownloadedPath(url: String): String? {
+        val onlyUrl = url.split("?")[0]
         val downloadMapString = sharedPreferences.getString(DOWNLOADED_URLS, "")
-        val typeToken = object: TypeToken<HashMap<String, String>>(){}.type
+        val typeToken = object : TypeToken<HashMap<String, String>>() {}.type
         val urlToPathMap = gson.fromJson<HashMap<String, String>>(downloadMapString, typeToken)
-        return if (urlToPathMap.containsKey(url)) return urlToPathMap[url] else null
+        return if (urlToPathMap?.containsKey(onlyUrl) == true) return urlToPathMap[onlyUrl] else null
     }
 
     fun hasDownloadedAudio(url: String): Boolean {
@@ -34,7 +35,7 @@ class AudioFileDownloadManager(private val mContext: Context) {
     fun saveDownloadedPath(url: String, path: String) {
         val downloads = sharedPreferences.getString(DOWNLOADED_URLS, null)
         downloads?.let {
-            val typeToken = object: TypeToken<HashMap<String, String>>(){}.type
+            val typeToken = object : TypeToken<HashMap<String, String>>() {}.type
             val urlToPathMap = gson.fromJson<HashMap<String, String>>(it, typeToken)
             urlToPathMap[url] = path
             val mapString = gson.toJson(urlToPathMap)
@@ -51,15 +52,28 @@ class AudioFileDownloadManager(private val mContext: Context) {
 
     fun downloadAudio(url: String, name: String, onLoading: () -> Unit, onCompleted: () -> Unit) {
         var currentDownloadId: Long = -1
-        val path = mContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/ulesson_tutor_voicechat"
 
-        val broadcastReceiver: BroadcastReceiver = object: BroadcastReceiver() {
+        //extract the file extension
+        val onlyUrl = url.split("?")[0]
+        val fileName = onlyUrl.substring(onlyUrl.lastIndexOf("/") + 1)
+
+        val audioDirectoryPath =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/ulesson_tutor_voicechat"
+
+        val audioDirectory = File(audioDirectoryPath)
+        if (!audioDirectory.exists()) {
+            audioDirectory.mkdir()
+        }
+
+        val path = "$audioDirectoryPath/$fileName"
+
+        val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val id = intent!!.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
                 if (currentDownloadId == id) {
                     //download complete
                     mContext.unregisterReceiver(this)
-                    saveDownloadedPath(url, path)
+                    saveDownloadedPath(onlyUrl, path)
                     onCompleted.invoke()
                 }
             }
@@ -67,7 +81,12 @@ class AudioFileDownloadManager(private val mContext: Context) {
 
         val downloadRequest = DownloadManager.Request(Uri.parse(url))
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-            .setDestinationInExternalFilesDir(mContext, Environment.DIRECTORY_DOWNLOADS, "/ulesson_tutor_voicechat")
+            //.setDestinationInExternalPublicDir()
+            .setDestinationInExternalPublicDir(
+                //mContext,
+                Environment.DIRECTORY_DOWNLOADS,
+                "ulesson_tutor_voicechat/$fileName"
+            )
             .setTitle(name)
             .setDescription("Downloading")
             .setAllowedOverMetered(true)
@@ -79,10 +98,11 @@ class AudioFileDownloadManager(private val mContext: Context) {
 
         onLoading.invoke()
 
-        mContext.registerReceiver(broadcastReceiver,
-            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        mContext.registerReceiver(
+            broadcastReceiver,
+            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        )
     }
-
 
 
     companion object {

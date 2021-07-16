@@ -7,4 +7,9 @@
         name="recordings"
         path="voice_chats/"/>
 
+
+    <external-path
+        name="download"
+        path="ulesson_tutor_voicechat"/>
+
 </paths>

@@ -14,9 +14,12 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.asynclayoutinflater.view.AsyncLayoutInflater
+import androidx.core.content.FileProvider
+import androidx.core.graphics.PathUtils
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+//import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
 import com.sendbird.android.sample.main.scheduler.AudioFileDownloadManager
@@ -25,6 +28,8 @@ import com.sendbird.android.sample.utils.SyncManagerUtils.findIndexOfMessage
 import com.sendbird.android.sample.utils.SyncManagerUtils.getIndexOfMessage
 import com.sendbird.android.sample.widget.MessageStatusView
 import org.json.JSONException
+import java.io.File
+import java.io.FileDescriptor
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -1364,12 +1369,12 @@ internal class GroupChatAdapter(private var mContext: Context) :
         ) {
             //messageStatusView?.drawMessageStatus(channel, message)
             player = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-                )
+//                setAudioAttributes(
+//                    AudioAttributes.Builder()
+//                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                        .setUsage(AudioAttributes.USAGE_MEDIA)
+//                        .build()
+                //)
             }
 
             audioFileDownloadManager = context?.let { AudioFileDownloadManager(it) }
@@ -1377,10 +1382,10 @@ internal class GroupChatAdapter(private var mContext: Context) :
             seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        player!!.pause()
+                        player?.pause()
                         val playerPosition = (player!!.duration * (progress / 100.0)).toInt()
                         updateDurationTxt(playerPosition)
-                        player!!.seekTo(playerPosition)
+                        player?.seekTo(playerPosition)
                         btnPlayPause?.setImageResource(R.drawable.ic_play)
                     }
                 }
@@ -1388,32 +1393,62 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 override fun onStartTrackingTouch(seekBar: SeekBar) {}
                 override fun onStopTrackingTouch(seekBar: SeekBar) {}
             })
-            player!!.setOnBufferingUpdateListener { mp, percent ->
+            player?.setOnBufferingUpdateListener { mp, percent ->
                 seekBar?.secondaryProgress = percent
             }
-            player!!.setOnCompletionListener {
+            player?.setOnCompletionListener {
                 mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
                 btnPlayPause?.setImageResource(R.drawable.ic_play)
                 seekBar?.progress = 100
             }
 
 
-            player!!.setOnPreparedListener {
+            player?.setOnPreparedListener {
                 hideLoaderProgress()
                 updateDurationTxt(player!!.duration)
                 seekBar?.progress = 0
                 btnPlayPause?.setImageResource(R.drawable.ic_play)
+
+                if (!it.isPlaying)
+                    it.start()
             }
 
 
             btnPlayPause?.setOnClickListener {
+
+                if (player?.isPlaying == true) {
+                    player?.pause()
+                    btnPlayPause?.setImageResource(R.drawable.ic_play)
+                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
+                    return@setOnClickListener
+                }
+
+//                if (!player!!.isPlaying) {
+//                    player?.start()
+//
+//                } else {
+//
+//                }
+//
+
                 if (audioFileDownloadManager?.hasDownloadedAudio(message.url) == true) {
                     audioFileDownloadManager?.getDownloadedPath(message.url)?.let { filePath ->
+                        mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
+                        btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
+
                         try {
+//                            val file = File(filePath)
+//                            val uri = FileProvider.getUriForFile(
+//                                context!!,
+//                                "${context.packageName}.theprovider",
+//                                file
+//                            )
                             player?.setDataSource(filePath)
                             player?.prepareAsync()
+
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
+                            //FirebaseCrashlytics.getInstance().recordException(e)
                         }
 
                     }
@@ -1425,25 +1460,19 @@ internal class GroupChatAdapter(private var mContext: Context) :
                         },
 
                         onCompleted = {
-                            audioFileDownloadManager?.getDownloadedPath(message.url)?.let { filePath ->
-                                try {
-                                    player?.setDataSource(filePath)
-                                    player?.prepareAsync()
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                            hideLoaderProgress()
+                            audioFileDownloadManager?.getDownloadedPath(message.url)
+                                ?.let { filePath ->
+                                    try {
+                                        //FileUtils.downloadFile()
+                                        player?.setDataSource(filePath)
+                                        player?.prepareAsync()
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        //FirebaseCrashlytics.getInstance().recordException(e)
+                                    }
                                 }
-                            }
                         })
-                }
-
-                if (!player!!.isPlaying) {
-                    player!!.start()
-                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
-                    btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
-                } else {
-                    player!!.pause()
-                    btnPlayPause?.setImageResource(R.drawable.ic_play)
-                    mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar)
                 }
 
             }

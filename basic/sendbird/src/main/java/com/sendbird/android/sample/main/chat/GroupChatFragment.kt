@@ -584,7 +584,7 @@ class GroupChatFragment : Fragment() {
     private fun startChatTimer() {
         mChannel?.let { channel ->
             if (!viewOnly) {
-                extractAndStartTimer()
+                //extractAndStartTimer()
             }
         }
     }
