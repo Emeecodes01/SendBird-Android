@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
@@ -146,7 +147,7 @@ class GroupChatFragment : Fragment() {
 
 
         mIMM =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         Log.d(LOG_TAG, mChannelUrl)
         mLastRead = PreferenceUtils.getLastRead(mChannelUrl);
@@ -197,8 +198,9 @@ class GroupChatFragment : Fragment() {
             mRecordVoiceButton?.setImageResource(R.drawable.ic_mic)
         }
 
-        requireActivity().onBackPressedDispatcher
-            .addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+        activity?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     goBack()
                 }
@@ -252,19 +254,23 @@ class GroupChatFragment : Fragment() {
             if (recordVoice) {
                 if (!isRecording) {
                     recordVoice()
-
                 } else {
                     voiceView(false)
                     isRecording = false
                     animateVoice(false)
-                    //stop recording
-                    mMediaRecorder!!.stop()
-                    mMediaRecorder!!.release()
-                    mMediaRecorder = null
-                    sendRecordedFileToSendBird()
-                    mRecordVoiceButton?.setImageResource(R.drawable.ic_mic)
-                }
 
+                    //stop recording
+                    try {
+                        mMediaRecorder?.stop()
+                        mMediaRecorder?.release()
+                        mMediaRecorder = null
+                        sendRecordedFileToSendBird()
+                        mRecordVoiceButton?.setImageResource(R.drawable.ic_mic)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        FirebaseCrashlytics.getInstance().recordException(e)
+                    }
+                }
             } else {
                 sendTextMessage()
             }
@@ -297,9 +303,10 @@ class GroupChatFragment : Fragment() {
                 //show navigate to dashboard
                 try {
                     findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    requireActivity().finish()
+                    activity?.finish()
+                    FirebaseCrashlytics.getInstance().recordException(e)
                 }
 
             }
@@ -307,9 +314,10 @@ class GroupChatFragment : Fragment() {
             CHAT_LIST -> {
                 try {
                     findNavController().navigate(Uri.parse(groupChatFragmentArgs.deeplinkUrl))
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    requireActivity().finish()
+                    activity?.finish()
+                    FirebaseCrashlytics.getInstance().recordException(e)
                 }
             }
 
@@ -420,18 +428,25 @@ class GroupChatFragment : Fragment() {
     private fun showSessionEndFragment() {
         countDownTimer?.cancel()
 
-        val direction =
-            GroupChatFragmentDirections
-                .actionNavGraphToChatEndSessionFragment(groupChatFragmentArgs.deeplinkUrl)
+        try {
+            val direction =
+                GroupChatFragmentDirections
+                    .actionNavGraphToChatEndSessionFragment(groupChatFragmentArgs.deeplinkUrl)
 
-        findNavController().navigate(direction)
+            findNavController().navigate(direction)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
+            activity?.finish()
+        }
     }
 
     private fun countTime(minute: Long, timerMillis: Long) {
         if (minute != 0L) {
             timer(minute, timerMillis)
         } else {
-            requireActivity().finish()
+            activity?.finish()
         }
 
         timerFrame!!.visibility = View.VISIBLE
@@ -480,10 +495,12 @@ class GroupChatFragment : Fragment() {
     private fun endChatSessionTimeOut() {
 
         endChat {
-            endChatSessionTimeOut.setPositiveButton(R.string.close, R.drawable.bg_chat_btn) {
-                endChatSessionTimeOut.dismiss()
-                showSessionEndFragment()
-            }.show(requireActivity().supportFragmentManager, "s")
+            activity?.supportFragmentManager?.let {
+                endChatSessionTimeOut.setPositiveButton(R.string.close, R.drawable.bg_chat_btn) {
+                    endChatSessionTimeOut.dismiss()
+                    showSessionEndFragment()
+                }.show(it, "s")
+            }
         }
     }
 
@@ -520,6 +537,7 @@ class GroupChatFragment : Fragment() {
                     .into(mProfileImage!!)
             } catch (e: Exception) {
                 e.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(e)
             }
 
         }
@@ -541,6 +559,7 @@ class GroupChatFragment : Fragment() {
                 map["startTime"].toString()
             } catch (e: Exception) {
                 e.printStackTrace()
+                FirebaseCrashlytics.getInstance().recordException(e)
                 SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
                     .format(Date(System.currentTimeMillis()))
             }
@@ -791,6 +810,7 @@ class GroupChatFragment : Fragment() {
                         startActivity(browserIntent)
                     } catch (e: JSONException) {
                         e.printStackTrace()
+                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             }
@@ -1109,10 +1129,10 @@ class GroupChatFragment : Fragment() {
                     setState(STATE_NORMAL, null, -1)
                     mIMM!!.hideSoftInputFromWindow(mMessageEditText!!.windowToken, 0)
                 }
-                requireActivity().supportFragmentManager.popBackStack()
+                activity?.supportFragmentManager?.popBackStack()
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
     }
 
     private fun retryFailedMessage(message: BaseMessage) {
@@ -1212,7 +1232,13 @@ class GroupChatFragment : Fragment() {
             isRecording = false
             animateVoice(false)
             //stop recording
-            mMediaRecorder?.stop()
+            try {
+                mMediaRecorder?.stop()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                FirebaseCrashlytics.getInstance()
+                    .recordException(e)
+            }
         } else {
             initVoiceRecorder()
             voiceView(true)
@@ -1276,15 +1302,18 @@ class GroupChatFragment : Fragment() {
             mMediaRecorder?.prepare()
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
 
 
     private fun requestAudioRecordPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                requireActivity(),
-                Manifest.permission.RECORD_AUDIO
-            )
+        if (activity?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    it,
+                    Manifest.permission.RECORD_AUDIO
+                )
+            } == true
         ) {
             // Provide an additional rationale to the user if the permission was not granted
             // and the user would benefit from additional context for the use of the permission.
@@ -1327,10 +1356,12 @@ class GroupChatFragment : Fragment() {
     }
 
     private fun requestStoragePermissions() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
+        if (activity?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    it,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            } == true
         ) {
             // Provide an additional rationale to the user if the permission was not granted
             // and the user would benefit from additional context for the use of the permission.
@@ -1338,13 +1369,12 @@ class GroupChatFragment : Fragment() {
             Snackbar.make(
                 mRootLayout!!, "Storage access permissions are required to upload/download files.",
                 Snackbar.LENGTH_LONG
-            )
-                .setAction("Okay") {
-                    requestPermissions(
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        PERMISSION_WRITE_EXTERNAL_STORAGE
-                    )
-                }
+            ).setAction("Okay") {
+                requestPermissions(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_WRITE_EXTERNAL_STORAGE
+                )
+            }
                 .show()
         } else {
             // Permission has not been granted yet. Request it directly.
@@ -1440,8 +1470,10 @@ class GroupChatFragment : Fragment() {
                         handler
                     )
                 } catch (e: Exception) {
+                    FirebaseCrashlytics.getInstance().recordException(e)
                     // Sending a message without URL preview information.
                     mChannel!!.sendUserMessage(text, handler)
+
                 }
 
 

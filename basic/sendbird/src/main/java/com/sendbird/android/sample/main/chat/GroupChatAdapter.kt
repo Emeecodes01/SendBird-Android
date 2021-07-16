@@ -1407,6 +1407,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
             btnPlayPause?.setOnClickListener {
                 if (!player!!.isPlaying) {
+//                    player?.prepareAsync()
+//                    showLoaderProgress()
                     player!!.start()
                     mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 0)
                     btnPlayPause?.setImageResource(R.drawable.ic_pause_btn)
@@ -1494,18 +1496,18 @@ internal class GroupChatAdapter(private var mContext: Context) :
 
             try {
                 if (isTempMessage && tempFileMessageUri != null) {
-                    player!!.setDataSource(context, tempFileMessageUri)
-                    player!!.prepareAsync()
+                    player?.setDataSource(context, tempFileMessageUri)
+                    player?.prepareAsync()
                     updateDurationTxt(player!!.duration)
                 } else {
-                    player!!.setAudioAttributes(
+                    player?.setAudioAttributes(
                         AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                             .setUsage(AudioAttributes.USAGE_MEDIA)
                             .build()
                     )
-                    player!!.setDataSource(message.url)
-                    player!!.prepareAsync()
+                    player?.setDataSource(message.url)
+                    player?.prepareAsync()
                     showLoaderProgress()
                 }
             } catch (e: Exception) {

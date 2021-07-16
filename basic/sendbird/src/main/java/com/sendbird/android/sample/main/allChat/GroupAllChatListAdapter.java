@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sendbird.android.AdminMessage;
@@ -311,6 +312,17 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                   @Nullable final OnItemLongClickListener longClickListener) {
 
             try {
+                // Set an OnClickListener to this item.
+                if (clickListener != null) {
+                    itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            clickListener.onItemClick(channel);
+                        }
+                    });
+                }
+
+
                 int unreadCount = channel.getUnreadMessageCount();
                 // If there are no unread messages, hide the unread count badge.
                 if (unreadCount == 0) {
@@ -343,16 +355,6 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 } else {
                     dateText.setVisibility(View.INVISIBLE);
                     lastMessageText.setVisibility(View.INVISIBLE);
-                }
-
-                // Set an OnClickListener to this item.
-                if (clickListener != null) {
-                    itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            clickListener.onItemClick(channel);
-                        }
-                    });
                 }
 
                 /*
@@ -435,6 +437,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             } catch (Exception e) {
                 e.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
 
         }
