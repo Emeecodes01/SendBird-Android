@@ -355,8 +355,11 @@ public class GroupChatFragment extends Fragment {
 
         if (new StringUtils().chatType(questionMap) == ChatType.Active) {
 
-            handleTimer(groupChannel.getData());
+            String inSession = (String) questionMap.get("inSession");
 
+            if (inSession != null && inSession.equals("true")) {
+                handleTimer(groupChannel.getData());
+            }
         } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
             chatStatus(false);
         }

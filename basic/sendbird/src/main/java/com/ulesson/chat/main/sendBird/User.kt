@@ -17,7 +17,7 @@ class User {
     private val networkRequest = NetworkRequest()
 
     fun disconnectUser(logout: () -> Unit) {
-        PushUtils.unregisterPushTokenForCurrentUser {}
+//        PushUtils.unregisterPushTokenForCurrentUser {}
         ConnectionManager.logout {
             logout()
         }

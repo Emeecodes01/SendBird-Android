@@ -19,7 +19,7 @@ public class ConnectionManager {
                 handler.onConnected(user, e);
             }
 
-            PushUtils.refreshPushTokenForCurrentUser();
+//            PushUtils.refreshPushTokenForCurrentUser();
         });
     }
 
