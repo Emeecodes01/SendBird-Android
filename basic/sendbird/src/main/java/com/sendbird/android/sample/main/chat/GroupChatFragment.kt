@@ -47,7 +47,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+//import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.sendbird.android.*
 import com.sendbird.android.sample.R
@@ -268,7 +268,7 @@ class GroupChatFragment : Fragment() {
                         mRecordVoiceButton?.setImageResource(R.drawable.ic_mic)
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        FirebaseCrashlytics.getInstance().recordException(e)
+                        //FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             } else {
@@ -306,7 +306,7 @@ class GroupChatFragment : Fragment() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     activity?.finish()
-                    FirebaseCrashlytics.getInstance().recordException(e)
+                    //FirebaseCrashlytics.getInstance().recordException(e)
                 }
 
             }
@@ -317,7 +317,7 @@ class GroupChatFragment : Fragment() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     activity?.finish()
-                    FirebaseCrashlytics.getInstance().recordException(e)
+                    //FirebaseCrashlytics.getInstance().recordException(e)
                 }
             }
 
@@ -437,7 +437,7 @@ class GroupChatFragment : Fragment() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            FirebaseCrashlytics.getInstance().recordException(e)
+            //FirebaseCrashlytics.getInstance().recordException(e)
             activity?.finish()
         }
     }
@@ -537,7 +537,7 @@ class GroupChatFragment : Fragment() {
                     .into(mProfileImage!!)
             } catch (e: Exception) {
                 e.printStackTrace()
-                FirebaseCrashlytics.getInstance().recordException(e)
+                //FirebaseCrashlytics.getInstance().recordException(e)
             }
 
         }
@@ -559,7 +559,7 @@ class GroupChatFragment : Fragment() {
                 map["startTime"].toString()
             } catch (e: Exception) {
                 e.printStackTrace()
-                FirebaseCrashlytics.getInstance().recordException(e)
+                //FirebaseCrashlytics.getInstance().recordException(e)
                 SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
                     .format(Date(System.currentTimeMillis()))
             }
@@ -588,7 +588,7 @@ class GroupChatFragment : Fragment() {
             val countDownMillis = TimeUnit.MINUTES.toMillis(countDown)
 
             //use this value for the timer
-            val timerMillis = TimeUnit.MINUTES.toMillis(chatDuration.toLong()) - elapse
+            val timerMillis = TimeUnit.MINUTES.toMillis(chatDuration.toLong()) - abs(elapse)
             countTime(countDown, timerMillis)
 
             if (countDownMillis > 0) {
@@ -810,7 +810,7 @@ class GroupChatFragment : Fragment() {
                         startActivity(browserIntent)
                     } catch (e: JSONException) {
                         e.printStackTrace()
-                        FirebaseCrashlytics.getInstance().recordException(e)
+                        //FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             }
@@ -947,7 +947,16 @@ class GroupChatFragment : Fragment() {
 
 
                 if (e != null) {
-                    MessageCollection.create(channelUrl, mMessageFilter, Long.MAX_VALUE,
+                    Toast.makeText(
+                        requireContext(),
+                        "An error occurred, try again \n ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    goBack()
+                    return
+
+                    /*MessageCollection.create(channelUrl, mMessageFilter, Long.MAX_VALUE,
                         MessageCollectionCreateHandler { messageCollection: MessageCollection?, e: SendBirdException? ->
                             if (e == null) {
                                 if (mMessageCollection != null) {
@@ -973,20 +982,23 @@ class GroupChatFragment : Fragment() {
                                 ).show()
                                 Handler().postDelayed(Runnable { goBack() }, 1000)
                             }
-                        })
-                } else {
-                    if (mMessageCollection != null) {
-                        mMessageCollection?.remove()
-                    }
-                    mMessageCollection = MessageCollection(groupChannel, mMessageFilter, mLastRead)
-                    mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
-                    mChannel = groupChannel
-                    setUpUIChannelElements()
-                    mChatAdapter!!.setChannel(mChannel)
-                    mChatAdapter?.clear()
-                    updateActionBarTitle()
-                    fetchInitialMessages()
+                        })*/
+                } /*else {
+
+                }*/
+
+                if (mMessageCollection != null) {
+                    mMessageCollection?.remove()
                 }
+                mMessageCollection = MessageCollection(groupChannel, mMessageFilter, mLastRead)
+                mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
+                mChannel = groupChannel
+                setUpUIChannelElements()
+                mChatAdapter!!.setChannel(mChannel)
+                mChatAdapter?.clear()
+                updateActionBarTitle()
+                fetchInitialMessages()
+
             }
         })
     }
@@ -1236,8 +1248,8 @@ class GroupChatFragment : Fragment() {
                 mMediaRecorder?.stop()
             } catch (e: Exception) {
                 e.printStackTrace()
-                FirebaseCrashlytics.getInstance()
-                    .recordException(e)
+//                FirebaseCrashlytics.getInstance()
+//                    .recordException(e)
             }
         } else {
             initVoiceRecorder()
@@ -1302,7 +1314,7 @@ class GroupChatFragment : Fragment() {
             mMediaRecorder?.prepare()
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
-            FirebaseCrashlytics.getInstance().recordException(e)
+            //FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
 
@@ -1470,7 +1482,7 @@ class GroupChatFragment : Fragment() {
                         handler
                     )
                 } catch (e: Exception) {
-                    FirebaseCrashlytics.getInstance().recordException(e)
+                    //FirebaseCrashlytics.getInstance().recordException(e)
                     // Sending a message without URL preview information.
                     mChannel!!.sendUserMessage(text, handler)
 

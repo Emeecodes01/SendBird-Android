@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
+//import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sendbird.android.AdminMessage;
@@ -437,7 +437,7 @@ class GroupAllChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             } catch (Exception e) {
                 e.printStackTrace();
-                FirebaseCrashlytics.getInstance().recordException(e);
+                //FirebaseCrashlytics.getInstance().recordException(e);
             }
 
         }
