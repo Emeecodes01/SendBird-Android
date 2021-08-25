@@ -543,6 +543,10 @@ class GroupChatFragment : Fragment() {
         }
     }
 
+
+    /**
+     * This method controls the chat timing
+     */
     private fun extractAndStartTimer() {
         mChannel?.let { channel ->
 
@@ -560,18 +564,18 @@ class GroupChatFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 //FirebaseCrashlytics.getInstance().recordException(e)
-                SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     .format(Date(System.currentTimeMillis()))
             }
 
 
-            val date = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+            val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .parse(startTime)
 
-            val dateNow = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+            val dateNow = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .format(System.currentTimeMillis())
 
-            val nowMillis = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+            val nowMillis = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .parse(dateNow)
 
             val elapse = nowMillis.time - date.time
@@ -594,6 +598,7 @@ class GroupChatFragment : Fragment() {
             if (countDownMillis > 0) {
                 shMgr.scheduleEndChat(countDownMillis)
             }
+
         }
     }
 
@@ -1294,7 +1299,7 @@ class GroupChatFragment : Fragment() {
         val fileName = mChannel!!.name.replace(
             " ",
             "_"
-        ) + dateStr + ".3gp"
+        ) + dateStr + ".mp3"
 
 
         val dir = File(requireContext().externalCacheDir!!.absolutePath + "/voice_chats")
@@ -1305,9 +1310,9 @@ class GroupChatFragment : Fragment() {
         newFile = File(dir, fileName)
         mMediaRecorder = MediaRecorder()
         mMediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mMediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+        mMediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
         mMediaRecorder?.setOutputFile(newFile!!.absolutePath)
-        mMediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+        mMediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
 
 
         try {

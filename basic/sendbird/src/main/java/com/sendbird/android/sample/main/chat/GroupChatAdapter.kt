@@ -378,7 +378,8 @@ internal class GroupChatAdapter(private var mContext: Context) :
                 } else {
                     VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER
                 }
-            } else if (fileMessage.type.toLowerCase().startsWith("video/3gpp")) {
+            } else if (fileMessage.type.toLowerCase().startsWith("audio") ||
+                    fileMessage.type.toLowerCase().startsWith("video/3gpp")) {
                 //NOTE: THIS IS ACTUALLY AN AUDIO FILE
                 return if (fileMessage.getSender().userId == PreferenceUtils.getUserId()) {
                     VIEW_TYPE_FILE_MESSAGE_AUDIO_ME
