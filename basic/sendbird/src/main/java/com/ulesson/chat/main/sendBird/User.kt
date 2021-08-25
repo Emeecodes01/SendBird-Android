@@ -1,6 +1,5 @@
 package com.ulesson.chat.main.sendBird
 
-import android.util.Log
 import com.sendbird.syncmanager.SendBirdSyncManager
 import com.ulesson.chat.main.ConnectionManager
 import com.ulesson.chat.main.SyncManagerUtils
@@ -11,12 +10,14 @@ import com.ulesson.chat.network.userModel.ConnectUserRequest
 import com.ulesson.chat.network.userModel.UpdateUserRequest
 import com.ulesson.chat.network.userModel.UserResponse
 import com.ulesson.chat.utils.PreferenceUtils
+import com.ulesson.chat.utils.PushUtils
 
 class User {
 
     private val networkRequest = NetworkRequest()
 
     fun disconnectUser(logout: () -> Unit) {
+//        PushUtils.unregisterPushTokenForCurrentUser {}
         ConnectionManager.logout {
             logout()
         }
@@ -29,6 +30,8 @@ class User {
         errorResponse: (ErrorData) -> Unit,
         updateAccessToken: (String?) -> Unit
     ) {
+
+        com.ulesson.chat.utils.PreferenceUtils.saveUserData(userData)
 
         if (accessToken.isNullOrEmpty()) {
 
@@ -48,9 +51,9 @@ class User {
 
         } else {
 
-            if (ConnectionManager.isLogin() && PreferenceUtils.getUserId() != null && PreferenceUtils.getContext() != null) {
+            if (ConnectionManager.isLogin() && com.ulesson.chat.utils.PreferenceUtils.getUserId() != null && com.ulesson.chat.utils.PreferenceUtils.getContext() != null) {
 
-                SyncManagerUtils.setup(PreferenceUtils.getContext(), userData.user_id) { error ->
+                SyncManagerUtils.setup(com.ulesson.chat.utils.PreferenceUtils.getContext(), userData.user_id) { error ->
 
                     error?.let {
 

@@ -9,48 +9,58 @@ class StringUtils {
         @JvmStatic
         fun String.toMutableMap(): MutableMap<String, Any?> {
 
-            val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
+            val type = object : TypeToken<MutableMap<String, Any?>>() {}.type
 
-            val gsonString = try {
-                Gson().fromJson(this, type).toString()
-            } catch (ignore: Exception) {
-                this
-            }
-
-            return gsonString.replace("{", "").replace("}", "")
-                .split(",")
-                .map { it.split("=") }
-                .map { it.first().trim() to it.last().trim() }
-                .toMap().toMutableMap()
-        }
-
-        fun String.isActive(): Boolean {
-            val map = this.gsonToMap()
-            return map["active"] == "true"
-        }
-
-        private fun String.gsonToMap(): MutableMap<String, Any?> {
-            val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
             return try {
-                Gson().fromJson(this, type).toString().toMutableMap()
+                Gson().fromJson(this, type)
             } catch (ignore: Exception) {
-                this.toMutableMap()
+                this.replace("{", "").replace("}", "")
+                    .split(",")
+                    .map { it.split("=") }
+                    .map { it.first().trim() to it.last().trim() }
+                    .toMap().toMutableMap()
             }
+
+        }
+
+        fun String.pendingChatType(): Boolean {
+            val map = this.toMutableMap()
+            return (map["active"] == "pending" && map["newVersion"] != null)
+        }
+
+        fun String.activeChatType(): Boolean {
+            val map = this.toMutableMap()
+            return (map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)
+        }
+
+    }
+
+    fun String.chatType(): ChatType {
+
+        val map = this.toMutableMap()
+        return if ((map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)) {
+            ChatType.Active
+        } else if (map["active"] == "false" || map["active"] == "past") {
+            ChatType.Past
+        } else if (map["active"] == "pending") {
+            ChatType.PendingChat
+        } else {
+            ChatType.PendingQuestion
         }
     }
 
-    private fun String.gsonToMap(): MutableMap<String, Any?> {
-        val type = object : TypeToken<HashMap<String, Any?>>() {}.rawType
-        return try {
-            Gson().fromJson(this, type).toString().toMutableMap()
-        } catch (ignore: Exception) {
-            this.toMutableMap()
-        }
-    }
+    fun Map<String, Any?>.chatType(): ChatType {
 
-    fun String.isActive(): Boolean {
-        val map = this.gsonToMap().toMutableMap()
-        return map["active"] == "true"
+        val map = this
+        return if ((map["active"] == "active" && map["newVersion"] != null) || (map["active"] == "true" && map["newVersion"] == null)) {
+            ChatType.Active
+        } else if (map["active"] == "false" || map["active"] == "past") {
+            ChatType.Past
+        } else if (map["active"] == "pending") {
+            ChatType.PendingChat
+        } else {
+            ChatType.PendingQuestion
+        }
     }
 
 }

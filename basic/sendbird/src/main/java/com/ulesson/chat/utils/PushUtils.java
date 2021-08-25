@@ -11,9 +11,20 @@ public class PushUtils {
         registerPushTokenForCurrentUser(null);
     }
 
+    public static void refreshPushTokenForCurrentUser() {
+        refreshPushTokenForCurrentUser(null);
+    }
+
     public static void registerPushTokenForCurrentUser(SendBird.RegisterPushTokenWithStatusHandler handler) {
         MyFirebaseMessagingService.getPushToken(pushToken -> {
             Log.d("Token", "++ pushToken : " + pushToken);
+            SendBird.registerPushTokenForCurrentUser(pushToken, handler);
+        });
+    }
+
+    public static void refreshPushTokenForCurrentUser(SendBird.RegisterPushTokenWithStatusHandler handler) {
+        MyFirebaseMessagingService.refreshPushToken(pushToken -> {
+            Log.d("okh", "++ pushToken : " + pushToken);
             SendBird.registerPushTokenForCurrentUser(pushToken, handler);
         });
     }

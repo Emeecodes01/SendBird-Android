@@ -3,7 +3,9 @@ package com.ulesson.chat.utils
 import android.content.Context
 import android.os.CountDownTimer
 import android.os.SystemClock
+import android.util.Log
 import android.widget.Chronometer
+import java.text.SimpleDateFormat
 import java.util.*
 
 class TimerUtils {
@@ -42,6 +44,7 @@ class TimerUtils {
         channelUrl: String,
         chatDuration: Int,
         isChannelCreate: Boolean,
+        startTime : String,
         countDownTime: (Int) -> Unit,
         timeOut: () -> Unit
     ) {
@@ -50,15 +53,24 @@ class TimerUtils {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
 
+        val startTimeFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
+            .parse(startTime)
+
+        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
+
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
         val currentSeconds = calendar.get(Calendar.SECOND)
 
         val currentTime = (currentHour * 3600) + (currentMinutes * 60) + currentSeconds
 
-        val endHour = currentHour + ((currentMinutes + chatDuration) / 60)
-        val endMinutes = (currentMinutes + chatDuration) % 60
-        val endTime = (endHour * 3600) + (endMinutes * 60) + (currentSeconds)
+        val startHour = startTimeFormat?.hours ?: 0
+        val startMinutes = startTimeFormat?.minutes ?: 0
+        val startSeconds = startTimeFormat?.seconds ?: 0
+
+        val endHour = startHour + ((startMinutes + chatDuration) / 60)
+        val endMinutes = (startMinutes + chatDuration) % 60
+        val endTime = (endHour * 3600) + (endMinutes * 60) + (startSeconds)
 
         when {
             PreferenceUtils.getEndTime()?.get(channelUrl) == null -> {
@@ -73,10 +85,8 @@ class TimerUtils {
                 timeOut()
             }
             else -> {
-
                 PreferenceUtils.getEndTime()?.get(channelUrl)?.let {
-
-                    if (it in (currentTime + 1) until endTime) {
+                    if (it in currentTime until endTime+1) {
                         countDownTime(it - currentTime)
                     } else {
                         PreferenceUtils.setEndTime(hashMapOf(channelUrl to -1))
@@ -89,8 +99,8 @@ class TimerUtils {
 
     }
 
-    fun updateChannelData(channelUrl: String) {
-        PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
+    fun removeChannelData(channelUrl: String) {
+        PreferenceUtils.removeTime(channelUrl)
     }
 
 }

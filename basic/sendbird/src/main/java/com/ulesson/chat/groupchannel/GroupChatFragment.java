@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -24,7 +25,6 @@ import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +56,7 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
 import com.sendbird.android.UserMessage;
 import com.sendbird.syncmanager.FailedMessageEventActionReason;
 import com.sendbird.syncmanager.MessageCollection;
@@ -68,6 +69,7 @@ import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.TutorActions;
 import com.ulesson.chat.utils.ChatGenericDialog;
+import com.ulesson.chat.utils.ChatType;
 import com.ulesson.chat.utils.CustomFontButton;
 import com.ulesson.chat.utils.FileUtils;
 import com.ulesson.chat.utils.MediaPlayerActivity;
@@ -112,6 +114,7 @@ public class GroupChatFragment extends Fragment {
     private static TutorActions tutorActionsChat;
     private static ChatActions tutorChatActions;
     private static Boolean channelCreate;
+    private static String channelCustomType;
     private static Boolean channelFinish;
     final MessageFilter mMessageFilter = new MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null);
     private final ChatGenericDialog uploadFileDialog =
@@ -247,11 +250,12 @@ public class GroupChatFragment extends Fragment {
     private View rootView;
     private File newFile;
 
-    public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
+    public static GroupChatFragment newInstance(@NonNull String channelUrl, Boolean isCreateChat, String customType, Boolean toFinish, @NonNull TutorActions tutorActions, @NonNull ChatActions chatActions) {
         GroupChatFragment groupChatFragment = new GroupChatFragment();
         tutorActionsChat = tutorActions;
         tutorChatActions = chatActions;
         channelCreate = isCreateChat;
+        channelCustomType = customType;
         channelFinish = toFinish;
         Bundle args = new Bundle();
         args.putString(GroupChannelListFragment.EXTRA_GROUP_CHANNEL_URL, channelUrl);
@@ -320,21 +324,68 @@ public class GroupChatFragment extends Fragment {
 
         createMessageCollection(mChannelUrl, (groupChannel, e) -> {
 
-            handleTimer(groupChannel);
+            try {
+                if (groupChannel != null) {
 
-            showTutorProfile(groupChannel);
+                    showTutorProfile(groupChannel);
 
-            if (channelCreate) {
-                sendDefaultMessage(groupChannel);
+                    if (channelCustomType.equalsIgnoreCase("tutorDefault")) {
+                        sendDefaultMessage(groupChannel);
+                    }
+
+                    sendMessage(groupChannel);
+
+                    tutorChatActions.chatReceived();
+
+                    checkChannel();
+
+                    checkActiveChat(groupChannel);
+                }
+            } catch (Exception ignore) {
             }
-
-            sendMessage(groupChannel);
-
-            tutorChatActions.chatReceived();
 
         });
 
         return rootView;
+    }
+
+    private void checkActiveChat(GroupChannel groupChannel) {
+
+        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+
+        if (new StringUtils().chatType(questionMap) == ChatType.Active) {
+
+            String inSession = (String) questionMap.get("inSession");
+
+            if (inSession != null && inSession.equals("true")) {
+                handleTimer(groupChannel.getData());
+            }
+        } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
+            chatStatus(false);
+        }
+    }
+
+    private void initializeViews(View rootView) {
+        mProfileImage = rootView.findViewById(R.id.profile_image);
+        mProfileLayout = rootView.findViewById(R.id.profile_layout);
+        mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
+        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
+        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
+        mUserName = rootView.findViewById(R.id.userName);
+        countdownTxt = rootView.findViewById(R.id.countdownTxt);
+        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
+        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
+        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
+        mSendMessage = rootView.findViewById(R.id.send_message_btn);
+        button_voice = rootView.findViewById(R.id.button_voice);
+        icVoice = rootView.findViewById(R.id.ic_voice);
+        icVoice1 = rootView.findViewById(R.id.ic_voice1);
+        icVoice2 = rootView.findViewById(R.id.ic_voice2);
+        chronometer = rootView.findViewById(R.id.chronometer);
+        cancelRecord = rootView.findViewById(R.id.cancel_record_txt);
+        recordGroup = rootView.findViewById(R.id.record_group);
+        textGroup = rootView.findViewById(R.id.text_group);
+        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
     }
 
     private void onTyping() {
@@ -375,41 +426,16 @@ public class GroupChatFragment extends Fragment {
         });
     }
 
-    private void initializeViews(View rootView) {
-        mProfileImage = rootView.findViewById(R.id.profile_image);
-        mProfileLayout = rootView.findViewById(R.id.profile_layout);
-        mchatBoxLayout = rootView.findViewById(R.id.layout_group_chat_chatbox);
-        mRootLayout = rootView.findViewById(R.id.layout_group_chat_root);
-        mRecyclerView = rootView.findViewById(R.id.recycler_group_chat);
-        mUserName = rootView.findViewById(R.id.userName);
-        countdownTxt = rootView.findViewById(R.id.countdownTxt);
-        toolbar_group_channel = rootView.findViewById(R.id.toolbar_group_channel);
-        mCurrentEventText = rootView.findViewById(R.id.text_group_chat_current_event);
-        mMessageEditText = rootView.findViewById(R.id.edittext_group_chat_message);
-        mSendMessage = rootView.findViewById(R.id.send_message_btn);
-        button_voice = rootView.findViewById(R.id.button_voice);
-        icVoice = rootView.findViewById(R.id.ic_voice);
-        icVoice1 = rootView.findViewById(R.id.ic_voice1);
-        icVoice2 = rootView.findViewById(R.id.ic_voice2);
-        chronometer = rootView.findViewById(R.id.chronometer);
-        cancelRecord = rootView.findViewById(R.id.cancel_record_txt);
-        recordGroup = rootView.findViewById(R.id.record_group);
-        textGroup = rootView.findViewById(R.id.text_group);
-        mUploadFileButton = rootView.findViewById(R.id.button_group_chat_upload);
-    }
-
     private void animateVoice(boolean animate) {
-        if (requireContext() != null) {
-            AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(requireContext(), R.animator.fade_animator);
-            if (animate) {
-                set.setTarget(icVoice);
-                set.setTarget(icVoice1);
-                set.setTarget(icVoice2);
-                set.start();
+        AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(requireContext(), R.animator.fade_animator);
+        if (animate) {
+            set.setTarget(icVoice);
+            set.setTarget(icVoice1);
+            set.setTarget(icVoice2);
+            set.start();
 
-            } else {
-                set.cancel();
-            }
+        } else {
+            set.cancel();
         }
     }
 
@@ -420,9 +446,31 @@ public class GroupChatFragment extends Fragment {
             Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
             String questionText = (String) questionMap.get("questionText");
             String questionUrl = (String) questionMap.get("questionUrl");
+            String questionUriPath = (String) questionMap.get("questionUri");
 
-            if (questionText != null && questionUrl != null && !questionUrl.isEmpty()) {
+            Uri mTempPhotoUri = null;
+
+            if (questionUrl != null && !questionUrl.isEmpty()) {
                 sendUserMessageWithImageUrl(questionText, questionUrl, groupChannel);
+            } else if (questionUriPath != null && !questionUriPath.isEmpty()) {
+
+                if (getActivity() != null) {
+
+                    File questionImage = new File(questionUriPath);
+
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        mTempPhotoUri = FileProvider.getUriForFile(getActivity().getBaseContext(), PreferenceUtils.getPackageName() + ".theprovider", questionImage);
+                    } else {
+                        mTempPhotoUri = Uri.fromFile(questionImage);
+                    }
+
+                    sendFileWithThumbnail(mTempPhotoUri, questionImage);
+                    if (questionText != null) {
+                        sendUserMessage(questionText, groupChannel);
+                    }
+
+                }
+
             } else {
                 sendUserMessage(questionText, groupChannel);
             }
@@ -435,59 +483,65 @@ public class GroupChatFragment extends Fragment {
     }
 
     private void showTutorProfile(GroupChannel groupChannel) {
-        Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
-        String tutorProfileUrl = (String) questionMap.get("tutorUrl");
 
-        RequestOptions options = new RequestOptions().transforms(new CircleCrop())
-                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                .placeholder(R.drawable.profile_thumbnail)
-                .error(R.drawable.profile_thumbnail);
+        if (groupChannel != null) {
 
-        if (getContext() != null) {
-            Glide.with(getContext()).load(tutorProfileUrl).apply(options)
-                    .into(mProfileImage);
+            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
+            if (questionMap != null) {
+
+                String tutorProfileUrl = (String) questionMap.get("tutorUrl");
+
+                RequestOptions options = new RequestOptions().transforms(new CircleCrop())
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .placeholder(R.drawable.profile_thumbnail)
+                        .error(R.drawable.profile_thumbnail);
+
+                if (getContext() != null && tutorProfileUrl != null) {
+                    Glide.with(getContext()).load(tutorProfileUrl).apply(options)
+                            .into(mProfileImage);
+                }
+
+                mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
+
+            }
         }
 
-        mProfileLayout.setOnClickListener(view -> tutorActionsChat.showTutorProfile(groupChannel.getMembers()));
     }
 
-    private void handleTimer(GroupChannel groupChannel) {
+    private void handleTimer(String channelData) {
 
-        if (new StringUtils().isActive(groupChannel.getData())) {
+        Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
+
+        String newVersion = (String) questionMap.get("newVersion");
+
+        ChatType chatType = new StringUtils().chatType(channelData);
+
+        if (chatType == ChatType.Active || chatType == ChatType.PendingChat) {
 
             countdownTxt.setVisibility(View.VISIBLE);
 
-            Map<String, Object> questionMap = StringUtils.toMutableMap(groupChannel.getData());
-
-            int chatDuration = 0;
-            try {
-                String chatDurationString = (String) questionMap.get("chatDuration");
-                if (chatDurationString != null) {
-                    chatDuration = Integer.parseInt(chatDurationString);
-                }
-            } catch (Exception ignore) {
-            }
-
-            new TimerUtils().getTime(mChannelUrl, chatDuration, channelCreate, (countDownTime) -> {
+            new TimerUtils().getTime(mChannelUrl, getChatDuration(questionMap), channelCreate, getStartTime(questionMap), (countDownTime) -> {
 
                 chatStatus(true);
 
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
 
-                countTime(countDownMinutes, countDownSeconds);
+                countTime(countDownMinutes, countDownSeconds, newVersion);
 
                 return Unit.INSTANCE;
 
             }, () -> {
                 chatStatus(false);
-                updateChat();
+                updateChat(newVersion);
                 return Unit.INSTANCE;
             });
         } else {
             chatStatus(false);
-            updateChat();
+            updateChat(newVersion);
         }
+
+        chatStatus(true);
 
     }
 
@@ -504,30 +558,34 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    private void updateChat() {
+    private void updateChat(String newVersion) {
         HashMap<String, Object> activeMap = new HashMap<>();
-        activeMap.put("active", "false");
+        if (newVersion != null) {
+            activeMap.put("active", "past");
+        } else {
+            activeMap.put("active", "false");
+        }
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
-            new TimerUtils().updateChannelData(updatedGroupChannel.getUrl());
+            new TimerUtils().removeChannelData(updatedGroupChannel.getUrl());
             return Unit.INSTANCE;
         });
     }
 
     @SuppressLint("SetTextI18n")
-    private void countTime(long minute, long seconds) {
+    private void countTime(long minute, long seconds, String newVersion) {
         if (minute >= 0) {
 
             new TimerUtils().timer(seconds, (l) -> {
                 countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l));
                 return Unit.INSTANCE;
             }, () -> {
-                countTime(minute - 1, 59);
+                countTime(minute - 1, 59, newVersion);
                 return Unit.INSTANCE;
             });
 
         } else {
             chatStatus(false);
-            updateChat();
+            updateChat(newVersion);
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
             }
@@ -570,7 +628,7 @@ public class GroupChatFragment extends Fragment {
 
     private void sendAudio() {
         Uri uri = FileProvider.getUriForFile(getContext(), PreferenceUtils.getPackageName() + ".theprovider", newFile);
-        sendFileWithThumbnail(uri);
+        sendFileWithThumbnail(uri, null);
     }
 
     private void initVoiceRecorder() {
@@ -637,6 +695,8 @@ public class GroupChatFragment extends Fragment {
             mChatAdapter.setContext(getActivity());
         }
 
+        mRecyclerView.setAdapter(mChatAdapter);
+
         SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
             @Override
             public void onReconnectStarted() {
@@ -663,9 +723,64 @@ public class GroupChatFragment extends Fragment {
             }
         });
 
+        checkConnection();
+        checkChannel();
+
+    }
+
+    private void checkConnection() {
+        SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
+            @Override
+            public void onReconnectStarted() {
+            }
+
+            @Override
+            public void onReconnectSucceeded() {
+
+                if (mMessageCollection != null) {
+                    if (mLayoutManager.findFirstVisibleItemPosition() <= 0) {
+                        mMessageCollection.fetchAllNextMessages((hasMore, e) -> {
+                        });
+                    }
+
+                    if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
+                        mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, (hasMore, e) -> {
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onReconnectFailed() {
+            }
+        });
+    }
+
+    private void checkChannel() {
         SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
             @Override
             public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+
+            }
+
+            @Override
+            public void onChannelChanged(BaseChannel channel) {
+                Log.d("okh", " data " + channel.getData());
+                super.onChannelChanged(channel);
+            }
+
+            @Override
+            public void onUserJoined(GroupChannel channel, User user) {
+                if (channel.getMemberCount() == 2) {
+                    handleTimer(channel.getData());
+                    checkConnection();
+                    updateActionBarTitle();
+                    showTutorProfile(channel);
+                } else if (channel.getMemberCount() > 2) {
+                    channel.banUserWithUserId(user.getUserId(), "Another tutor has accepted this question", 100000, e -> {
+                    });
+                }
+                super.onUserJoined(channel, user);
             }
 
             @Override
@@ -706,7 +821,37 @@ public class GroupChatFragment extends Fragment {
                 }
             }
         });
+    }
 
+
+    private int getChatDuration(Map<String, Object> questionMap) {
+
+        int chatDuration = 0;
+
+        try {
+            String chatDurationString = (String) questionMap.get("chatDuration");
+            if (chatDurationString != null) {
+                chatDuration = Integer.parseInt(chatDurationString);
+            }
+        } catch (Exception ignore) {
+        }
+
+        return chatDuration;
+    }
+
+    private String getStartTime(Map<String, Object> questionMap) {
+
+        String startTime = "0";
+
+        try {
+            String startTimeString = (String) questionMap.get("startTime");
+            if (startTimeString != null) {
+                startTime = startTimeString;
+            }
+        } catch (Exception ignore) {
+        }
+
+        return startTime;
     }
 
 
@@ -747,7 +892,7 @@ public class GroupChatFragment extends Fragment {
         SendBird.setAutoBackgroundDetection(true);
 
         if (requestCode == MEDIA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            sendFileWithThumbnail(data.getData());
+            sendFileWithThumbnail(data.getData(), null);
             uploadFileDialog.dismiss();
         }
 
@@ -759,7 +904,7 @@ public class GroupChatFragment extends Fragment {
                 return;
             }
 
-            sendFileWithThumbnail(data.getData());
+            sendFileWithThumbnail(data.getData(), null);
         }
     }
 
@@ -777,11 +922,15 @@ public class GroupChatFragment extends Fragment {
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         if (mLayoutManager.findFirstVisibleItemPosition() == 0) {
-                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
+                            if (mMessageCollection != null) {
+                                mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.NEXT, null);
+                            }
                         }
 
                         if (mLayoutManager.findLastVisibleItemPosition() == mChatAdapter.getItemCount() - 1) {
-                            mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
+                            if (mMessageCollection != null) {
+                                mMessageCollection.fetchSucceededMessages(MessageCollection.Direction.PREVIOUS, null);
+                            }
                         }
 
                     }
@@ -835,7 +984,7 @@ public class GroupChatFragment extends Fragment {
             @Override
             public void onUserMessageItemLongClick(UserMessage message, int position) {
                 try {
-                    if (message.getSender().getUserId() != null && new StringUtils().isActive(mChannel.getData())) {
+                    if (message.getSender().getUserId() != null && new StringUtils().chatType(mChannel.getData()) == ChatType.Active) {
                         if (message.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                             showMessageOptionsDialog(message, position);
                         }
@@ -996,7 +1145,7 @@ public class GroupChatFragment extends Fragment {
                             mChannel.resendUserMessage((UserMessage) message, (userMessage, e) -> mMessageCollection.handleSendMessageResponse(userMessage, e));
                         } else if (message instanceof FileMessage) {
                             Uri uri = mChatAdapter.getTempFileMessageUri(message);
-                            sendFileWithThumbnail(uri);
+                            sendFileWithThumbnail(uri, null);
                         }
                         mChatAdapter.removeFailedMessage(message);
                     }
@@ -1178,7 +1327,6 @@ public class GroupChatFragment extends Fragment {
             title = TextUtils.getGroupChannelTitle(mChannel);
         }
         mUserName.setText(title);
-
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -1187,54 +1335,51 @@ public class GroupChatFragment extends Fragment {
             return;
         }
 
-        new WebUtils.UrlPreviewAsyncTask() {
-            @Override
-            protected void onPostExecute(UrlPreviewInfo info) {
-                if (mChannel == null) {
-                    return;
-                }
-                if (url != null) {
+        try {
 
-                    UserMessage tempUserMessage = null;
-                    BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
-                        if (e != null) {
-                            // Error!
-                            Log.e(LOG_TAG, e.toString());
-                            if (getActivity() != null) {
-                                Toast.makeText(
-                                        getActivity(),
-                                        "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
-                                        .show();
+            new WebUtils.UrlPreviewAsyncTask() {
+                @Override
+                protected void onPostExecute(UrlPreviewInfo info) {
+                    if (mChannel == null) {
+                        return;
+                    }
+                    if (url != null) {
+
+                        UserMessage tempUserMessage = null;
+                        BaseChannel.SendUserMessageHandler handler = (userMessage, e) -> {
+                            if (e != null) {
+                                // Error!
+                                Log.e(LOG_TAG, e.toString());
+                                if (getActivity() != null) {
+                                    Toast.makeText(
+                                            getActivity(),
+                                            "Send failed with error " + e.getCode() + ": " + e.getMessage(), Toast.LENGTH_SHORT)
+                                            .show();
+                                }
+                                mChatAdapter.markMessageFailed(userMessage);
+                                return;
                             }
-                            mChatAdapter.markMessageFailed(userMessage);
-                            return;
+
+                            mMessageCollection.handleSendMessageResponse(userMessage, e);
+                        };
+
+                        try {
+                            tempUserMessage = mChannel.sendUserMessage(text, url, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
+                        } catch (Exception e) {
+                            // Sending a message without URL preview information.
+                            tempUserMessage = mChannel.sendUserMessage(text, handler);
                         }
 
-                        mMessageCollection.handleSendMessageResponse(userMessage, e);
-                    };
-
-                    try {
-                        tempUserMessage = mChannel.sendUserMessage(text, url, GroupChatAdapter.URL_PREVIEW_CUSTOM_TYPE, handler);
-                    } catch (Exception e) {
-                        // Sending a message without URL preview information.
-                        tempUserMessage = mChannel.sendUserMessage(text, handler);
-                    }
-
-                    if (mMessageCollection != null) {
-                        mMessageCollection.appendMessage(tempUserMessage);
+                        if (mMessageCollection != null) {
+                            mMessageCollection.appendMessage(tempUserMessage);
+                        }
                     }
                 }
-            }
-        }.execute(url);
+            }.execute(url);
+        } catch (Exception ignore) {
 
-    }
-
-    private void refresh(GroupChannel groupChannel, String text) {
-        if (groupChannel != null) {
-
-        } else {
-            Log.d("okh", "no channel");
         }
+
     }
 
     private void sendUserMessage(String text, GroupChannel groupChannel) {
@@ -1283,7 +1428,7 @@ public class GroupChatFragment extends Fragment {
         }
     }
 
-    private void sendFileWithThumbnail(Uri uri) {
+    private void sendFileWithThumbnail(Uri uri, File defaultFile) {
         if (mChannel == null) {
             return;
         }
@@ -1317,6 +1462,15 @@ public class GroupChatFragment extends Fragment {
             BaseChannel.SendFileMessageHandler fileMessageHandler = (fileMessage, e) -> {
                 mMessageCollection.handleSendMessageResponse(fileMessage, e);
                 mMessageCollection.fetchAllNextMessages(null);
+
+                if (defaultFile != null) {
+                    try {
+                        defaultFile.delete();
+                    } catch (Exception ignore) {
+
+                    }
+
+                }
             };
 
             // Send image with thumbnails in the specified dimensions
@@ -1327,6 +1481,7 @@ public class GroupChatFragment extends Fragment {
             if (mMessageCollection != null) {
                 mMessageCollection.appendMessage(tempFileMessage);
             }
+
         }
     }
 

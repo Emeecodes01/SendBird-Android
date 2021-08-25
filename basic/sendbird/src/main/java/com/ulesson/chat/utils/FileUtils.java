@@ -241,13 +241,33 @@ public class FileUtils {
         return newFile;
     }
 
-    private static long copy(InputStream input, OutputStream output) throws IOException {
+    public static void copy(File src, File dst) {
+        try (InputStream in = new FileInputStream(src)) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static long copy(InputStream input, OutputStream output) {
         long count = 0;
-        int n;
+        int n = 0;
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        while (EOF != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
-            count += n;
+        while (true) {
+            try {
+                if (!(EOF != (n = input.read(buffer)))) break;
+                output.write(buffer, 0, n);
+                count += n;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return count;
     }

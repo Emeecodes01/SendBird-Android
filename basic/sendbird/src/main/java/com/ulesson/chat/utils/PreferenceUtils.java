@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ulesson.chat.main.model.Question;
+import com.ulesson.chat.main.model.UserData;
+import com.ulesson.chat.network.userModel.ConnectUserRequest;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -19,6 +21,8 @@ public class PreferenceUtils {
     private static final String PREFERENCE_KEY_ACCESS_TOKEN = "accessToken";
     private static final String PENDING_QUESTIONS = "pendingQuestions";
     private static final String PREFERENCE_KEY_NICKNAME = "nickname";
+    private static final String PREFERENCE_KEY_USER_DATA = "userData";
+    private static final String PREFERENCE_CHAT_COUNT = "chatCount";
     private static final String PREFERENCE_COUNTDOWN_TIME = "countdown";
     private static final String PREFERENCE_AUDIO_FILE = "audioFile";
     private static final String PREFERENCE_KEY_CONNECTED = "connected";
@@ -136,6 +140,28 @@ public class PreferenceUtils {
         Type type = new TypeToken<HashMap<String, Integer>>() {
         }.getType();
         return gson.fromJson(getSharedPreferences().getString(PREFERENCE_COUNTDOWN_TIME, ""), type);
+    }
+
+    public static void saveUserData(ConnectUserRequest userData) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(PREFERENCE_KEY_USER_DATA, new Gson().toJson(userData)).apply();
+    }
+
+    @Nullable
+    public static ConnectUserRequest getUserData() {
+        Type type = new TypeToken<ConnectUserRequest>() {
+        }.getType();
+        return gson.fromJson(getSharedPreferences().getString(PREFERENCE_KEY_USER_DATA, ""), type);
+    }
+
+
+    public static void removeTime(String channelUrl){
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        HashMap<String, Integer> endTime = getEndTime();
+        if (endTime != null) {
+            endTime.remove(channelUrl);
+        }
+        editor.putString(PREFERENCE_COUNTDOWN_TIME, gson.toJson(endTime)).apply();
     }
 
     public static void setEndTime(HashMap<String, Integer> endTimeMap) {

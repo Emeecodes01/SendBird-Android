@@ -29,6 +29,7 @@ import com.ulesson.chat.main.model.Question;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
+import com.ulesson.chat.utils.ChatType;
 import com.ulesson.chat.utils.CustomFontTextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -66,9 +67,10 @@ public class GroupAllChatListFragment extends Fragment {
                         case INSERT:
                             mChannelListAdapter.clearMap();
                             if (getArguments() != null) {
-                                String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
+                                String chatType = getArguments().getString(CHAT_TYPE);
                                 List<GroupChannel> groupChannelList = mChannelListAdapter.insertChannels(list, channelCollection.getQuery().getOrder(), chatType);
                                 groupChannelEmpty = groupChannelList.isEmpty();
+                                mChannelListAdapter.notifyDataSetChanged();
                                 setUpChatView(groupChannelEmpty);
                             }
                             break;
@@ -106,7 +108,7 @@ public class GroupAllChatListFragment extends Fragment {
         tutorActionsChannel = tutorActions;
         chatActionsChannel = chatActions;
         Bundle args = new Bundle();
-        args.putString(GroupAllChatListFragment.CHAT_TYPE, chatType.name());
+        args.putString(CHAT_TYPE, chatType.name());
         fragment.setArguments(args);
 
         return fragment;
@@ -132,8 +134,9 @@ public class GroupAllChatListFragment extends Fragment {
 
         if (getArguments() != null) {
             String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
-            noChatTxt.setText(getString(R.string.chat_status_message, chatType));
-            noChatDetailsTxt.setText(getString(R.string.chat_status_detail, chatType.toLowerCase()));
+            String chatTypeName = chatType.replace("Chat", "").replace("Question", "");
+            noChatTxt.setText(getString(R.string.chat_status_message, chatTypeName));
+            noChatDetailsTxt.setText(getString(R.string.chat_status_detail, chatTypeName.toLowerCase()));
         }
 
         mSwipeRefresh.setOnRefreshListener(this::refresh);
@@ -224,7 +227,7 @@ public class GroupAllChatListFragment extends Fragment {
     }
 
     void enterGroupChannel(String channelUrl) {
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
                 tutorActionsChannel.showTutorRating(questionMap);
@@ -294,12 +297,12 @@ public class GroupAllChatListFragment extends Fragment {
                 mChannelListAdapter.notifyDataSetChanged();
             });
 
-            if (getArguments() != null) {
-                String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
-                if (chatType.equalsIgnoreCase(GroupAllChatListFragment.ChatType.Pending.name())) {
-                    chatActionsChannel.getPendingQuestions();
-                }
-            }
+//            if (getArguments() != null) {
+//                String chatType = getArguments().getString(GroupAllChatListFragment.CHAT_TYPE);
+//                if (chatType.equalsIgnoreCase(ChatType.PendingQuestion.name())) {
+//                    chatActionsChannel.getPendingQuestions();
+//                }
+//            }
 
         } catch (Exception e) {
 
@@ -324,12 +327,6 @@ public class GroupAllChatListFragment extends Fragment {
             mRecyclerView.setVisibility(View.VISIBLE);
             mRecyclerView.smoothScrollToPosition(0);
         }
-    }
-
-    enum ChatType {
-        Pending,
-        Active,
-        Past,
     }
 
 }

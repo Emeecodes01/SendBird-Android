@@ -106,7 +106,8 @@ public class ImageUtils {
     public static void displayRoundCornerImageFromUrl(final Context context, final String url, final ImageView imageView) {
         RequestOptions myOptions = new RequestOptions()
                 .centerCrop()
-                .dontAnimate();
+                .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC);
 
         Glide.with(context)
                 .asBitmap()

@@ -149,7 +149,7 @@ public class WebUtils {
                             result.get("image")
                     );
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

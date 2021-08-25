@@ -20,17 +20,18 @@ import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.sendbird.android.SendBird;
 import com.ulesson.chat.R;
 import com.ulesson.chat.groupchannel.GroupChannelActivity;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -76,29 +77,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
-            public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                if (!task.isSuccessful()) {
-                    Log.w(TAG, "getInstanceId failed", task.getException());
-                    return;
-                }
-
-                // Get new Instance ID token
-                InstanceIdResult result = task.getResult();
-                if (result != null) {
-                    String token = result.getToken();
-                    pushToken.set(token);
-                    listner.onPushTokenReceived(token);
-                }
+            public void onComplete(@NonNull @NotNull Task<String> task) {
+                Log.d("okh", task.getResult().toString());
+                pushToken.set(token);
+                listner.onPushTokenReceived(token);
             }
         });
+
+    }
+
+    public static void refreshPushToken(ITokenResult listner) {
+
+         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+
+             listner.onPushTokenReceived(task.getResult());
+         });
+
     }
 
     @Override
     public void onNewToken(String token) {
-        Log.i(TAG, "onNewToken(" + token + ")");
-
+        Log.d("okh", "onNewToken(" + token + ")");
         sendRegistrationToServer(token);
     }
 
@@ -111,6 +112,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             pushToken.set(token);
         });
     }
+
     // [END receive_message]
 
     /**

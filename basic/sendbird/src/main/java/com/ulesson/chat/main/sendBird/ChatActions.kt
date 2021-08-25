@@ -8,3 +8,7 @@ interface ChatActions {
     fun getPendingQuestions()
 }
 
+interface PendingChats {
+    fun chatPending(pendingCount : Int, activeCount : Int, chatActions: ChatActions)
+}
+

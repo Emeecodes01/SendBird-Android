@@ -18,6 +18,7 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelListQuery;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
 import com.sendbird.syncmanager.ChannelCollection;
 import com.sendbird.syncmanager.ChannelEventAction;
 import com.sendbird.syncmanager.handler.ChannelCollectionHandler;
@@ -29,12 +30,12 @@ import com.ulesson.chat.main.sendBird.Chat;
 import com.ulesson.chat.main.sendBird.ChatActions;
 import com.ulesson.chat.main.sendBird.Connect;
 import com.ulesson.chat.main.sendBird.TutorActions;
+import com.ulesson.chat.main.sendBird.User;
 import com.ulesson.chat.utils.CustomFontButton;
-import com.ulesson.chat.utils.TimerUtils;
+import com.ulesson.chat.utils.PreferenceUtils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
     public static final String EXTRA_GROUP_CHANNEL_URL = "GROUP_CHANNEL_URL";
     public static final String HOST_USER_DATA = "HOST_USER_DATA";
+    public static final String NEW_VERSION = "newVersion";
 
     private static final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHANNEL_LIST";
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_LIST";
@@ -104,6 +106,18 @@ public class GroupChannelListFragment extends BaseFragment {
 
                         groupChannelEmpty = list.isEmpty();
 
+                        mChannelListAdapter.notifyDataSetChanged();
+
+                        if (groupChannelEmpty) {
+                            mRecyclerView.setVisibility(View.GONE);
+                            noChatCard.setVisibility(View.VISIBLE);
+                        } else {
+                            noChatCard.setVisibility(View.GONE);
+                            seeAllBtn.setVisibility(View.VISIBLE);
+                            mRecyclerView.setVisibility(View.VISIBLE);
+                            mRecyclerView.smoothScrollToPosition(0);
+                        }
+
                         break;
 
                     case UPDATE:
@@ -130,14 +144,16 @@ public class GroupChannelListFragment extends BaseFragment {
         }
     };
     private UserData hostUserData;
+    private Boolean newVersion;
     private ChannelCollection mChannelCollection;
 
-    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions) {
+    public static GroupChannelListFragment newInstance(UserData hostUserData, TutorActions tutorActions, ChatActions chatActions, Boolean newVersion) {
         GroupChannelListFragment fragment = new GroupChannelListFragment();
         Bundle args = new Bundle();
         tutorActionsChannel = tutorActions;
         chatActionsChannel = chatActions;
-        args.putParcelable(GroupChannelListFragment.HOST_USER_DATA, hostUserData);
+        args.putParcelable(HOST_USER_DATA, hostUserData);
+        args.putBoolean(NEW_VERSION, newVersion);
         fragment.setArguments(args);
         return fragment;
     }
@@ -145,7 +161,8 @@ public class GroupChannelListFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            hostUserData = getArguments().getParcelable(GroupChannelListFragment.HOST_USER_DATA);
+            hostUserData = getArguments().getParcelable(HOST_USER_DATA);
+            newVersion = getArguments().getBoolean(NEW_VERSION);
         }
 
         super.onCreate(savedInstanceState);
@@ -168,10 +185,19 @@ public class GroupChannelListFragment extends BaseFragment {
         mSwipeRefresh.setOnRefreshListener(() -> {
             mSwipeRefresh.setRefreshing(true);
             refresh();
+
+            UserData loginData = new UserData(PreferenceUtils.getUserId(), PreferenceUtils.getNickname(), PreferenceUtils.getAccessToken());
+
+            new Connect().login(loginData, new SendBird.ConnectHandler() {
+                @Override
+                public void onConnected(com.sendbird.android.User user, SendBirdException e) {
+
+                }
+            });
         });
 
         if (getActivity() != null) {
-            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData, tutorActionsChannel, chatActionsChannel));
+            seeAllBtn.setOnClickListener(view -> new Chat().showAllChat(getActivity(), android.R.id.content, hostUserData, tutorActionsChannel, chatActionsChannel, newVersion));
             mChannelListAdapter = new GroupChannelListAdapter(getActivity());
         }
 
@@ -258,8 +284,7 @@ public class GroupChannelListFragment extends BaseFragment {
 
     void enterGroupChannel(String channelUrl) {
 
-
-        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, false, new TutorActions() {
+        GroupChatFragment fragment = GroupChatFragment.newInstance(channelUrl, false, "",false, new TutorActions() {
 
             @Override
             public void showTutorRating(@NotNull Map<String, Object> questionMap) {
@@ -296,7 +321,23 @@ public class GroupChannelListFragment extends BaseFragment {
 
     }
 
-    private void refresh() {
+    public void refresh() {
+
+        if (PreferenceUtils.getUserData() != null) {
+            new User().connectUser(PreferenceUtils.getUserData(), PreferenceUtils.getAccessToken(),
+                    (userResponse) -> {
+                        loadChannels();
+                        return Unit.INSTANCE;
+                    },
+                    (errorData) -> Unit.INSTANCE, (updateAccessToken) -> Unit.INSTANCE);
+        } else {
+            loadChannels();
+        }
+
+
+    }
+
+    private void loadChannels() {
 
         try {
 
@@ -339,7 +380,6 @@ public class GroupChannelListFragment extends BaseFragment {
                 }
             }
         }
-
     }
 
 }

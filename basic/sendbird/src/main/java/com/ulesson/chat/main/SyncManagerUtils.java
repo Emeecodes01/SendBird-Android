@@ -16,6 +16,7 @@ import com.sendbird.syncmanager.handler.CompletionHandler;
 import java.util.List;
 
 public class SyncManagerUtils {
+
     public static void setup(Context context, String userId, CompletionHandler handler) {
         SendBirdSyncManager.Options options = new SendBirdSyncManager.Options.Builder()
                 .setMessageResendPolicy(SendBirdSyncManager.MessageResendPolicy.AUTOMATIC)
