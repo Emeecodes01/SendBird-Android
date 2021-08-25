@@ -580,16 +580,13 @@ class GroupChatFragment : Fragment() {
 
             val elapse = nowMillis.time - date.time
             val elapseMins = TimeUnit.MILLISECONDS.toMinutes(elapse)
-            var chatDuration = (map["chatDuration"] ?: "").toInt()
-//            chatDuration = if (chatDuration is Double) {
-//                chatDuration.toInt()
-//            }else {
-//                chatDuration.toString().toInt()
-//            }
-            //val chatDuration = map["chatDuration"].toString().toInt()
-            val countDown = chatDuration - abs(elapseMins)
+            val chatDuration = (map["chatDuration"] ?: "").toInt()
+            val chatDurationMillis = TimeUnit.MINUTES.toMillis(chatDuration.toLong())
 
-            val countDownMillis = TimeUnit.MINUTES.toMillis(countDown)
+
+            val countDown = chatDurationMillis - abs(elapse)
+
+            val countDownMillis = /*TimeUnit.MINUTES.toMillis(countDown)*/ countDown
 
             //use this value for the timer
             val timerMillis = TimeUnit.MINUTES.toMillis(chatDuration.toLong()) - abs(elapse)

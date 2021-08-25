@@ -43,7 +43,7 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
                 .connectUserToSendBird(requireContext(), userData,
                     onConnected = {
                         val direct = FragmentDecisionDirections.actionFragmentDecisionToChatNav(
-                            "sendbird_group_channel_99500281_e1ef486242282e7a8def5446c6b386c3978c8046",
+                            "sendbird_group_channel_98416866_1260ea52aaaea4da76d695d9afebc2cf867ee14d",
                             GroupChatFragment.DASHBOARD, "fragdecsion://fragment_start"
                         )
                         findNavController().navigate(direct)
