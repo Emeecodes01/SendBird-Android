@@ -94,4 +94,4 @@ dependencies {
     //workmanager
     implementation "androidx.work:work-runtime:2.4.0"
 }
-apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'
