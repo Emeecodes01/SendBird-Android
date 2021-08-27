@@ -641,7 +641,7 @@ public class GroupChatFragment extends Fragment {
         String dateStr = simpleDateFormat.format(date);
 
         String fileName = mChannel.getName().replace(" ",
-                "_") + dateStr + ".mp3";
+                "_") + dateStr + ".3gp";
 
         File dir = new File(getContext().getExternalCacheDir().getAbsolutePath() + "/voice_chats");
         if (!dir.exists()) {
@@ -652,9 +652,9 @@ public class GroupChatFragment extends Fragment {
 
         mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mMediaRecorder.setOutputFile(newFile.getAbsolutePath());
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
             mMediaRecorder.prepare();
