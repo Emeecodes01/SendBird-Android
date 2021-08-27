@@ -18,8 +18,8 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
     val endChatVM: EndChatSessionViewModel by activityViewModels()
 
     private val userData = UserData(
-        "Tutor-3", "Adenuga Ayannuga",
-        "69f50e8dd79e08b223ab94d948a066a99e1157de"
+        "Tutor-8", "Oludotun Ayannuga",
+        "9ef4dde4258ef92e3983a53f0b842fdc395552a1"
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,7 +43,7 @@ class FragmentDecision : Fragment(R.layout.fragment_decision) {
                 .connectUserToSendBird(requireContext(), userData,
                     onConnected = {
                         val direct = FragmentDecisionDirections.actionFragmentDecisionToChatNav(
-                            "sendbird_group_channel_98416866_1260ea52aaaea4da76d695d9afebc2cf867ee14d",
+                            "sendbird_group_channel_98416866_c2242dc0e9d8c43fae139b13be8fa73cdb9399c7",
                             GroupChatFragment.DASHBOARD, "fragdecsion://fragment_start"
                         )
                         findNavController().navigate(direct)

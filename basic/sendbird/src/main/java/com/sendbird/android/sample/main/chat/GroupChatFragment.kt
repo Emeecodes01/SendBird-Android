@@ -18,7 +18,6 @@ import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
 import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
@@ -44,7 +43,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.*
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 //import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -64,7 +62,6 @@ import com.sendbird.syncmanager.MessageCollection
 import com.sendbird.syncmanager.MessageEventAction
 import com.sendbird.syncmanager.MessageFilter
 import com.sendbird.syncmanager.handler.CompletionHandler
-import com.sendbird.syncmanager.handler.MessageCollectionCreateHandler
 import com.sendbird.syncmanager.handler.MessageCollectionHandler
 import kotlinx.android.synthetic.main.fragment_group_chat.*
 import org.json.JSONException
@@ -72,7 +69,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 
 class GroupChatFragment : Fragment() {
@@ -120,6 +116,8 @@ class GroupChatFragment : Fragment() {
     private var cancelRecordTv: TextView? = null
     private var newFile: File? = null
     private var timerStarted: Boolean = false
+
+    private var chatTimerManager: ChatTimerManager? = null
 
     val mMessageFilter = MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null)
 
@@ -284,6 +282,8 @@ class GroupChatFragment : Fragment() {
 
         createMessageCollection(mChannelUrl)
 
+        chatTimerManager = context?.let { ChatTimerManager(it) }
+
         return rootView
     }
 
@@ -442,9 +442,9 @@ class GroupChatFragment : Fragment() {
         }
     }
 
-    private fun countTime(minute: Long, timerMillis: Long) {
+    private fun countTime(questionId: Int, minute: Long, timerMillis: Long) {
         if (minute != 0L) {
-            timer(minute, timerMillis)
+            timer(questionId, minute, timerMillis)
         } else {
             activity?.finish()
         }
@@ -455,7 +455,7 @@ class GroupChatFragment : Fragment() {
         }
     }
 
-    private fun timer(minute: Long, millis: Long) {
+    private fun timer(questionId: Int, minute: Long, millis: Long) {
         if (countDownTimer != null) {
             countDownTimer?.cancel()
         }
@@ -463,6 +463,9 @@ class GroupChatFragment : Fragment() {
 
         countDownTimer = object : CountDownTimer(millis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+
+                chatTimerManager?.saveTimeUntilFinished(questionId, millisUntilFinished)
+                chatTimerManager?.saveTimeConsolidation(questionId)
 
                 val mins = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
                 if (mins <= 4 && !viewOnly) {
@@ -478,6 +481,7 @@ class GroupChatFragment : Fragment() {
                         TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
                     )
                 )
+
 
                 Log.i("TIME: ", timeStr)
 
@@ -549,7 +553,7 @@ class GroupChatFragment : Fragment() {
      */
     private fun extractAndStartTimer() {
         mChannel?.let { channel ->
-
+            /*
             val map = channel.data.toMutableMap()
             val questionId = (map["questionId"] ?: "").toInt()
 
@@ -594,6 +598,38 @@ class GroupChatFragment : Fragment() {
 
             if (countDownMillis > 0) {
                 shMgr.scheduleEndChat(countDownMillis)
+            }
+            */
+
+
+            val map = channel.data.toMutableMap()
+            val questionId = (map["questionId"] ?: "").toInt()
+
+
+            val shMgr = ScheduleManager.getInstance(SessionStoreManager(requireContext()))
+                .apply {
+                    this.questionId = questionId
+                    channelUrl = mChannelUrl
+                }
+
+
+            chatTimerManager?.let {
+                val chatDuration = (map["chatDuration"] ?: "").toInt()
+                val durationMilis = TimeUnit.MINUTES.toMillis(chatDuration.toLong())
+
+                val timeUntilFinished = it.getTimeUntilFinish(questionId)
+
+                if (timeUntilFinished == 0L) {
+                    //The first time a user enters the chat session
+                    shMgr.scheduleEndChat(durationMilis)
+                    countTime(questionId, chatDuration.toLong(), durationMilis)
+                } else {
+                    shMgr.scheduleEndChat(timeUntilFinished)
+                    val minuteUntilFinish = TimeUnit.MILLISECONDS.toMinutes(timeUntilFinished)
+                    countTime(questionId, minuteUntilFinish, timeUntilFinished)
+                }
+
+
             }
 
         }
