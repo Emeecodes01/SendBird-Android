@@ -250,7 +250,8 @@ class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         return VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER;
                     }
 
-                } else if (fileMessage.getType().toLowerCase().startsWith("video/3gpp")) {
+                } else if (fileMessage.getType().toLowerCase().startsWith("video/3gpp") ||
+                fileMessage.getType().toLowerCase().startsWith("audio")) {
                     //NOTE: THIS IS ACTUALLY AN AUDIO FILE
                     if (fileMessage.getSender().getUserId().equals(PreferenceUtils.getUserId())) {
                         return VIEW_TYPE_FILE_MESSAGE_AUDIO_ME;
