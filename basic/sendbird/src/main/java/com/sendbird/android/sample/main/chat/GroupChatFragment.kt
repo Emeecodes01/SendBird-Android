@@ -443,11 +443,7 @@ class GroupChatFragment : Fragment() {
     }
 
     private fun countTime(questionId: Int, minute: Long, timerMillis: Long) {
-        if (minute != 0L) {
-            timer(questionId, minute, timerMillis)
-        } else {
-            activity?.finish()
-        }
+        timer(questionId, minute, timerMillis)
 
         timerFrame!!.visibility = View.VISIBLE
         if (minute == 5L && !viewOnly) {
