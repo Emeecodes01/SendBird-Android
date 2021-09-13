@@ -1,7 +1,6 @@
 package com.ulesson.chat.main.sendBird
 
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -561,6 +560,10 @@ class Chat {
     fun setPendingQuestions(pendingQuestions: String) {
         PreferenceUtils.setPendingQuestions(pendingQuestions)
         GroupAllChatListFragment().updateQuestion()
+    }
+
+    fun logOut() {
+        SendBirdSyncManager.getInstance().clearCache()
     }
 
 }

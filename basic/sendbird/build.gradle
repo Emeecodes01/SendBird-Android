@@ -57,7 +57,7 @@ dependencies {
     implementation 'com.sendbird.sdk:sendbird-android-sdk:3.0.160'
     implementation 'com.sendbird.sdk:sendbird-syncmanager:1.1.30'
 
-    implementation "androidx.core:core-ktx:1.3.2"
+    implementation "androidx.core:core-ktx:1.6.0"
 
     //multidex
     implementation "androidx.multidex:multidex:2.0.1"
