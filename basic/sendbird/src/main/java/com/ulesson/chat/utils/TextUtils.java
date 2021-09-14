@@ -14,7 +14,7 @@ public class TextUtils {
         List<Member> members = channel.getMembers();
 
         if (members.size() < 2 || PreferenceUtils.getUserId().isEmpty()) {
-            return "Connecting you to a tutor...";
+            return "Connecting To a Tutor";
         } else if (members.size() == 2) {
 
             StringBuffer names = new StringBuffer();
