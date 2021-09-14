@@ -1,6 +1,7 @@
 package com.ulesson.chat.main.sendBird
 
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -23,6 +24,7 @@ import com.ulesson.chat.groupchannel.GroupChannelListFragment
 import com.ulesson.chat.groupchannel.GroupChatActivity
 import com.ulesson.chat.groupchannel.GroupChatFragment
 import com.ulesson.chat.groupchannel.GroupChatFragment.GROUP_CHAT_TAG
+import com.ulesson.chat.main.ConnectionManager
 import com.ulesson.chat.main.SyncManagerUtils
 import com.ulesson.chat.main.allChat.GroupAllChatListFragment
 import com.ulesson.chat.main.allChat.PagerFragment
@@ -563,7 +565,10 @@ class Chat {
     }
 
     fun logOut() {
-        SendBirdSyncManager.getInstance().clearCache()
+        ConnectionManager.logout {
+            //do nothing
+            Log.i(Chat::class.java.simpleName, "SENDBIRD LOGGED...")
+        }
     }
 
 }

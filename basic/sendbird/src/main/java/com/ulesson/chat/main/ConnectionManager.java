@@ -25,11 +25,11 @@ public class ConnectionManager {
 
     public static void logout(final SendBird.DisconnectHandler handler) {
         SendBird.disconnect(() -> {
-
             try {
                 SendBirdSyncManager.getInstance().pauseSync();
                 SendBirdSyncManager.getInstance().clearCache();
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
 
             PreferenceUtils.setConnected(false);
