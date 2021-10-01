@@ -280,8 +280,6 @@ class GroupChatFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-        createMessageCollection(mChannelUrl)
-
         chatTimerManager = context?.let { ChatTimerManager(it) }
 
         return rootView
@@ -645,6 +643,7 @@ class GroupChatFragment : Fragment() {
 
         if (mChannel != null) {
             startChatTimer()
+            createMessageCollection(mChannelUrl)
         } else {
 
             GroupChannel.getChannel(groupChatFragmentArgs.channelUrl) { channel: GroupChannel?, error: SendBirdException? ->
@@ -655,11 +654,11 @@ class GroupChatFragment : Fragment() {
 
                 mChannel = channel
 
+                createMessageCollection(mChannelUrl)
                 startChatTimer()
             }
         }
 
-        fetchInitialMessages()
         //ConnectionManager.addConnectionManagementHandler(CONNECTION_HANDLER_ID) { refresh() }
         mChatAdapter!!.setContext(requireContext()) // Glide bug fix (java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity)
 
@@ -670,24 +669,37 @@ class GroupChatFragment : Fragment() {
 
         SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, object : SendBird.ConnectionHandler {
             override fun onReconnectStarted() {
-                //Toast.makeText(requireContext(), "-- RECONNECTED --", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), "-- RECONNECTED STARTED --", Toast.LENGTH_SHORT).show()
             }
 
             override fun onReconnectSucceeded() {
+                //Toast.makeText(requireContext(), "-- RECONNECTED --", Toast.LENGTH_SHORT).show()
                 if (mMessageCollection != null) {
-                    if (mLayoutManager!!.findFirstVisibleItemPosition() <= 0) {
+                    mMessageCollection?.setCollectionHandler(mMessageCollectionHandler)
+
+                    if (mLayoutManager?.findFirstVisibleItemPosition() ?: -1 <= 0) {
+                        //Toast.makeText(requireContext(), "Next messages1", Toast.LENGTH_LONG).show()
                         mMessageCollection!!.fetchAllNextMessages { hasMore, e -> }
                     }
-                    if (mLayoutManager!!.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
-                        mMessageCollection!!.fetchSucceededMessages(
-                            MessageCollection.Direction.PREVIOUS
-                        ) { hasMore, e -> }
+                    if (mLayoutManager?.findLastVisibleItemPosition() == mChatAdapter!!.itemCount - 1) {
+                        //Toast.makeText(requireContext(), "Next messages2", Toast.LENGTH_LONG).show()
+
+                        fetchInitialMessages()
+
+//                        mMessageCollection?.fetchSucceededMessages(
+//                            MessageCollection.Direction.PREVIOUS
+//                        ) { hasMore, e -> }
+//
+//                        mMessageCollection?.fetchSucceededMessages(
+//                            MessageCollection.Direction.NEXT
+//                        ) { hasMore, e -> }
                     }
+
                 }
             }
 
             override fun onReconnectFailed() {
-                //Toast.makeText(requireContext(), "-- FAILED --", Toast.LENGTH_SHORT).show()
+               // Toast.makeText(requireContext(), "-- FAILED --", Toast.LENGTH_SHORT).show()
             }
         })
 
@@ -940,13 +952,17 @@ class GroupChatFragment : Fragment() {
         mMessageCollection!!.fetchSucceededMessages(
             MessageCollection.Direction.PREVIOUS
         ) { hasMore, e ->
-
+            if (e == null) {
+                //Toast.makeText(requireContext(), "Previous messages", Toast.LENGTH_LONG).show()
+            }
         }
 
         mMessageCollection!!.fetchSucceededMessages(
             MessageCollection.Direction.NEXT
         ) { hasMore, e ->
-
+//            if (e == null) {
+//                Toast.makeText(requireContext(), "Next messages", Toast.LENGTH_LONG).show()
+//            }
         }
 
         mMessageCollection!!.fetchFailedMessages(object : CompletionHandler {
