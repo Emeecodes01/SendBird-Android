@@ -5,6 +5,8 @@ import android.os.CountDownTimer
 import android.os.SystemClock
 import android.util.Log
 import android.widget.Chronometer
+import com.google.gson.internal.bind.util.ISO8601Utils
+import java.text.ParsePosition
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -53,10 +55,14 @@ class TimerUtils {
             PreferenceUtils.setEndTime(hashMapOf(channelUrl to null))
         }
 
+        //val startTimeFormat = ISO8601Utils.parse(startTime, ParsePosition(0))
+
         val startTimeFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault())
             .parse(startTime)
 
-        val calendar = GregorianCalendar(TimeZone.getTimeZone("GMT+1"))
+        Log.i(TimerUtils::class.java.simpleName, startTimeFormat.toString())
+
+        val calendar = Calendar.getInstance()
 
         val currentHour = calendar.get(Calendar.HOUR)
         val currentMinutes = calendar.get(Calendar.MINUTE)
@@ -72,8 +78,14 @@ class TimerUtils {
         val endMinutes = (startMinutes + chatDuration) % 60
         val endTime = (endHour * 3600) + (endMinutes * 60) + (startSeconds)
 
+
+        Log.i(TimerUtils::class.java.simpleName,
+            "EndHour: $endHour, EndMinutes: $endMinutes, EndTime: $endTime")
+
         when {
             PreferenceUtils.getEndTime()?.get(channelUrl) == null -> {
+
+                Log.i(TimerUtils::class.java.simpleName,"FIRST")
 
                 val endTimeMap = hashMapOf(channelUrl to endTime)
                 PreferenceUtils.setEndTime(endTimeMap)
@@ -82,13 +94,16 @@ class TimerUtils {
 
             }
             PreferenceUtils.getEndTime()?.get(channelUrl) == -1 -> {
+                Log.i(TimerUtils::class.java.simpleName,"SECOND")
                 timeOut()
             }
             else -> {
                 PreferenceUtils.getEndTime()?.get(channelUrl)?.let {
                     if (it in currentTime until endTime+1) {
+                        Log.i(TimerUtils::class.java.simpleName,"FIRST4")
                         countDownTime(it - currentTime)
                     } else {
+                        Log.i(TimerUtils::class.java.simpleName,"FIRST5")
                         PreferenceUtils.setEndTime(hashMapOf(channelUrl to -1))
                         timeOut()
                     }

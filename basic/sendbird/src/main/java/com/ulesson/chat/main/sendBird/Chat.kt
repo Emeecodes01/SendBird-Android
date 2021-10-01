@@ -15,6 +15,7 @@ import com.sendbird.android.GroupChannel
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.GroupChannelParams
 import com.sendbird.android.Member
+import com.sendbird.android.SendBird
 import com.sendbird.android.SendBirdException
 import com.sendbird.syncmanager.ChannelCollection
 import com.sendbird.syncmanager.SendBirdSyncManager
@@ -567,6 +568,9 @@ class Chat {
     fun logOut() {
         ConnectionManager.logout {
             //do nothing
+            SendBird.unregisterPushTokenAllForCurrentUser {
+
+            }
             Log.i(Chat::class.java.simpleName, "SENDBIRD LOGGED...")
         }
     }

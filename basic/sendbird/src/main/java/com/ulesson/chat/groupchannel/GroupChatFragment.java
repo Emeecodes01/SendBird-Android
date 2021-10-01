@@ -267,6 +267,8 @@ public class GroupChatFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(GroupChatFragment.LOG_TAG, "onCreate: "+"created");
+
         if (getActivity() != null) {
             mIMM = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         }
@@ -357,7 +359,10 @@ public class GroupChatFragment extends Fragment {
 
             String inSession = (String) questionMap.get("inSession");
 
+            Log.i(GroupChatFragment.LOG_TAG, "checkActiveChat: "+inSession);
+
             if (inSession != null && inSession.equals("true")) {
+                Log.i(GroupChatFragment.LOG_TAG, "checkActiveChat2: "+inSession);
                 handleTimer(groupChannel.getData());
             }
         } else if (new StringUtils().chatType(groupChannel.getData()) == ChatType.Past) {
@@ -510,6 +515,8 @@ public class GroupChatFragment extends Fragment {
 
     private void handleTimer(String channelData) {
 
+        Log.i(GroupChatFragment.LOG_TAG, "handleTimer: "+channelData);
+
         Map<String, Object> questionMap = StringUtils.toMutableMap(channelData);
 
         String newVersion = (String) questionMap.get("newVersion");
@@ -519,6 +526,7 @@ public class GroupChatFragment extends Fragment {
         if (chatType == ChatType.Active || chatType == ChatType.PendingChat) {
 
             countdownTxt.setVisibility(View.VISIBLE);
+            Log.i(GroupChatFragment.LOG_TAG, "handleTimer2: "+channelData);
 
             new TimerUtils().getTime(mChannelUrl, getChatDuration(questionMap), channelCreate, getStartTime(questionMap), (countDownTime) -> {
 
@@ -527,22 +535,26 @@ public class GroupChatFragment extends Fragment {
                 int countDownMinutes = countDownTime / 60;
                 int countDownSeconds = countDownTime - (60 * countDownMinutes);
 
+                Log.i(GroupChatFragment.LOG_TAG, "CountDown Time: "+countDownTime);
+
                 countTime(countDownMinutes, countDownSeconds, newVersion);
 
                 return Unit.INSTANCE;
 
             }, () -> {
+                Log.i(GroupChatFragment.LOG_TAG, "handleTimer3: "+channelData);
                 chatStatus(false);
                 updateChat(newVersion);
                 return Unit.INSTANCE;
             });
         } else {
+            Log.i(GroupChatFragment.LOG_TAG, "handleTimer4: "+channelData);
             chatStatus(false);
             updateChat(newVersion);
         }
 
         chatStatus(true);
-
+        Log.i(GroupChatFragment.LOG_TAG, "handleTimer5: "+channelData);
     }
 
     private void chatStatus(boolean enable) {
@@ -561,9 +573,9 @@ public class GroupChatFragment extends Fragment {
     private void updateChat(String newVersion) {
         HashMap<String, Object> activeMap = new HashMap<>();
         if (newVersion != null) {
-            activeMap.put("active", "past");
+           // activeMap.put("active", "past");
         } else {
-            activeMap.put("active", "false");
+            //activeMap.put("active", "false");
         }
         new Chat().updateGroupChat(mChannelUrl, mChannel.getData(), activeMap, getActivity(), (updatedGroupChannel) -> {
             new TimerUtils().removeChannelData(updatedGroupChannel.getUrl());
@@ -573,18 +585,27 @@ public class GroupChatFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void countTime(long minute, long seconds, String newVersion) {
+        Log.i(GroupChatFragment.LOG_TAG, "countTime: "+minute);
         if (minute >= 0) {
 
+            Log.i(GroupChatFragment.LOG_TAG, "Minutes: " + minute);
+            Log.i(GroupChatFragment.LOG_TAG, "Seconds: " + minute);
+
             new TimerUtils().timer(seconds, (l) -> {
-                countdownTxt.setText(String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l));
+                String timer = String.format(Locale.US, "%02d", minute) + ":" + String.format(Locale.US, "%02d", l);
+                Log.i(GroupChatFragment.LOG_TAG, "Timer: " + timer);
+
+                countdownTxt.setText(timer);
                 return Unit.INSTANCE;
             }, () -> {
+                Log.i(GroupChatFragment.LOG_TAG, "TimerFinished FFS: " + "timer finished");
                 countTime(minute - 1, 59, newVersion);
                 return Unit.INSTANCE;
             });
 
         } else {
             chatStatus(false);
+            Log.i(GroupChatFragment.LOG_TAG, "TimerFinished FFS2: " + "timer finished");
             updateChat(newVersion);
             if (getActivity() != null) {
                 tutorActionsChat.showTutorRating(StringUtils.toMutableMap(mChannel.getData()));
