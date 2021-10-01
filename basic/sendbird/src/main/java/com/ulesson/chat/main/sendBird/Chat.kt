@@ -568,9 +568,7 @@ class Chat {
     fun logOut() {
         ConnectionManager.logout {
             //do nothing
-            SendBird.unregisterPushTokenAllForCurrentUser {
-
-            }
+            SendBird.unregisterPushTokenAllForCurrentUser {}
             Log.i(Chat::class.java.simpleName, "SENDBIRD LOGGED...")
         }
     }
