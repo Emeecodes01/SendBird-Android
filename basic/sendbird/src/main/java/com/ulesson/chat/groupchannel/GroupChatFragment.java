@@ -329,6 +329,8 @@ public class GroupChatFragment extends Fragment {
             try {
                 if (groupChannel != null) {
 
+                    mChannel = groupChannel;
+
                     showTutorProfile(groupChannel);
 
                     if (channelCustomType.equalsIgnoreCase("tutorDefault")) {
@@ -712,6 +714,10 @@ public class GroupChatFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
+
+        //extractAndInitTime();
+
+
         if (getActivity() != null) {
             mChatAdapter.setContext(getActivity());
         }
@@ -748,6 +754,18 @@ public class GroupChatFragment extends Fragment {
         checkChannel();
 
     }
+
+    private void extractAndInitTime() {
+        GroupChannel.getChannel(mChannelUrl, (groupChannel, e) -> {
+            if (groupChannel != null) {
+                Log.i(GroupChatFragment.LOG_TAG, "CHANNEL NOT NULL");
+                checkActiveChat(groupChannel);
+            }else  {
+                Log.i(GroupChatFragment.LOG_TAG, "CHANNEL IS NULL");
+            }
+        });
+    }
+
 
     private void checkConnection() {
         SendBird.addConnectionHandler(CONNECTION_HANDLER_ID, new SendBird.ConnectionHandler() {
