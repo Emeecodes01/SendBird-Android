@@ -14,13 +14,12 @@ object WorkRequestManager {
             .setInputData(
                 workDataOf(
                 EndChatService.END_CHAT_SERVICE_QUESTION_ID to  questionId,
-                EndChatService.END_CHAT_SERVICE_CHANNEL_URL to channelUrl
-            )
+                EndChatService.END_CHAT_SERVICE_CHANNEL_URL to channelUrl)
             )
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .setBackoffCriteria(
-                BackoffPolicy.LINEAR,
-                15,
+                BackoffPolicy.EXPONENTIAL,
+                1,
                 TimeUnit.MINUTES)
             .build()
 
