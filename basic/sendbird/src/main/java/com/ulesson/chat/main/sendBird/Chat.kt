@@ -55,7 +55,8 @@ class Chat {
         questionMap: HashMap<String, Any?>,
         channelUrl: (String) -> Unit,
         chatActions: ChatActions,
-        tutorActions: TutorActions
+        tutorActions: TutorActions,
+        onError: (String) -> Unit = {}
     ) {
 
         if (questionMap["newVersion"] == "true") {
@@ -102,6 +103,8 @@ class Chat {
 
                 })
 
+            } else {
+                onError.invoke("An error occurred while trying to send your chat, Please try again.")
             }
 
         }
@@ -568,9 +571,16 @@ class Chat {
     fun logOut() {
         ConnectionManager.logout {
             //do nothing
-            SendBird.unregisterPushTokenAllForCurrentUser {}
+            SendBird.unregisterPushTokenAllForCurrentUser {
+                it?.printStackTrace()
+            }
             Log.i(Chat::class.java.simpleName, "SENDBIRD LOGGED...")
         }
+    }
+
+
+    fun getChatCount() {
+
     }
 
 }

@@ -50,7 +50,9 @@
             android:name="com.ulesson.chat.utils.MediaUtils"
             android:launchMode="singleTop" />
 
-        <activity android:name="com.ulesson.chat.groupchannel.GroupChatActivity" />
+        <activity android:name="com.ulesson.chat.groupchannel.GroupChatActivity"
+            android:screenOrientation="portrait"
+            android:exported="true"/>
 
 <!--        <service-->
 <!--            android:name="com.ulesson.chat.fcm.MyFirebaseMessagingService"-->

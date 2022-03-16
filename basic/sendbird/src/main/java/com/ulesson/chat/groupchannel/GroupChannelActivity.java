@@ -177,6 +177,8 @@ public class GroupChannelActivity extends AppCompatActivity {
                 @Override
                 public void showTutorRating(@NotNull Map<String, Object> questionMap) {
                 }
+            }, (errMsg) -> {
+                return null;
             });
 
             return Unit.INSTANCE;
