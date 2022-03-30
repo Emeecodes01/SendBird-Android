@@ -99,5 +99,6 @@
     <string name="close">CLOSE</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
+    <string name="record_audio">Record Audio</string>
 
 </resources>

@@ -230,6 +230,7 @@
             android:layout_marginStart="11dp"
             android:background="@drawable/ic_mic"
             android:gravity="center"
+            android:contentDescription="@string/record_audio"
             android:textColor="@drawable/selector_btn_send"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
